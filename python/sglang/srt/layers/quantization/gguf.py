@@ -186,6 +186,41 @@ DEQUANT_TYPES = STANDARD_QUANT_TYPES | KQUANT_TYPES | IMATRIX_QUANT_TYPES
 MMVQ_QUANT_TYPES = STANDARD_QUANT_TYPES | KQUANT_TYPES | IMATRIX_QUANT_TYPES
 MMQ_QUANT_TYPES = STANDARD_QUANT_TYPES | KQUANT_TYPES
 
+# Largest batch that stays on MMVQ, keyed by (rows <= 5120, rows > 5120).
+# Measured on GB10 (sm_121a) with the g2-t1 MMVQ/MMQ crossover microbench:
+# Q8_0 2/2, Q4_K 2/2, Q6_K 6/2 (Q6_K rows > 5120 is unmeasured; keep the
+# legacy value). These are the last batches where MMVQ wins, not the first
+# batch where MMQ wins. At batch 4 MMVQ is already 17-24% slower than MMQ,
+# and the legacy rows-only threshold (6 / 2) kept it there on 3 of the 6
+# measured shapes, by up to +24.1%. Unmeasured types keep the legacy
+# threshold; lowering an unmeasured one only adds risk.
+_MMVQ_SAFE_MEASURED = {
+    WeightType.Q8_0: (2, 2),
+    WeightType.Q4_K: (2, 2),
+    WeightType.Q6_K: (6, 2),
+}
+
+
+def _mmvq_safe_batch(qweight_type: int, rows: int) -> int:
+    band = 1 if rows > 5120 else 0
+    try:
+        weight_type = WeightType(qweight_type)
+    except ValueError:
+        # Preserve the legacy threshold for unknown types; kernel dispatch
+        # rejects them later anyway.
+        return 2 if band else 6
+    measured = _MMVQ_SAFE_MEASURED.get(weight_type)
+    if measured is not None:
+        return measured[band]
+    if weight_type == WeightType.Q8_1:
+        # No MMQ kernel for Q8_1; the threshold only gates the dequant
+        # fallback.
+        return 2 if band else 6
+    if weight_type in IMATRIX_QUANT_TYPES:
+        # MMVQ-only; the threshold only gates the dequant fallback.
+        return 8 if band else 16
+    return 2 if band else 6
+
 
 def ggml_moe_get_block_size(qweight_type: int) -> int:
     # MOE_X in the CUDA/MUSA GGUF MMQ kernels is 4. The released wheel's
@@ -209,10 +244,7 @@ def dequantize_gguf_weight(
 def fused_mul_mat_gguf(
     x: torch.Tensor, qweight: torch.Tensor, qweight_type: int
 ) -> torch.Tensor:
-    if qweight_type in IMATRIX_QUANT_TYPES:
-        mmvq_safe = 8 if qweight.shape[0] > 5120 else 16
-    else:
-        mmvq_safe = 2 if qweight.shape[0] > 5120 else 6
+    mmvq_safe = _mmvq_safe_batch(qweight_type, qweight.shape[0])
     # HACK: when doing chunked prefill we don't generate output tokens
     # so input to logits generator is empty which causes invalid parameter
     if x.shape[0] == 0:
