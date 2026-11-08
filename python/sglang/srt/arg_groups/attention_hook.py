@@ -20,7 +20,6 @@ from sglang.srt.arg_groups.overrides import (
     _intel_xpu_page_constraint,
     _mla_backend_page_constraints,
     _mla_kv_cache_dtype_checks,
-    _rsi_trial_attention_backend,
     attention_backends_of,
     declare_resolution,
     mamba_extra_buffer_of,
@@ -119,7 +118,6 @@ def handle_attention_backend_compatibility(server_args: Any):
 
     # Split-backend override + default fill.
     run_post_process_pass(server_args, _attention_backend_default)
-    run_post_process_pass(server_args, _rsi_trial_attention_backend)
 
     # Torch native and flex attention backends
     attention_backend = resolved_view(server_args).attention_backend

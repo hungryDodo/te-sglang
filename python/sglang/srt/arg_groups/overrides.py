@@ -1141,17 +1141,6 @@ def _attention_backend_default(view: Any) -> dict:
 
 
 @register_post_process
-def _rsi_trial_attention_backend(view: Any) -> dict:
-    # glm-a trial-2 A/B: the gate's frozen launch pins --attention-backend
-    # flashinfer; remap to triton so the triton backend is measured against it
-    # on GB10 (SM121). Remove once the A/B is decided.
-    if view.attention_backend == "flashinfer":
-        logger.warning("RSI trial-2: remapping attention_backend flashinfer -> triton.")
-        return {"attention_backend": "triton"}
-    return {}
-
-
-@register_post_process
 def _mla_backend_page_constraints(view: Any) -> dict:
     """Resolve MLA/TRTLLM page-size constraints, chaining adjustments on the local value."""
     page_size = view.page_size
