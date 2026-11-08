@@ -2,6 +2,63 @@ from typing import Any, Optional
 
 from transformers.configuration_utils import PretrainedConfig
 
+_GGUF_ARCH = "spark2_5"
+
+
+def spark2_5_config_kwargs_from_gguf(gguf_path: str) -> dict[str, Any]:
+    """Reconstruct Spark2_5Config kwargs from a llama.cpp spark2_5 GGUF.
+
+    llama.cpp emits one kv block per attention family: the unsuffixed
+    ``rope.*`` keys describe full-attention layers and the ``*_swa`` keys the
+    sliding-window layers, which is the reverse assignment of
+    ``Spark2_5Config.rope_parameters`` naming (full_attention gets the large
+    theta with the small partial rotary factor).
+    """
+    from gguf import GGUFReader
+
+    reader = GGUFReader(gguf_path)
+    meta = {key: field.contents() for key, field in reader.fields.items()}
+    shapes = {t.name: tuple(int(x) for x in t.shape) for t in reader.tensors}
+
+    def get(suffix):
+        return meta[f"{_GGUF_ARCH}.{suffix}"]
+
+    head_dim = int(get("attention.key_length"))
+    swa_pattern = [bool(x) for x in get("attention.sliding_window_pattern")]
+
+    return dict(
+        # token_embd is stored [n_embd, n_vocab] in ggml's reversed order.
+        vocab_size=shapes["token_embd.weight"][1],
+        hidden_size=int(get("embedding_length")),
+        intermediate_size=int(get("feed_forward_length")),
+        num_hidden_layers=int(get("block_count")),
+        num_attention_heads=int(get("attention.head_count")),
+        num_key_value_heads=int(get("attention.head_count_kv")),
+        head_dim=head_dim,
+        rms_norm_eps=float(get("attention.layer_norm_rms_epsilon")),
+        max_position_embeddings=int(get("context_length")),
+        sliding_window=int(get("attention.sliding_window")),
+        layer_types=[
+            "sliding_attention" if s else "full_attention" for s in swa_pattern
+        ],
+        rope_parameters={
+            "full_attention": {
+                "rope_theta": float(get("rope.freq_base")),
+                "partial_rotary_factor": int(get("rope.dimension_count")) / head_dim,
+            },
+            "sliding_attention": {
+                "rope_theta": float(get("rope.freq_base_swa")),
+                "partial_rotary_factor": int(get("rope.dimension_count_swa")) / head_dim,
+            },
+        },
+        headwise_attn_output_gate=any(
+            n.endswith("attn_gate.weight") for n in shapes
+        ),
+        tie_word_embeddings="output.weight" not in shapes,
+        architectures=["Spark2_5ForCausalLM"],
+        dtype="bfloat16",
+    )
+
 
 class Spark2_5Config(PretrainedConfig):
     model_type = "spark2_5"
@@ -65,3 +122,7 @@ class Spark2_5Config(PretrainedConfig):
         ]
         self.is_hybrid_swa = any(self.hybrid_layer_pattern)
         super().__init__(**kwargs, tie_word_embeddings=tie_word_embeddings)
+
+    @classmethod
+    def from_gguf(cls, gguf_path: str) -> "Spark2_5Config":
+        return cls(**spark2_5_config_kwargs_from_gguf(gguf_path))

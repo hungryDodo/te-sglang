@@ -470,6 +470,17 @@ class GGUFLinearMethod(LinearMethodBase):
         qweight = layer.qweight
         shard_id_map = qweight.shard_id_map
         shard_id = qweight.shard_id
+        if len(qweight.data_container) == 1 and shard_id == [None]:
+            # Fused-in-checkpoint tensor (e.g. spark2_5 attn_qkv): a single
+            # container entry with no shard split. Materialize it directly so
+            # apply()'s unsharded path can dequantize the whole qweight.
+            data = qweight.data_container[0].to(qweight.device)
+            qweight.data_container.clear()
+            materialized = Parameter(data, requires_grad=False)
+            set_weight_attrs(materialized, vars(qweight))
+            materialized.shard_id = []
+            layer.register_parameter("qweight", materialized)
+            return
         if len(data_container := qweight.data_container) > 1:
             dtype = {data.dtype for data in data_container}
             assert len(dtype) == 1, ValueError(
