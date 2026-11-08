@@ -1835,7 +1835,39 @@ class FlashInferIndicesUpdaterDecode:
             and wrapper.begin_forward.func == fast_decode_plan
         )
 
-        if wrapper_uses_fast_decode_plan:
+        # Eager decode with host-known metadata: plain plan() always reads
+        # indptr and last_page_len back to the host (blocking D2H that drains
+        # the launch pipeline every step). The host indptr is already built
+        # above, and the device tensors passed here are the same buffers
+        # run() consumes, so fast_decode_plan yields a bit-identical plan
+        # with no device-to-host reads. _cached_module appears only after a
+        # first plain plan(), so the very first step falls back to plain.
+        eager_fast_plan = (
+            global_override_indptr_cpu is not None
+            and not wrapper.is_cuda_graph_enabled
+            and hasattr(wrapper, "_cached_module")
+        )
+
+        if eager_fast_plan:
+            fast_decode_plan(
+                wrapper,
+                kv_indptr,
+                kv_indices,
+                self.kv_last_page_len[:bs],
+                self.num_qo_heads,
+                self.num_kv_heads,
+                self.head_dim,
+                1,
+                data_type=self.data_type,
+                q_data_type=self.q_data_type,
+                non_blocking=True,
+                fixed_split_size=fixed_split_size,
+                disable_split_kv=(
+                    disable_split_kv if disable_split_kv is not None else False
+                ),
+                global_override_indptr_cpu=global_override_indptr_cpu,
+            )
+        elif wrapper_uses_fast_decode_plan:
             # When begin_forward is replaced with fast_decode_plan, pass global_override_indptr_cpu
             wrapper.begin_forward(
                 kv_indptr,
