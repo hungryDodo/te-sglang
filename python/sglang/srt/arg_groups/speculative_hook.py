@@ -234,6 +234,23 @@ def handle_speculative_decoding(server_args: ServerArgs) -> None:
             speculative_draft_sink_size=sink_size,
         )
 
+    # RSI trial-2 overlay: default to lossless NGRAM self-speculation when the
+    # operator did not request any speculative algorithm. NGRAM drafts from the
+    # request's own token history and every draft is verified exactly, so greedy
+    # outputs are unchanged. Frozen CLI flags stay untouched; this only fills a
+    # runtime default that is otherwise None.
+    if (
+        cfg.speculative_algorithm is None
+        and cfg.device.startswith("cuda")
+        and cfg.tp_size == 1
+        and not cfg.enable_dp_attention
+    ):
+        declare_resolution(
+            server_args,
+            "handle_speculative_decoding",
+            speculative_algorithm="NGRAM",
+        )
+
     algo = None
     if cfg.speculative_algorithm is not None:
         from sglang.srt.speculative.spec_info import SpeculativeAlgorithm
