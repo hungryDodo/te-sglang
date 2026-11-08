@@ -35,9 +35,11 @@ from typing import Any, Callable, Dict, Optional
 from transformers import PretrainedConfig
 
 from sglang.srt.configs.muse_glimmer import MuseGlimmerConfig
+from sglang.srt.configs.spark2_5 import Spark2_5Config
 
 GGUF_NATIVE_CONFIG_BUILDERS: Dict[str, Callable[[str], PretrainedConfig]] = {
     "muse-glimmer": MuseGlimmerConfig.from_gguf,
+    "spark2_5": Spark2_5Config.from_gguf,
 }
 
 

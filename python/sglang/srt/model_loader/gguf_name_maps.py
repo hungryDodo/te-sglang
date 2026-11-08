@@ -64,9 +64,43 @@ def build_muse_glimmer_name_map(config: PretrainedConfig) -> Dict[str, str]:
     return name_map
 
 
+# Spark2_5 stores attention fused: attn_qkv is the merged QKV projection and
+# attn_gate the per-head output gate. ffn_gate/ffn_up stay separate and are
+# merged by Spark2_5ForCausalLM.load_weights' stacked_params_mapping.
+_SPARK2_5_LAYER_TENSORS = {
+    "attn_norm": "input_layernorm",
+    "attn_qkv": "self_attn.q_k_v_proj",
+    "attn_gate": "self_attn.g_proj",
+    "attn_output": "self_attn.out_proj",
+    "ffn_norm": "post_attention_layernorm",
+    "ffn_gate": "mlp.gate_proj",
+    "ffn_up": "mlp.up_proj",
+    "ffn_down": "mlp.down_proj",
+}
+
+_SPARK2_5_GLOBAL_TENSORS = {
+    "token_embd": "model.embed_tokens",
+    "output_norm": "model.norm",
+    # "output" only exists when embeddings are not tied; Spark2_5 ties them.
+}
+
+
+def build_spark2_5_name_map(config: PretrainedConfig) -> Dict[str, str]:
+    name_map = {
+        f"{gguf}.weight": f"{hf}.weight"
+        for gguf, hf in _SPARK2_5_GLOBAL_TENSORS.items()
+    }
+    for layer in range(config.num_hidden_layers):
+        for gguf, hf in _SPARK2_5_LAYER_TENSORS.items():
+            name_map[f"blk.{layer}.{gguf}.weight"] = f"model.layers.{layer}.{hf}.weight"
+    return name_map
+
+
 # Keyed by HF ``config.model_type`` (loader.py looks it up with that), which is
 # not the GGUF ``general.architecture`` that GGUF_NATIVE_CONFIG_BUILDERS uses:
 # llama.cpp spells the arch "muse-glimmer" while the HF config says "muse_glimmer".
+# spark2_5 happens to use the same spelling in both places.
 GGUF_HF_NAME_MAP_BUILDERS: Dict[str, Callable[[PretrainedConfig], Dict[str, str]]] = {
     "muse_glimmer": build_muse_glimmer_name_map,
+    "spark2_5": build_spark2_5_name_map,
 }
