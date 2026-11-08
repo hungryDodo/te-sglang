@@ -23,6 +23,7 @@ from sglang.srt.utils.common import get_device_memory_capacity
 logger = logging.getLogger(__name__)
 
 _DEFAULT_PP_PREFILL_CUDA_GRAPH_MAX_TOKENS = 8192
+_RSI_DECODE_GRAPH_MAX_BS_CAP = 256
 
 
 def handle_offload_compatibility(server_args: Any) -> None:
@@ -203,6 +204,23 @@ def handle_gpu_memory_settings(server_args: Any):
             decode_cuda_graph_config.bs = generate_decode_cuda_graph_batch_sizes(
                 server_args, decode_cuda_graph_config.max_bs
             )
+            # RSI: decode concurrency is bounded by --max-running-requests, but
+            # the batch-size knob may be set lower (e.g. 64).  Every decode step
+            # above that knob then falls back to eager execution, paying python
+            # dispatch + per-op launch cost per token.  Capture graphs up to the
+            # real decode concurrency so those steps replay too.  The explicit
+            # knob acts as a floor, so this only ever widens coverage.
+            if cfg.max_running_requests is not None:
+                graph_bs_target = min(
+                    cfg.max_running_requests, _RSI_DECODE_GRAPH_MAX_BS_CAP
+                )
+                if decode_cuda_graph_config.max_bs < graph_bs_target:
+                    decode_cuda_graph_config.max_bs = graph_bs_target
+                    decode_cuda_graph_config.bs = (
+                        generate_decode_cuda_graph_batch_sizes(
+                            server_args, decode_cuda_graph_config.max_bs
+                        )
+                    )
         else:
             decode_cuda_graph_config.max_bs = max(decode_cuda_graph_config.bs)
     else:
