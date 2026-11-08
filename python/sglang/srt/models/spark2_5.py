@@ -490,8 +490,46 @@ class Spark2_5ForCausalLM(nn.Module):
             ("gate_up_proj", "up_proj", 1),
         ]
         params_dict = dict(self.named_parameters())
+        # GGUF spark2_5 checkpoints store a fused attn_qkv and a quantized
+        # attn_gate, but g_proj is intentionally left unquantized (bf16) and the
+        # fused qweight_type scalar has no per-shard assignment path. Track the
+        # gate quant type, dequantize attn_gate into g_proj.weight, and fill the
+        # fused QKV type parameter directly.
+        gguf_gate_types: dict[str, int] = {}
         for name, loaded_weight in weights:
             original_name = name
+            if name.endswith("self_attn.q_k_v_proj.qweight_type"):
+                param = params_dict.get(name)
+                if param is not None:
+                    value = int(loaded_weight.item())
+                    param.data.fill_(value)
+                    param.weight_type = value
+                continue
+            if name.endswith("self_attn.g_proj.qweight_type"):
+                gguf_gate_types[name[: -len(".qweight_type")]] = int(
+                    loaded_weight.item()
+                )
+                continue
+            if name.endswith("self_attn.g_proj.qweight"):
+                base = name[: -len(".qweight")]
+                weight_type = gguf_gate_types.get(base)
+                if weight_type is None:
+                    logger.warning("GGUF %s arrived before its qweight_type", name)
+                    continue
+                from sglang.srt.layers.quantization.gguf import (
+                    dequantize_gguf_weight,
+                )
+
+                dequantized = dequantize_gguf_weight(
+                    loaded_weight, weight_type, torch.bfloat16
+                )
+                param = params_dict.get(base + ".weight")
+                if param is None:
+                    logger.warning("Parameter %s.weight not found", base)
+                    continue
+                weight_loader = getattr(param, "weight_loader", default_weight_loader)
+                weight_loader(param, dequantized)
+                continue
             layer_id = get_layer_id(name)
             if (
                 layer_id is not None
