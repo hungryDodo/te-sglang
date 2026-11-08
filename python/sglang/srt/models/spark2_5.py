@@ -520,8 +520,10 @@ class Spark2_5ForCausalLM(nn.Module):
                     dequantize_gguf_weight,
                 )
 
+                # ggml_dequantize only has a CUDA kernel; the iterator yields
+                # CPU tensors.
                 dequantized = dequantize_gguf_weight(
-                    loaded_weight, weight_type, torch.bfloat16
+                    loaded_weight.to(param.device), weight_type, torch.bfloat16
                 )
                 param = params_dict.get(base + ".weight")
                 if param is None:
