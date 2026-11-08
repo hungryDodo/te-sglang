@@ -1813,7 +1813,14 @@ class FlashInferIndicesUpdaterDecode:
 
         if use_sliding_window_kv_pool and not use_swa_source:
             assert self._swa_kv_pool is not None
-            kv_last_index = kv_indptr[-1]
+            # kv_indptr[-1] is a device scalar: slicing kv_indices with it
+            # forces a blocking D2H every decode step. seq_lens_cpu mirrors
+            # the same bs lanes the device cumsum ran over, so its sum is
+            # the same packed length.
+            if seq_lens_cpu is not None and bs == seq_lens_cpu.numel():
+                kv_last_index = int(seq_lens_cpu.sum())
+            else:
+                kv_last_index = kv_indptr[-1]
             kv_indices[:kv_last_index] = (
                 self._swa_kv_pool.translate_loc_from_full_to_swa(
                     kv_indices[:kv_last_index]
