@@ -187,6 +187,27 @@ def handle_gpu_memory_settings(server_args: Any):
     ):
         decode_cuda_graph_config.max_bs = cfg.max_running_requests
 
+    if (
+        not decode_max_bs_is_default
+        and (Phase.DECODE, "bs") not in server_args._cuda_graph_config_locked
+        and cfg.max_running_requests is not None
+        and decode_cuda_graph_config.max_bs is not None
+        and decode_cuda_graph_config.max_bs < cfg.max_running_requests
+        and gpu_mem is not None
+        and gpu_mem >= 60 * 1024
+    ):
+        # A decode batch can never exceed max_running_requests, so graph
+        # coverage below it leaves large batches on the eager path with no
+        # offsetting benefit. An explicit max_bs below the running limit
+        # still acts as a floor; only expand on 60GB+ GPUs where the larger
+        # capture pool fits.
+        logger.info(
+            "Expanding decode CUDA graph max_bs %d -> max_running_requests=%d.",
+            decode_cuda_graph_config.max_bs,
+            cfg.max_running_requests,
+        )
+        decode_cuda_graph_config.max_bs = cfg.max_running_requests
+
     from sglang.srt.arg_groups.model_overrides.qwen3_vl import (
         expand_multimodal_decode_graph_to_running_limit,
     )
