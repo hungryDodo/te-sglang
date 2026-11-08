@@ -20,6 +20,7 @@ from sglang.srt.arg_groups.overrides import (
     _intel_xpu_page_constraint,
     _mla_backend_page_constraints,
     _mla_kv_cache_dtype_checks,
+    _rsi_trial_kv_cache_dtype,
     attention_backends_of,
     declare_resolution,
     mamba_extra_buffer_of,
@@ -188,6 +189,7 @@ def handle_attention_backend_compatibility(server_args: Any):
     # _mla_kv_cache_dtype_checks), invoked here at their legacy slot.
 
     run_post_process_pass(server_args, _mla_kv_cache_dtype_checks)
+    run_post_process_pass(server_args, _rsi_trial_kv_cache_dtype)
 
     # The CuteDSL MLA validation + prefill fill moved to the resolution
     # pipeline (arg_groups/overrides.py: _cutedsl_prefill_backend_fill),

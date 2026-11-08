@@ -1141,6 +1141,18 @@ def _attention_backend_default(view: Any) -> dict:
 
 
 @register_post_process
+def _rsi_trial_kv_cache_dtype(view: Any) -> dict:
+    # glm-a trial-2 H2: the gate's frozen launch pins
+    # --kv-cache-dtype bfloat16; remap to fp8_e4m3 to halve KV bytes per
+    # decode step (decode on GB10 is memory-bandwidth-bound, trial-1).
+    # Precision experiment, integrity-gated. Remove once decided.
+    if view.kv_cache_dtype == "bfloat16":
+        logger.warning("RSI trial-2: remapping kv_cache_dtype bfloat16 -> fp8_e4m3.")
+        return {"kv_cache_dtype": "fp8_e4m3"}
+    return {}
+
+
+@register_post_process
 def _mla_backend_page_constraints(view: Any) -> dict:
     """Resolve MLA/TRTLLM page-size constraints, chaining adjustments on the local value."""
     page_size = view.page_size
