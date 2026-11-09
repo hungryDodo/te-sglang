@@ -1,0 +1,461 @@
+{
+ "sites": [
+  {
+   "line": 1694,
+   "attr": "item",
+   "receiver": "seq_lens_cpu_tmp.sum()",
+   "class": "FlashInferIndicesUpdaterDecode",
+   "function": "update_sliding_window",
+   "hot_path": true,
+   "host_mirror": true,
+   "verdict": "host-mirror-no-sync",
+   "src": "paged_kernel_lens_sum_tmp = seq_lens_cpu_tmp.sum().item()"
+  },
+  {
+   "line": 1696,
+   "attr": "item",
+   "receiver": "paged_kernel_lens_tmp.sum()",
+   "class": "FlashInferIndicesUpdaterDecode",
+   "function": "update_sliding_window",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "paged_kernel_lens_sum_tmp = paged_kernel_lens_tmp.sum().item()"
+  },
+  {
+   "line": 1739,
+   "attr": "cpu",
+   "receiver": "encoder_lens",
+   "class": "FlashInferIndicesUpdaterDecode",
+   "function": "update_cross_attention",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "encoder_lens_cpu = encoder_lens.cpu() if encoder_lens is not None else None"
+  },
+  {
+   "line": 1749,
+   "attr": "item",
+   "receiver": "encoder_lens.sum()",
+   "class": "FlashInferIndicesUpdaterDecode",
+   "function": "update_cross_attention",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "seq_lens_sum = encoder_lens.sum().item()"
+  },
+  {
+   "line": 1969,
+   "attr": "item",
+   "receiver": "paged_kernel_lens.sum()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_single_wrapper",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+  },
+  {
+   "line": 2050,
+   "attr": "tolist",
+   "receiver": "seq_lens_cpu",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "hot_path": true,
+   "host_mirror": true,
+   "verdict": "host-mirror-no-sync",
+   "src": "for s, p in zip(seq_lens_cpu.tolist(), extend_prefix_lens_cpu)"
+  },
+  {
+   "line": 2082,
+   "attr": "item",
+   "receiver": "paged_kernel_lens.sum()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+  },
+  {
+   "line": 2107,
+   "attr": "tolist",
+   "receiver": "seq_lens_cpu",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "hot_path": true,
+   "host_mirror": true,
+   "verdict": "host-mirror-no-sync",
+   "src": "for s, e in zip(seq_lens_cpu.tolist(), extend_lens_cpu)"
+  },
+  {
+   "line": 2116,
+   "attr": "item",
+   "receiver": "paged_kernel_lens.sum()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+  },
+  {
+   "line": 2124,
+   "attr": "item",
+   "receiver": "prefix_lens.sum()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "paged_kernel_lens_sum = prefix_lens.sum().item()"
+  },
+  {
+   "line": 2186,
+   "attr": "tolist",
+   "receiver": "prefix_lens.detach().cpu()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "_build_swa_prefix_custom_mask",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "prefix_lens_cpu = prefix_lens.detach().cpu().tolist()"
+  },
+  {
+   "line": 2186,
+   "attr": "cpu",
+   "receiver": "prefix_lens.detach()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "_build_swa_prefix_custom_mask",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "prefix_lens_cpu = prefix_lens.detach().cpu().tolist()"
+  },
+  {
+   "line": 2187,
+   "attr": "tolist",
+   "receiver": "(seq_lens - prefix_lens).detach().cpu()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "_build_swa_prefix_custom_mask",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()"
+  },
+  {
+   "line": 2187,
+   "attr": "cpu",
+   "receiver": "(seq_lens - prefix_lens).detach()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "_build_swa_prefix_custom_mask",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()"
+  },
+  {
+   "line": 2188,
+   "attr": "tolist",
+   "receiver": "kv_start_idx.detach().cpu()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "_build_swa_prefix_custom_mask",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "kv_start_cpu = kv_start_idx.detach().cpu().tolist()"
+  },
+  {
+   "line": 2188,
+   "attr": "cpu",
+   "receiver": "kv_start_idx.detach()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "_build_swa_prefix_custom_mask",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "kv_start_cpu = kv_start_idx.detach().cpu().tolist()"
+  },
+  {
+   "line": 2251,
+   "attr": "item",
+   "receiver": "paged_kernel_lens.sum()",
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_cross_attention",
+   "hot_path": true,
+   "host_mirror": false,
+   "verdict": "DEVICE-READ-ON-HOT-PATH",
+   "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+  },
+  {
+   "line": 675,
+   "attr": "item",
+   "receiver": "delimiter_indices_cpu[0]",
+   "class": "FlashInferAttnBackend",
+   "function": "_process_multi_item_scoring",
+   "hot_path": false,
+   "host_mirror": true,
+   "verdict": "host-mirror-no-sync",
+   "src": "first_delim = delimiter_indices_cpu[0].item()  # CPU .item(), no GPU sync"
+  },
+  {
+   "line": 954,
+   "attr": "tolist",
+   "receiver": "paged_seq_lens_cpu",
+   "class": "FlashInferAttnBackend",
+   "function": "_prepare_dequant_workspace_metadata_for_extend",
+   "hot_path": false,
+   "host_mirror": true,
+   "verdict": "host-mirror-no-sync",
+   "src": "else paged_seq_lens_cpu.tolist()"
+  },
+  {
+   "line": 957,
+   "attr": "item",
+   "receiver": "seq_len",
+   "class": "FlashInferAttnBackend",
+   "function": "_prepare_dequant_workspace_metadata_for_extend",
+   "hot_path": false,
+   "host_mirror": false,
+   "verdict": "device-read-cold-path",
+   "src": "int(seq_len.item()) if isinstance(seq_len, torch.Tensor) else int(seq_len)"
+  },
+  {
+   "line": 2513,
+   "attr": "tolist",
+   "receiver": "seq_lens_cpu",
+   "class": null,
+   "function": "_build_draft_indptr_host",
+   "hot_path": false,
+   "host_mirror": true,
+   "verdict": "host-mirror-no-sync",
+   "src": "for length in seq_lens_cpu.tolist():"
+  },
+  {
+   "line": 2630,
+   "attr": "tolist",
+   "receiver": "host_lengths",
+   "class": "FlashInferMultiStepDraftBackend",
+   "function": "common_template",
+   "hot_path": false,
+   "host_mirror": true,
+   "verdict": "host-mirror-no-sync",
+   "src": "min(32, max(1, (max(host_lengths.tolist(), default=0) + 511) // 512))"
+  },
+  {
+   "line": 2678,
+   "attr": "cpu",
+   "receiver": "self.kv_indptr[:, :bs + 1]",
+   "class": "FlashInferMultiStepDraftBackend",
+   "function": "common_template",
+   "hot_path": false,
+   "host_mirror": false,
+   "verdict": "device-read-cold-path",
+   "src": "else self.kv_indptr[:, : bs + 1].cpu()"
+  }
+ ],
+ "installs": [
+  {
+   "line": 846,
+   "wrapper_expr": "w",
+   "wrappers_iterated": "self.decode_cuda_graph_metadata[bs]",
+   "plan_fn": "fast_decode_plan",
+   "guards": [
+    "in_capture and forward_mode.is_decode_or_idle()"
+   ],
+   "src": "w.begin_forward = partial(fast_decode_plan, w)"
+  },
+  {
+   "line": 860,
+   "wrapper_expr": "w",
+   "wrappers_iterated": "self.draft_extend_cuda_graph_metadata[bs]",
+   "plan_fn": "fast_prefill_plan",
+   "guards": [
+    "in_capture and forward_mode.is_draft_extend_v2() and (self.prefill_backend == 'fa2') and (self.dispatch_reason is None)"
+   ],
+   "src": "w.begin_forward = partial(fast_prefill_plan, w)"
+  },
+  {
+   "line": 886,
+   "wrapper_expr": "w",
+   "wrappers_iterated": "self.prefill_cuda_graph_metadata[bs]",
+   "plan_fn": "fast_prefill_plan",
+   "guards": [
+    "in_capture and forward_mode.is_target_verify() and (spec_info is not None) and (spec_info.spec_input_type == SpecInputType.DFLASH_VERIFY) and (getattr(spec_info, 'custom_mask', None) is None) and (self.prefill_backend == 'fa2') and (self.dispatch_reason is None)"
+   ],
+   "src": "w.begin_forward = partial(fast_prefill_plan, w)"
+  },
+  {
+   "line": 902,
+   "wrapper_expr": "w",
+   "wrappers_iterated": "self.prefill_cuda_graph_metadata[bs]",
+   "plan_fn": "fast_prefill_plan",
+   "guards": [
+    "in_capture and envs.SGLANG_OPT_FLASHINFER_VERIFY_HOST_PLAN.get() and forward_mode.is_target_verify() and (spec_info is not None) and (spec_info.spec_input_type == SpecInputType.EAGLE_VERIFY) and (spec_info.topk == 1) and (seq_lens_cpu is not None) and (self.prefill_backend == 'fa2') and (self.dispatch_reason is None) and (self.flashinfer_kv_cache_dtype in (torch.bfloat16, torch.float16, torch.float8_e4m3fn, torch.float8_e5m2))"
+   ],
+   "src": "w.begin_forward = partial(fast_prefill_plan, w)"
+  }
+ ],
+ "verdicts": {
+  "hot_path_device_reads": [
+   {
+    "line": 1696,
+    "attr": "item",
+    "receiver": "paged_kernel_lens_tmp.sum()",
+    "class": "FlashInferIndicesUpdaterDecode",
+    "function": "update_sliding_window",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "paged_kernel_lens_sum_tmp = paged_kernel_lens_tmp.sum().item()"
+   },
+   {
+    "line": 1739,
+    "attr": "cpu",
+    "receiver": "encoder_lens",
+    "class": "FlashInferIndicesUpdaterDecode",
+    "function": "update_cross_attention",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "encoder_lens_cpu = encoder_lens.cpu() if encoder_lens is not None else None"
+   },
+   {
+    "line": 1749,
+    "attr": "item",
+    "receiver": "encoder_lens.sum()",
+    "class": "FlashInferIndicesUpdaterDecode",
+    "function": "update_cross_attention",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "seq_lens_sum = encoder_lens.sum().item()"
+   },
+   {
+    "line": 1969,
+    "attr": "item",
+    "receiver": "paged_kernel_lens.sum()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_single_wrapper",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+   },
+   {
+    "line": 2082,
+    "attr": "item",
+    "receiver": "paged_kernel_lens.sum()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_sliding_window",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+   },
+   {
+    "line": 2116,
+    "attr": "item",
+    "receiver": "paged_kernel_lens.sum()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_sliding_window",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+   },
+   {
+    "line": 2124,
+    "attr": "item",
+    "receiver": "prefix_lens.sum()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_sliding_window",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "paged_kernel_lens_sum = prefix_lens.sum().item()"
+   },
+   {
+    "line": 2186,
+    "attr": "tolist",
+    "receiver": "prefix_lens.detach().cpu()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "_build_swa_prefix_custom_mask",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "prefix_lens_cpu = prefix_lens.detach().cpu().tolist()"
+   },
+   {
+    "line": 2186,
+    "attr": "cpu",
+    "receiver": "prefix_lens.detach()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "_build_swa_prefix_custom_mask",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "prefix_lens_cpu = prefix_lens.detach().cpu().tolist()"
+   },
+   {
+    "line": 2187,
+    "attr": "tolist",
+    "receiver": "(seq_lens - prefix_lens).detach().cpu()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "_build_swa_prefix_custom_mask",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()"
+   },
+   {
+    "line": 2187,
+    "attr": "cpu",
+    "receiver": "(seq_lens - prefix_lens).detach()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "_build_swa_prefix_custom_mask",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()"
+   },
+   {
+    "line": 2188,
+    "attr": "tolist",
+    "receiver": "kv_start_idx.detach().cpu()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "_build_swa_prefix_custom_mask",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "kv_start_cpu = kv_start_idx.detach().cpu().tolist()"
+   },
+   {
+    "line": 2188,
+    "attr": "cpu",
+    "receiver": "kv_start_idx.detach()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "_build_swa_prefix_custom_mask",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "kv_start_cpu = kv_start_idx.detach().cpu().tolist()"
+   },
+   {
+    "line": 2251,
+    "attr": "item",
+    "receiver": "paged_kernel_lens.sum()",
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_cross_attention",
+    "hot_path": true,
+    "host_mirror": false,
+    "verdict": "DEVICE-READ-ON-HOT-PATH",
+    "src": "paged_kernel_lens_sum = paged_kernel_lens.sum().item()"
+   }
+  ],
+  "full_cg_prefill_fast_plan_installs": [],
+  "Q3_full_cg_ever_fast": false,
+  "install_count": 4,
+  "site_count": 23
+ }
+}
