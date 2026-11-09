@@ -7,18 +7,21 @@
   "decode_fallback": true
  },
  "verdicts": {
-  "V1_prefill_site_two_blocking_reads_and_translates": false,
-  "V2_decode_mirror_zero_reads_value_preserved": false,
+  "V1_prefill_site_two_blocking_reads_and_translates": true,
+  "V2_decode_mirror_zero_reads_value_preserved": true,
   "V3_decode_none_falls_back_two_reads": true,
   "V4_decode_bs_mismatch_falls_back_two_reads": true,
   "V5_branch_dead_no_reads": true,
   "anchors_verbatim": true
  },
- "all_ok": false,
+ "all_ok": true,
  "V1_prefill_unfixed": {
   "d2h_reads": 2,
   "cpu_sums": 0,
   "slice_bounds": [
+   4242
+  ],
+  "write_bounds": [
    4242
   ],
   "translated_bound": [
@@ -34,14 +37,18 @@
  },
  "V2_decode_mirror_control": {
   "d2h_reads": 0,
-  "cpu_sums": 0,
+  "cpu_sums": 1,
   "slice_bounds": [
+   4242
+  ],
+  "write_bounds": [
    4242
   ],
   "translated_bound": [
    4242
   ],
   "log": [
+   "cpu_sum",
    "('slice', 4242)",
    "('translate', 4242)",
    "('write', 4242)"
@@ -51,6 +58,9 @@
   "d2h_reads": 2,
   "cpu_sums": 0,
   "slice_bounds": [
+   4242
+  ],
+  "write_bounds": [
    4242
   ],
   "translated_bound": [
@@ -70,6 +80,9 @@
   "slice_bounds": [
    4242
   ],
+  "write_bounds": [
+   4242
+  ],
   "translated_bound": [
    4242
   ],
@@ -85,6 +98,7 @@
   "d2h_reads": 0,
   "cpu_sums": 0,
   "slice_bounds": [],
+  "write_bounds": [],
   "translated_bound": [],
   "log": []
  },

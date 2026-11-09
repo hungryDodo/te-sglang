@@ -98,9 +98,12 @@ def find_blocks():
     return hits
 
 
-def run_block(block, *, seq_lens_cpu, bs, swa=True):
+def run_block(block, *, cpu, bs, swa=True):
+    """cpu: None, or (numel, value) — built on the SHARED log so cpu sums are
+    counted by the same harness log as device reads."""
     log = []
     pool = SwaPool(log)
+    seq_lens_cpu = CpuTensor(cpu[0], cpu[1], log) if cpu else None
     ns = {"use_sliding_window_kv_pool": swa, "use_swa_source": False,
           "self": Simple(pool), "kv_indptr": DevTensor(log),
           "kv_indices": IdxStore(log), "seq_lens_cpu": seq_lens_cpu, "bs": bs}
@@ -109,6 +112,7 @@ def run_block(block, *, seq_lens_cpu, bs, swa=True):
     return {"d2h_reads": log.count("d2h_sync_read"),
             "cpu_sums": log.count("cpu_sum"),
             "slice_bounds": [e[1] for e in log if isinstance(e, tuple) and e[0] == "slice"],
+            "write_bounds": [e[1] for e in log if isinstance(e, tuple) and e[0] == "write"],
             "translated_bound": translated,
             "log": [str(x) for x in log]}
 
@@ -123,20 +127,18 @@ def main(outp):
     }
     a_ok = {k: (v in text) for k, v in anchors.items()}
 
-    v1 = run_block(blocks["prefill"], seq_lens_cpu=None, bs=128)
-    v2 = run_block(blocks["decode"], seq_lens_cpu=CpuTensor(128, EXPECT_VAL, []), bs=128)
-    # v2 uses its own log; re-run with shared log for inspection
-    log2 = []
-    v2 = run_block(blocks["decode"], seq_lens_cpu=CpuTensor(128, EXPECT_VAL, log2), bs=128)
-    v3 = run_block(blocks["decode"], seq_lens_cpu=None, bs=128)
-    v4 = run_block(blocks["decode"], seq_lens_cpu=CpuTensor(64, EXPECT_VAL, []), bs=128)
-    v5 = run_block(blocks["prefill"], seq_lens_cpu=None, bs=128, swa=False)
+    v1 = run_block(blocks["prefill"], cpu=None, bs=128)
+    v2 = run_block(blocks["decode"], cpu=(128, EXPECT_VAL), bs=128)
+    v3 = run_block(blocks["decode"], cpu=None, bs=128)
+    v4 = run_block(blocks["decode"], cpu=(64, EXPECT_VAL), bs=128)
+    v5 = run_block(blocks["prefill"], cpu=None, bs=128, swa=False)
 
     verdicts = {
         # real block slices with the device scalar TWICE (read view + write
         # target) -> two __index__ coercions = two blocking D2H per extend step
         "V1_prefill_site_two_blocking_reads_and_translates":
-            v1["d2h_reads"] == 2 and v1["slice_bounds"] == [EXPECT_VAL, EXPECT_VAL]
+            v1["d2h_reads"] == 2 and v1["slice_bounds"] == [EXPECT_VAL]
+            and v1["write_bounds"] == [EXPECT_VAL]
             and v1["translated_bound"] == [EXPECT_VAL],
         "V2_decode_mirror_zero_reads_value_preserved":
             v2["d2h_reads"] == 0 and v2["cpu_sums"] == 1

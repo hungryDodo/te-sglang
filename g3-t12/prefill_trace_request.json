@@ -1,0 +1,30 @@
+{
+  "request": "bounded custom GPU diagnostic (NOT a Fast/Candidate gate)",
+  "purpose": "Decide whether the unfixed prefill-path device-scalar sync at flashinfer_backend.py:2347 (2 blocking D2H per extend forward, proven at source level in g3-t12/raw/prefill_site_probe.json) is a real host lever in prefill/mixed windows, before any patch is written.",
+  "target_tree": "glm-b trial-12 HEAD; python/ is bit-identical to the 2c854e0 promotion lineage (verify: git diff 2c854e0 <HEAD> -- python/ is empty). No source change required - uses the engine's BUILT-IN profiler endpoints.",
+  "engine_launch": "frozen BF16 launch exactly as configs/rsi/fast-gate.json / scripts/rsi_node.py build_command (same as the 20261110-decode-trace run). No flag changes.",
+  "workload": {
+    "shape": "Prefill Heavy: input 8192 / output 32, concurrency 16 (frozen category)",
+    "warmup": "16 requests completed before profiling starts",
+    "measured": "32 requests after warmup (4C at C16 = 64 per frozen recipe; 32 is enough for >=16 extend forwards and keeps the trace small)",
+    "seed": "4242, no_shared, closed - same conventions as prior diagnostics"
+  },
+  "capture": {
+    "mechanism": "engine built-in /start_profile (http_server.py:1221) - NOT a code patch",
+    "body": {"output_dir": "<controller evidence dir>", "num_steps": 48, "activities": ["CPU", "GPU"]},
+    "bracketing": "start AFTER warmup completes (one control request), let the profiler AUTO-STOP at num_steps=48 - do NOT call /stop_profile afterwards (v1 artifact: explicit stop after auto-stop returned 500; auto-stop at the intended step count is the intended stop)",
+    "expected_size": "<= 1 MB gzipped, comparable to the 410 KB decode trace"
+  },
+  "pre_registered_discriminators": {
+    "D1_site_live": "count Memcpy DtoH rows vs extend (prefill/mixed) forward count in the window: ratio >= 1.0 confirms the site executes live (source probe predicts 2 coercions/step; if torch collapses them, >=1 still confirms); ratio ~0 falsifies the live-site premise (branch not taken / non-SWA path) and closes the line as dead code",
+    "D2_host_lever": "kernel-union idle fraction inside prefill step spans (steady state, step-1 artifact excluded, gpu_memcpy+gpu_memset included in coverage): >= 2% -> host lever exists, next trial writes the host-mirror patch (candidate mirror: paged_kernel_lens_sum, already an int at flashinfer_backend.py:1770 / eagle_info.py:442; equality with kv_indptr[-1] must be verified per spec_info variant BEFORE patching); < 2% -> negative closure (prefill kernel-bound like decode, it11), no patch",
+    "D3_sync_cost": "excess idle in 200us post-DtoH windows vs seeded random-gap control (method validated this trial on the real decode trace: 75.8us vs 18.8us control on the unfixed glm-a tree)"
+  },
+  "analysis_tooling": "g3-t12/analyze_sync_sites.py (committed, stdlib-only). Its hard gate constants (8560 kernels / 565.549025ms / 16 steps) are the DECODE-trace validation values; for this new trace take the controller-README totals as gate constants (one-constant edit, method unchanged).",
+  "bounds": [
+    "single operating point (Prefill Heavy C16 + its extend->decode mixed tail)",
+    "profiler perturbs timing; interpret idle FRACTIONS and DtoH counts, never absolute walls; no speed ratio, no numeric/quality claim",
+    "expected magnitude caveat: prefill steps are long (GEMM near roofline per g2-t2), so even a confirmed live site may be sub-noise at C16 - the extend->decode transition and mixed windows are where short steps could expose it",
+    "GGUF/NGRAM/precision lanes untouched; frozen protocol untouched"
+  ]
+}
