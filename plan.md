@@ -1,56 +1,63 @@
-# G3 glm-b trial-8 plan — close the last untraced CPU legs of the null-topk chain (intake of k; sampler branch; detokenizer conversion)
+# G3 trial 9 — glm-b (i0009), campaign continuous-20261109-01
 
-Context: campaign continuous-20261109-01, glm-b iteration 8. Engine lane is measured-closed by my own
-traces (decode C128/C256 bytes-bound at roofline, 99.2% GPU busy; prefill near-roofline; sync sweep
-closed; prefill-mirror patch adds ~0.1% aggregate, reachable at b196fd4). The binding constraint on the
-highest-value glm-b action (promotion of the 076b006+aa45af5 lineage, tree 2c854e0, measured
-1.0920/1.0984) is the numeric-evidence gate (canonical F6/C5): trusted numeric comparison is blocked
-because the frozen probe observed `meta.top_logprobs`/`meta.top_output_logprobs` = null.
+## Session bounds
+45 turns, 20 min hard, USD 5 nominal cap (prior sessions died at USD 1–3; keep ≤ ~30 turns).
+Early recoverable checkpoint commit; final quarter reserved for iteration-proposal.json + commit.
+No GPU/SSH: CPU-decidable work only; official measurement stays with the controller.
 
-State after i4/i5/i7 (all executed CPU-side, engine untouched):
-- i4/C7: probe REQUEST does send return_logprob=true, top_logprobs_num=8 (rsi_equivalence.py:114-115).
-- i5: response-side assembly mapped+executed: API emits `meta.output_top_logprobs` (nested) / flat
-  `_val_flat/_idx_flat/_shape/_null_prefix` fields; the probe's read name is structurally wrong -> null.
-  Recipe fix (2) delivered.
-- i7: scheduler-side output population (sampler->batch_result_processor) POPULATED_AT_SOURCE hop1-h7
-  for the probe shape; between populated and empty the only mode is a TypeError crash, never silent null.
+## State at entry (i7/i8 + sync-002)
+- Engine lane saturated per existing traces (decode C128/C256 bytes-bound at roofline,
+  99.2% GPU busy at C256; prefill near-roofline; sync sweep closed; prefill-mirror
+  b196fd4 measured no attributable gain in G3-i2 gate). No new engine candidate.
+- Top-k evidence chain CPU-side fully closed (i7/i8). Standing pending controller
+  request = numeric probe re-run with BOTH recipe fixes → candidate-x3 on the
+  2c854e0-identical HEAD if clean. Do not rebuild fixtures for it (008).
+- Promotion candidate tree kept bit-identical to 2c854e0: `git diff 2c854e0 HEAD --
+  python/` EMPTY at entry, stays EMPTY this trial.
 
-NOT yet traced (this trial's targets — the gap between "request JSON has k=8" and "sampler branch ran",
-plus the detokenizer conversion):
-1. INTAKE of k: HTTP JSON -> GenerateReqInput -> TokenizedGenerateReqInput -> Req -> ScheduleBatch.
-   i7's hop4/hop5 assumed a FIXTURE batch with k=8; whether the real path delivers k=8 to the sampler's
-   `any(batch.top_logprobs_nums)` branch is an assumption, not evidence. If any site drops/renames/
-   defaults k to 0, the controller's re-run probe returns null AGAIN and a probe is wasted (observed
-   signature "chosen LP present, top null" is exactly what k=0-at-sampler produces).
-2. SAMPLER branch conditions: the exact guard(s) gating topk computation for the frozen shape
-   (return_logprob + top_logprobs_nums), incl. any clamp against vocab size and the per-req slice.
-3. DETOKENIZER conversion: scheduler BatchTokenIDOut.output_top_logprobs_val -> detokenizer ->
-   BatchStrOutput/meta_info field names; i7 hop8 was census+context-read only, i5's per-token text
-   builder needed a live tokenizer (mock suffices for field-name/control-flow evidence).
+## New question for this trial
+The promotion claim for the 076b006+aa45af5 lineage will be ALGORITHM_PRESERVING.
+Three × exact-token 10/10 fast gates are sample evidence; nobody has audited the two
+accepted hunks' edge paths. Reading the live code surfaced three concrete hazards:
 
-## Hypotheses (falsifiable)
-- H-A (intake clean): for the frozen probe shape, k=8 survives every intake site; no silent k->0.
-- H-B (sampler branch): with return_logprob=True and k=8, the topk branch is entered and its output
-  var is the only source feeding output_top_logprobs_val; no silent-empty branch.
-- H-C (detokenizer clean): detokenizer forwards/renames top-logprob fields without dropping; the
-  meta_info key is exactly `output_top_logprobs` (+ flat variants), matching i5's read map.
-Falsifier: ast-extract the REAL expressions/functions (i7 methodology: ast.unparse, no text-dedent),
-execute with labeled stdlib fixtures, hard verdict gate (any harness error blocks all claims), raw JSON
-+ file:line provenance per hop. Negative controls: k=0 fixture must reproduce the empty path; a
-renamed-field fixture must be caught.
+- H1 (arithmetic exactness of aa45af5): `kv_last_index = int(seq_lens_cpu.sum())`
+  replaces `kv_indptr[-1]`. `kv_indptr` is cumsum over CLAMPED lens on the SWA
+  wrapper-0 path (window+1 clamp at lines 1687–1693) while the raw mirror is
+  UNCLAMPED; exactness holds only because `update_sliding_window` passes the clamped
+  mirror `seq_lens_cpu_tmp` down. Invariant to execute: clamp(mirror) lanes ==
+  clamp(device lens) lanes for every reachable decode shape, incl. above-window seqs.
+- H2 (global lifecycle of `global_override_indptr_cpu`, 076b006): set at :1832
+  (only-if-None), consumed by fast_decode_plan :1853–1894, cleared at :1916 — with NO
+  try/finally. An exception between set and clear leaks a stale override; 1832 then
+  skips rebuild forever after and every later eager step plans against a wrong-length
+  indptr (silent wrong attention), and the prefill save/restore at :2635–2646
+  faithfully restores the stale value. Also: :1832 rebuild lacks the `bs ==
+  seq_lens_cpu.numel()` guard that aa45af5 has; safety there rests on the caller's
+  `seq_lens_cpu[:bs]` slice (:748–846).
+- H3 (mirror origin/aliasing): is `forward_batch.seq_lens_cpu` an immutable per-step
+  snapshot or a tensor the scheduler thread can mutate while the forward thread
+  reads it (overlap scheduler)? Source-level check of its construction.
 
-## Outcomes
-- All clean => CPU chain now closed end-to-end (request->intake->sampler branch->scheduler->IPC->
-  detokenizer->response->read); null is fully attributed to the read-path mismatch; re-run probe is
-  maximally de-risked (only GPU compute remains unknown, and chosen-LP-present bounds that).
-- Drop site found => third recipe fix BEFORE the probe is spent; documented; request updated.
-Either is a valid bounded Iteration. No engine change (HEAD stays 2c854e0-identical).
+## Method (i7/i8 harness lessons enforced)
+- Extract REAL statements via ast and execute the `ast.unparse` form (dedent
+  re-indent bug; needles match UNPARSED text; enclosing-If extraction).
+- Hard verdict gate: ANY harness error ⇒ NO_CLAIM.
+- Sensitivity controls: an UNSYNCED mirror (≠ device lanes) MUST produce a mismatch;
+  an injected exception mid-plan MUST leave the stale global detectable. Proves the
+  oracle can see the failures it claims to bound.
+- Raw JSON with per-case file:line provenance + sha256 of extracted segments.
 
-## Request (queued, unchanged in substance; now fully grounded)
-Controller re-runs the numeric coverage probe on BOTH servers with BOTH fixes (shape from i4 + read
-path from i5); if non-null on both -> trusted comparison on 2c854e0-identical HEAD -> candidate-x3
-slot #1 (FULL gate, exact-token 10/10 mandatory). request_fast_gate=false.
+## Deliverables
+1. plan.md (this file) — committed first as recoverable checkpoint.
+2. g3-t9/probe_promotion_invariants.py — executed oracle (exit 0 clean; raw JSON).
+3. g3-t9/VERIFICATION.md — bounded conclusion per hypothesis, limits, next actions.
+4. iteration-proposal.json — string fields + request_fast_gate=false; controller ask
+   unchanged in substance (numeric probe re-run with both fixes → candidate-x3 if
+   clean), now carrying the audit outcome for the ALGORITHM_PRESERVING claim.
 
-## Budget/checkpoint
-Early commit (plan + probe skeleton), execute, raw preserved, final quarter reserved for
-iteration-proposal.json + final commit. 45 turns / 1200s wall cap.
+## Non-goals
+No engine change this trial (python/ untouched — the candidate-x3 request depends on
+2c854e0-identity; the H2 hardening fix is recorded as a one-hunk follow-up commit the
+controller may order before or after promotion). No promotion claim, no precision
+change, no protocol/evaluator change, no missing-k fixture repeats, no NGRAM/MMVQ/GGUF
+lane work.

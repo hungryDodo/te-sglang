@@ -1,0 +1,531 @@
+{
+ "trial": "glm-b/i0009",
+ "source_file": "/workspace/python/sglang/srt/layers/attention/flashinfer_backend.py",
+ "source_sha256_16": "0fa8a75229827957",
+ "segments": {
+  "swa_clamp_wrapper0": {
+   "anchor": "flashinfer_backend.py:1685-1697",
+   "sha256_16": "757ad82de8316951"
+  },
+  "translate_bound_if": {
+   "anchor": "flashinfer_backend.py:1814-1828",
+   "sha256_16": "c2575c6c2ff051ad"
+  },
+  "override_set_if": {
+   "anchor": "flashinfer_backend.py:1830-1836",
+   "sha256_16": "fec921528a99df7e"
+  },
+  "eager_fast_plan_expr": {
+   "anchor": "flashinfer_backend.py:1852-1856",
+   "sha256_16": "33110f008d393c9f"
+  },
+  "override_clear_if": {
+   "anchor": "flashinfer_backend.py:1915-1916",
+   "sha256_16": "dae128732b6c5cc5"
+  },
+  "prefill_save_restore": {
+   "anchor": "flashinfer_backend.py:2635-2646",
+   "sha256_16": "cdd703ebe21a5045"
+  }
+ },
+ "h1_arithmetic": [
+  {
+   "case": "all_below_window",
+   "lens": [
+    160,
+    200,
+    128,
+    96
+   ],
+   "window": 1024,
+   "bs": 4,
+   "clamped_mirror": [
+    160,
+    200,
+    128,
+    96
+   ],
+   "clamped_dev": [
+    160,
+    200,
+    128,
+    96
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 584,
+   "dev_cumsum_last": 584,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "at_window_boundary",
+   "lens": [
+    1024,
+    1025,
+    1026,
+    512
+   ],
+   "window": 1024,
+   "bs": 4,
+   "clamped_mirror": [
+    1024,
+    1025,
+    1025,
+    512
+   ],
+   "clamped_dev": [
+    1024,
+    1025,
+    1025,
+    512
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 3586,
+   "dev_cumsum_last": 3586,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "above_window_mixed",
+   "lens": [
+    4096,
+    100,
+    8192,
+    1
+   ],
+   "window": 1024,
+   "bs": 4,
+   "clamped_mirror": [
+    1025,
+    100,
+    1025,
+    1
+   ],
+   "clamped_dev": [
+    1025,
+    100,
+    1025,
+    1
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 2151,
+   "dev_cumsum_last": 2151,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "single_lane",
+   "lens": [
+    5000
+   ],
+   "window": 1024,
+   "bs": 1,
+   "clamped_mirror": [
+    1025
+   ],
+   "clamped_dev": [
+    1025
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 1025,
+   "dev_cumsum_last": 1025,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "gate_shape_decode_heavy",
+   "lens": [
+    512,
+    512,
+    512,
+    512,
+    512,
+    512,
+    512,
+    512
+   ],
+   "window": 1024,
+   "bs": 8,
+   "clamped_mirror": [
+    512,
+    512,
+    512,
+    512,
+    512,
+    512,
+    512,
+    512
+   ],
+   "clamped_dev": [
+    512,
+    512,
+    512,
+    512,
+    512,
+    512,
+    512,
+    512
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 4096,
+   "dev_cumsum_last": 4096,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "gate_shape_decode_ceiling",
+   "lens": [
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544
+   ],
+   "window": 1024,
+   "bs": 16,
+   "clamped_mirror": [
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544
+   ],
+   "clamped_dev": [
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544,
+    544
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 8704,
+   "dev_cumsum_last": 8704,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "long_context_above_window",
+   "lens": [
+    9000,
+    8500
+   ],
+   "window": 1024,
+   "bs": 2,
+   "clamped_mirror": [
+    1025,
+    1025
+   ],
+   "clamped_dev": [
+    1025,
+    1025
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 2050,
+   "dev_cumsum_last": 2050,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "mirror_lanes_mismatch_fallback",
+   "lens": [
+    100,
+    200,
+    300
+   ],
+   "window": 1024,
+   "bs": 2,
+   "clamped_mirror": [
+    100,
+    200,
+    300
+   ],
+   "clamped_dev": [
+    100,
+    200,
+    300
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 600,
+   "dev_cumsum_last": 600,
+   "host_path_taken": false,
+   "exact": true
+  },
+  {
+   "case": "UNSYNCED_mirror_sensitivity",
+   "lens": [
+    100,
+    200,
+    300
+   ],
+   "window": 1024,
+   "bs": 3,
+   "clamped_mirror": [
+    100,
+    193,
+    300
+   ],
+   "clamped_dev": [
+    100,
+    200,
+    300
+   ],
+   "lanes_eq_after_clamp": false,
+   "host_bound": 593,
+   "dev_cumsum_last": 600,
+   "host_path_taken": true,
+   "exact": false
+  },
+  {
+   "case": "clamp_absorbs_above_window_mirror_error",
+   "lens": [
+    4096,
+    200
+   ],
+   "window": 1024,
+   "bs": 2,
+   "clamped_mirror": [
+    1025,
+    200
+   ],
+   "clamped_dev": [
+    1025,
+    200
+   ],
+   "lanes_eq_after_clamp": true,
+   "host_bound": 1225,
+   "dev_cumsum_last": 1225,
+   "host_path_taken": true,
+   "exact": true
+  },
+  {
+   "case": "UNSYNCED_cross_below_window_sensitivity",
+   "lens": [
+    4096,
+    200
+   ],
+   "window": 1024,
+   "bs": 2,
+   "clamped_mirror": [
+    196,
+    200
+   ],
+   "clamped_dev": [
+    1025,
+    200
+   ],
+   "lanes_eq_after_clamp": false,
+   "host_bound": 396,
+   "dev_cumsum_last": 1225,
+   "host_path_taken": true,
+   "exact": false
+  }
+ ],
+ "h2_lifecycle": {
+  "B1_normal_three_steps": {
+   "calls": [
+    {
+     "wrapper": "W",
+     "indptr_host": [
+      0,
+      10,
+      30,
+      60
+     ],
+     "indptr_dev": [
+      0,
+      10,
+      30,
+      60
+     ],
+     "raised": false
+    },
+    {
+     "wrapper": "W",
+     "indptr_host": [
+      0,
+      11,
+      32,
+      63
+     ],
+     "indptr_dev": [
+      0,
+      11,
+      32,
+      63
+     ],
+     "raised": false
+    },
+    {
+     "wrapper": "W",
+     "indptr_host": [
+      0,
+      12,
+      34,
+      66
+     ],
+     "indptr_dev": [
+      0,
+      12,
+      34,
+      66
+     ],
+     "raised": false
+    }
+   ],
+   "final_global": null
+  },
+  "B2_exception_leak": {
+   "exception_raised": true,
+   "override_leaked": [
+    0,
+    10,
+    30,
+    60
+   ],
+   "next_step_value": [
+    0,
+    10,
+    30,
+    60
+   ],
+   "next_step_uses_stale": true
+  },
+  "B3_prefill_roundtrip": {
+   "prefill_restores_previous": true
+  }
+ },
+ "h3_source_scan": {
+  "origin_sites": [
+   {
+    "file": "forward_batch_info.py",
+    "line": 1013,
+    "text": "seq_lens_cpu = batch.seq_lens_cpu"
+   },
+   {
+    "file": "forward_batch_info.py",
+    "line": 1019,
+    "text": "if batch.seq_lens_sum is None and seq_lens_cpu is not None:"
+   },
+   {
+    "file": "forward_batch_info.py",
+    "line": 1020,
+    "text": "batch.seq_lens_sum = int(seq_lens_cpu.sum())"
+   }
+  ],
+  "schedule_batch_seq_lens_cpu_sites": [
+   {
+    "line": 2633,
+    "text": "seq_lens_cpu: torch.Tensor = None  # shape: [b], int64"
+   },
+   {
+    "line": 2789,
+    "text": "self.seq_lens_cpu = torch.tensor(seq_lens, dtype=torch.int64)"
+   },
+   {
+    "line": 2879,
+    "text": "seq_lens_cpu = torch.tensor(seq_lens, dtype=torch.int64)"
+   },
+   {
+    "line": 2888,
+    "text": "self.seq_lens_cpu = seq_lens_cpu"
+   },
+   {
+    "line": 3274,
+    "text": "running_prefix_lens = [s - 1 for s in running_batch.seq_lens_cpu.tolist()]"
+   },
+   {
+    "line": 3304,
+    "text": "running_seq_lens_cpu = torch.tensor("
+   },
+   {
+    "line": 3308,
+    "text": "merged_seq_lens_cpu = running_seq_lens_cpu"
+   },
+   {
+    "line": 3310,
+    "text": "merged_seq_lens_cpu = torch.cat("
+   },
+   {
+    "line": 3318,
+    "text": "merged_seq_lens_cpu = None"
+   },
+   {
+    "line": 3349,
+    "text": "self.seq_lens_cpu = merged_seq_lens_cpu"
+   },
+   {
+    "line": 3388,
+    "text": "seq_lens = self.seq_lens_cpu[:bs].tolist()"
+   },
+   {
+    "line": 3606,
+    "text": "self.seq_lens_cpu = torch.empty(0, dtype=torch.int64)"
+   },
+   {
+    "line": 3632,
+    "text": "if self.seq_lens_cpu[i].item() % mamba_track_interval != 0:"
+   },
+   {
+    "line": 3788,
+    "text": "self.seq_lens_cpu = self.seq_lens_cpu + 1"
+   },
+   {
+    "line": 3815,
+    "text": "track_remainders_cpu = self.seq_lens_cpu % mamba_track_interval"
+   },
+   {
+    "line": 3888,
+    "text": "self.seq_lens_cpu = self.seq_lens_cpu[keep_indices]"
+   },
+   {
+    "line": 3955,
+    "text": "self.seq_lens_cpu = None"
+   },
+   {
+    "line": 3957,
+    "text": "self.seq_lens_cpu = torch.cat([self.seq_lens_cpu, other.seq_lens_cpu])"
+   },
+   {
+    "line": 4025,
+    "text": "seq_lens_cpu=self.seq_lens_cpu,"
+   }
+  ],
+  "schedule_batch_site_count": 19
+ },
+ "failures": [],
+ "harness_errors": [],
+ "verdict": "EXECUTED_CLEAN"
+}
