@@ -60,3 +60,39 @@ Falsifier (CPU, executed): margin census over all 36 responses.
 ## Budget
 45 turns / 20 min / $5. Checkpoint commit after plan; final quarter for proposal,
 tests record, final commit, clean-status verification.
+
+## OUTCOME (executed 2026-11-10, checkpoint a87ab05 -> final)
+
+**H8 REFUTED on the observed data — with a sharper, decision-relevant replacement finding.**
+
+Executed: `g3-t8/margin_census.py` (python3 -I, exit 0; raw `g3-t8/raw/margin_census_output.json`).
+All parsing controls PASSED (rows sorted desc; chosen==top1 logprob at 960 positions;
+self-top1 anomaly counts reproduce the packet's primary ON=1/OFF=0; 10/10 pairs; 0 parse
+errors) — reproduction of the packet's own anomaly count is the negative control that
+validates the parser.
+
+Headline numbers (details + contract draft in g3-t8/quality-budget-proposal.md):
+- F-a: plain-BF16 baseline margins over 480 real positions (10 responses, repeat-512
+  family): min 0.9375 nat, p50 5.97; P(margin<=0.5)=0/480, P(<=1.0)=3.96%.
+- F-b: fp8-KV scale (E2 |dlogprob|<=0.153) needs margin<=0.306 to flip -> 0/480
+  flippable on these instances. Token-exactness is PREDICTED for fp8-KV on this
+  prompt class (prediction; rule-of-three bounds P(margin<=0.5)<=~0.6%, not 0).
+- F-d: divergence is permanent once flipped (cascade 0.91-1.00, resyncs 0-4/~44):
+  the fp8 lineage's 159/512 (31%) is the signature of ~1 late flip (p~353) or a
+  few flips — not 159 independent corruptions. Reframes F2 as a rare-near-tie-rate
+  question.
+- F-e: NGRAM flips overcome >= ~1 nat (its first-div OFF margins 0.94-1.16 in 9/10;
+  replay OFF argmax margins 6.93/1.0/1.203 = the packet's quoted gaps) — 6-65x the
+  fp8 scale; NGRAM's 10/10 divergence says nothing about fp8-class noise.
+- F-c: near-tie tail is prompt-instance-dependent (E2 saw sub-0.15 margins on other
+  instances) -> exactness verdicts are decided by which positions a probe samples.
+
+Actionable output: margin-stratified acceptance contract (5 clauses) proposed for
+registration, plus a sharp falsifiable prediction for the next fp8 numeric probe
+(repeat-512 prompts: expect exact IDs or flips only at margin<=0.306; a flip above
+that = non-precision defect, reclassifying part of F2 as bug-hunting).
+
+No engine change (tree bit-identical to 5a20347/i4 — verified this session via
+t7's recorded diff and unchanged HEAD since 498aa25/15fd7f4 which touch no python/);
+request_fast_gate=false (a re-screen of the unchanged tree would be a non-action).
+The t7 decode-trace request remains standing, not re-requested unchanged.
