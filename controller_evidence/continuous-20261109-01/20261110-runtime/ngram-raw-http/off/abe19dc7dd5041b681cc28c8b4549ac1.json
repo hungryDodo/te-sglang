@@ -1,0 +1,197 @@
+{
+  "role": "OFF",
+  "role_run_uuid": "3de072a3b6b04db7ae02693bda73c37d",
+  "request_uuid": "abe19dc7dd5041b681cc28c8b4549ac1",
+  "label": "replay/3",
+  "instance": 0,
+  "commit": "999d4b24355a12ea2d50959b7da4d3263cca08e2",
+  "snapshot_tree_sha256": "18dc7014f98932fdc6cf3d2ace74799fbc08b1b8d82ca93630e6ec2996b86983",
+  "method": "POST",
+  "url": "http://127.0.0.1:31343/generate",
+  "request_headers": {
+    "Content-Type": "application/json"
+  },
+  "request_sha256": "a6c55add47e712686c7d43be809f78adacd8ad8229eb3e65d6f5131d1b8b7185",
+  "started_at": "2026-11-09T16:54:57.323159+00:00",
+  "status": "SUCCEEDED",
+  "request_path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T165301-ca14fc41b5/attempt-1/ngram-ab/off/raw-http/abe19dc7dd5041b681cc28c8b4549ac1.request.json",
+  "response_path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T165301-ca14fc41b5/attempt-1/ngram-ab/off/raw-http/abe19dc7dd5041b681cc28c8b4549ac1.response.bin",
+  "transport_body_complete": true,
+  "http_status": 200,
+  "response_headers": [
+    [
+      "date",
+      "Mon, 09 Nov 2026 16:54:56 GMT"
+    ],
+    [
+      "server",
+      "uvicorn"
+    ],
+    [
+      "content-length",
+      "1218"
+    ],
+    [
+      "content-type",
+      "application/json"
+    ],
+    [
+      "vary",
+      "Origin"
+    ],
+    [
+      "Connection",
+      "close"
+    ]
+  ],
+  "response_sha256": "d40f4811b03946038e0e4213bbe00081aecc5283781abf762ff1c39f11b4dcdb",
+  "response_bytes": 1218,
+  "response": {
+    "text": " comic",
+    "output_ids": [
+      48977
+    ],
+    "meta_info": {
+      "id": "78c2d266b05445c29d62626ea3241d23",
+      "finish_reason": {
+        "type": "length",
+        "length": 1
+      },
+      "prompt_tokens": 518,
+      "weight_version": "default",
+      "num_retractions": 0,
+      "storage_prefetch_wait": 0.0,
+      "storage_staging_wait": 0.0,
+      "forward_entry_time": 1794243297.350057,
+      "prefill_finished_time": 1794243297.3829188,
+      "queue_time": 0.00010300707072019577,
+      "input_token_logprobs": [],
+      "output_token_logprobs": [
+        [
+          -0.5736420154571533,
+          48977,
+          null
+        ]
+      ],
+      "output_token_logprobs_length": 1,
+      "input_top_logprobs": [],
+      "output_top_logprobs": [
+        [
+          [
+            -0.5736420154571533,
+            48977,
+            null
+          ],
+          [
+            -1.7767670154571533,
+            1271,
+            null
+          ],
+          [
+            -3.6205170154571533,
+            3642,
+            null
+          ],
+          [
+            -3.7455170154571533,
+            1028,
+            null
+          ],
+          [
+            -4.433016777038574,
+            276,
+            null
+          ],
+          [
+            -4.495516777038574,
+            302,
+            null
+          ],
+          [
+            -4.589266777038574,
+            34332,
+            null
+          ],
+          [
+            -4.651766777038574,
+            220,
+            null
+          ]
+        ]
+      ],
+      "reasoning_tokens": 0,
+      "completion_tokens": 1,
+      "cached_tokens": 0,
+      "weight_versions": [
+        {
+          "version": "default",
+          "start": 0,
+          "end": 1
+        }
+      ],
+      "cached_tokens_details": null,
+      "dp_rank": null,
+      "e2e_latency": 0.03490761108696461,
+      "request_received_ts": 1794243297.3494058,
+      "first_token_latency": 0.03351315809413791,
+      "api_server_dispatch_finish_ts": 1794243297.3495696,
+      "request_finished_ts": 1794243297.3843133,
+      "response_sent_to_client_ts": 1794243297.3844426
+    }
+  },
+  "output_ids": [
+    48977
+  ],
+  "chosen_logprobs": [
+    [
+      -0.5736420154571533,
+      48977,
+      null
+    ]
+  ],
+  "top_logprobs": [
+    [
+      [
+        -0.5736420154571533,
+        48977,
+        null
+      ],
+      [
+        -1.7767670154571533,
+        1271,
+        null
+      ],
+      [
+        -3.6205170154571533,
+        3642,
+        null
+      ],
+      [
+        -3.7455170154571533,
+        1028,
+        null
+      ],
+      [
+        -4.433016777038574,
+        276,
+        null
+      ],
+      [
+        -4.495516777038574,
+        302,
+        null
+      ],
+      [
+        -4.589266777038574,
+        34332,
+        null
+      ],
+      [
+        -4.651766777038574,
+        220,
+        null
+      ]
+    ]
+  ],
+  "ended_at": "2026-11-09T16:54:57.385017+00:00"
+}
