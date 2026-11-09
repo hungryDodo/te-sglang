@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "original_driver_result_status": "INCONCLUSIVE",
+  "original_Controller_worker_status": "FAILED",
+  "trace_coverage_status": "OBSERVED",
+  "purpose": "read_only_CPU_Analyzer_of_instrumented_16_forward_fragment",
+  "eligible_for_baseline": false,
+  "identity": {
+    "campaign": "continuous-20261109-01",
+    "worker": "glm-a",
+    "node": "a1",
+    "actual_run_uuid": "a3b0f3ec142a468abaf2eef396d4f803",
+    "commit": "15fd7f47856305e3fbab6383d1579e0754db9423",
+    "job_id": "20261109T173034-40f40399a3",
+    "overlay_tree_sha256": "4d001d9606fbbc43b5f9a850c415bd52f7008934066e8841f352e1f4f77b1018"
+  },
+  "source_sha256": {
+    "analyzer_script": "d13696deef05f2259fd4f5d5df622f4b355189c98db1da1792076696f05c8659",
+    "driver": {
+      "path": "/home/guorun/Projects/TierEngine/runs/control-startup/bf16_c128_torch_diagnostic.py",
+      "sha256": "8c83b1f978ef691ea4c5ed5147a01211ee2d805806487022f38b1dc990dcad1f",
+      "bytes": 20959
+    },
+    "shared_recorder": {
+      "path": "/home/guorun/Projects/TierEngine/runs/control-startup/gguf_c4_diagnostic.py",
+      "sha256": "c661e091bea2b2fc169343e0cf047996556ef89432c6189a89866493fdf0d88a",
+      "bytes": 20428
+    },
+    "profiler_sources": [
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/managers/io_struct.py",
+        "sha256": "0518aa62b3d864be6f4d76a7fcf14720a2f5854b557df19ddd8ea717de62cb57",
+        "bytes": 111191
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/managers/scheduler_components/profiler_manager.py",
+        "sha256": "5bf4828dbb4471c87cbd6c363fe1ddd211efb9bf8b4ab9bebec1de6b710af90d",
+        "bytes": 19383
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/utils/nvtx_utils.py",
+        "sha256": "c97d6b542d463f37b54c6e983b0d6ac40ca57f0402b17584ea35103339fd5775",
+        "bytes": 4439
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/utils/profile_utils.py",
+        "sha256": "3f6fec78e3aec1ae90c6dcc730baddfa532330d102f7fe16f88f0d6429839a7c",
+        "bytes": 17371
+      }
+    ],
+    "trusted_helpers": [
+      {
+        "path": "/home/guorun/Projects/TierEngine/scripts/rsi_node.py",
+        "sha256": "27ba32db06d4b0d27b9662d85b65367eafc9e25481ee455f79b785531c2cb671",
+        "bytes": 19114
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/scripts/run_engine_job.py",
+        "sha256": "a5a9593f44feb06d7503126127a7595e0aa625a0dfb9613ccfede16a0ce4d226",
+        "bytes": 37320
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/controller/gpu_lock.py",
+        "sha256": "8d737124f148e367d7a9d413e8a65614327c9a7a084a4370441f2bd658728362",
+        "bytes": 19783
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/benchmarks/runner.py",
+        "sha256": "301ed01fa7b5817fd079093fe82cdbd9e2c4882356b01b3f60e2014158d4a1cc",
+        "bytes": 25768
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/benchmarks/corpus.py",
+        "sha256": "7e08c7ab1e759ac7bcc74ae2b3ec0aee74a18378b8dcc2d8ee0c7b25c155553e",
+        "bytes": 2707
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/benchmarks/metrics.py",
+        "sha256": "48d6eec52b9b3d3b7e272da13a16c82419654a205e59b5e8402e8268982b5add",
+        "bytes": 4047
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/configs/rsi/fast-gate.json",
+        "sha256": "96cccb1b065b559fd496cdaf9bff196d37d945b285344155f033556d69d03c60",
+        "bytes": 2998
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/configs/models.json",
+        "sha256": "76c220f8b17f6f941de7a393ff3efd6561c2a24f3e316383241213dc256f23fc",
+        "bytes": 13341
+      }
+    ],
+    "server_log": "2058f417b2f536f9cf318287202e178a03ec651a0482ac63ecf3c763e7ca272a"
+  },
+  "trace": {
+    "path": "/home/dodo/Projects/TierEngine/runs/rsi-continuous/continuous-20261109-01/diagnostics/bf16-c128/remote-attempt-1/bf16-c128/torch-profile/bf16-m-c128-a3b0f3ec142a468abaf2eef396d4f803-TP-0-DECODE.trace.json.gz",
+    "sha256": "09e8dcb9352c1809e05b10b1673420c543a12c5ebccdc57fc864c3ad4372e4b1",
+    "bytes": 410050,
+    "unit": "Chrome ts/dur are microseconds; displayTimeUnit=ms is presentation only",
+    "device": [
+      {
+        "id": 0,
+        "name": "NVIDIA GB10",
+        "totalGlobalMem": 130661203968,
+        "computeMajor": 12,
+        "computeMinor": 1,
+        "maxThreadsPerBlock": 1024,
+        "maxThreadsPerMultiprocessor": 1536,
+        "regsPerBlock": 65536,
+        "warpSize": 32,
+        "sharedMemPerBlock": 49152,
+        "numSms": 48,
+        "regsPerMultiprocessor": 65536,
+        "sharedMemPerBlockOptin": 101376,
+        "sharedMemPerMultiprocessor": 102400
+      }
+    ],
+    "category_event_counts": {
+      "cpu_op": 3686,
+      "user_annotation": 112,
+      "overhead": 1,
+      "cuda_runtime": 1430,
+      "kernel": 8560,
+      "cuda_driver": 48,
+      "gpu_memcpy": 80,
+      "gpu_memset": 16,
+      "gpu_user_annotation": 63,
+      "Trace": 1
+    }
+  },
+  "forward_coverage": {
+    "distinct_forwards": 16,
+    "CPU_step_labels": 16,
+    "GPU_step_labels": 16,
+    "binding": "One-to-one equality of explicit External id sets, not nearest timestamps",
+    "CPU_pid_tid": [
+      [
+        718599,
+        718599
+      ]
+    ],
+    "GPU_pid_tid": [
+      [
+        0,
+        13
+      ]
+    ],
+    "actual_host_batch_label": 128,
+    "cudaGraphLaunch_calls": 16
+  },
+  "time_windows": {
+    "profiler_capture_start_us": 3388469566139.746,
+    "profiler_capture_end_us": 3388470138066.899,
+    "profiler_capture_wall_ms": 571.927153,
+    "profiler_capture_scope": "PyTorch Profiler (0) Trace marker window; not the envelope of every complete event",
+    "all_complete_events_start_us": 3388469566139.746,
+    "all_complete_events_end_us": 3388470140749.474,
+    "all_complete_events_envelope_ms": 574.609728,
+    "kernel_envelope_start_us": 3388469566615.967,
+    "kernel_envelope_end_us": 3388470138048.655,
+    "kernel_envelope_ms": 571.432688,
+    "CPU_step_envelope_start_us": 3388469566977.558,
+    "CPU_step_envelope_end_us": 3388470070798.311,
+    "CPU_step_envelope_ms": 503.820753,
+    "GPU_step_envelope_start_us": 3388469567237.483,
+    "GPU_step_envelope_end_us": 3388470137718.586,
+    "GPU_step_envelope_ms": 570.481103
+  },
+  "interval_union": {
+    "kernel_union_busy_ms": 565.549025,
+    "kernel_union_fraction_of_profiler_capture": 0.9888480064321047,
+    "kernel_union_fraction_of_kernel_envelope": 0.9897036637742044,
+    "leading_capture_region_without_kernels_ms": 0.476221,
+    "trailing_capture_region_without_kernels_ms": 0.018244,
+    "kernel_free_total_within_kernel_envelope_ms": 5.883663,
+    "summed_kernel_event_duration_ms": 567.334558,
+    "CPU_step_union_ms": 28.303983,
+    "CPU_step_fraction_of_CPU_step_envelope": 0.056178677106593036,
+    "CPU_step_fraction_of_kernel_envelope": 0.04953161412253327,
+    "boundary": "Kernel union merges every observed kernel interval on device0 across streams. It is not SM utilization, bandwidth, or CPU utilization. Summed kernel event duration can overlap and is not wall time. Python float endpoint arithmetic has sub-microsecond rounding differences versus Decimal; six decimal ms formatting is not an accuracy guarantee."
+  },
+  "largest_host_inter_step_region": {
+    "left_forward": 11,
+    "right_forward": 12,
+    "start_us": 3388469893754.792,
+    "end_us": 3388469928431.06,
+    "duration_ms": 34.676268,
+    "kernel_union_during_gap_ms": 34.417705
+  },
+  "largest_kernel_free_internal_region": {
+    "start_us": 3388469567857.5293,
+    "end_us": 3388469568307.243,
+    "duration_ms": 0.449714
+  },
+  "visible_synchronization": {
+    "cudaStreamWaitEvent": {
+      "calls": 48,
+      "inclusive_api_duration_sum_ms": 0.03536,
+      "max_api_duration_ms": 0.003696,
+      "kernel_union_during_api_intervals_ms": 0.031648
+    },
+    "cudaEventSynchronize": {
+      "calls": 16,
+      "inclusive_api_duration_sum_ms": 472.169159,
+      "max_api_duration_ms": 32.412146,
+      "kernel_union_during_api_intervals_ms": 469.53069
+    },
+    "cudaDeviceSynchronize": {
+      "calls": 1,
+      "inclusive_api_duration_sum_ms": 33.575263,
+      "max_api_duration_ms": 33.575263,
+      "kernel_union_during_api_intervals_ms": 33.384744
+    }
+  },
+  "CPU_user_annotation_scopes": {
+    "step[DECODE bs=128]": {
+      "events": 16,
+      "union_ms": 28.303983
+    },
+    "copy_result_to_cpu": {
+      "events": 16,
+      "union_ms": 0.955361
+    },
+    "scheduler.process_batch_result": {
+      "events": 16,
+      "union_ms": 492.072583
+    },
+    "scheduler.recv_requests": {
+      "events": 16,
+      "union_ms": 0.798059
+    },
+    "scheduler.process_input_requests": {
+      "events": 16,
+      "union_ms": 0.127948
+    },
+    "scheduler.get_next_batch_to_run": {
+      "events": 16,
+      "union_ms": 5.992136
+    },
+    "scheduler.run_batch": {
+      "events": 16,
+      "union_ms": 70.900672
+    }
+  },
+  "gpu_memcpy": {
+    "events_by_name": {
+      "Memcpy HtoD (Pinned -> Device)": 32,
+      "Memcpy DtoD (Device -> Device)": 32,
+      "Memcpy DtoH (Device -> Pinned)": 16
+    },
+    "bytes_by_name": {
+      "Memcpy DtoD (Device -> Device)": 32768,
+      "Memcpy DtoH (Device -> Pinned)": 16384,
+      "Memcpy HtoD (Pinned -> Device)": 100832
+    }
+  },
+  "top_kernels_by_summed_duration": [
+    {
+      "name": "void flashinfer::BatchPrefillWithPagedKVCacheKernel<true, flashinfer::KernelTraits<(flashinfer::MaskMode)0, 16u, 1u, 1u, 16u, 16u, 1u, 4u, (flashinfer::PosEncodingMode)0, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, int, flashinfer::DefaultAttention<false, false, false, false>, true>, PagedParams>(PagedParams)",
+      "calls": 448,
+      "summed_event_duration_ms": 266.856465,
+      "max_instance_ms": 0.708394
+    },
+    {
+      "name": "nvjet_sm121_tst_mma_96x128x64_3_96x16x64_tmaAB_bz_TNNN",
+      "calls": 448,
+      "summed_event_duration_ms": 115.569316,
+      "max_instance_ms": 0.401972
+    },
+    {
+      "name": "nvjet_sm121_tst_mma_64x128x64_4_64x32x64_tmaAB_bz_TNNN",
+      "calls": 448,
+      "summed_event_duration_ms": 64.681808,
+      "max_instance_ms": 0.453585
+    },
+    {
+      "name": "nvjet_sm121_tst_mma_128x208x64_2_32x104x64_tmaAB_bz_TNNN",
+      "calls": 16,
+      "summed_event_duration_ms": 40.734466,
+      "max_instance_ms": 2.58584
+    },
+    {
+      "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x128_64x3_tn_align8>(cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x128_64x3_tn_align8::Params)",
+      "calls": 448,
+      "summed_event_duration_ms": 29.994501,
+      "max_instance_ms": 0.157627
+    },
+    {
+      "name": "nvjet_sm121_tst_mma_96x64x64_4_16x64x64_tmaAB_bz_TNNN",
+      "calls": 448,
+      "summed_event_duration_ms": 18.396632,
+      "max_instance_ms": 0.098365
+    },
+    {
+      "name": "softcap_inplace_logits_kernel",
+      "calls": 16,
+      "summed_event_duration_ms": 6.250625,
+      "max_instance_ms": 0.404532
+    },
+    {
+      "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4> >(at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4>)",
+      "calls": 16,
+      "summed_event_duration_ms": 4.995176,
+      "max_instance_ms": 0.319894
+    }
+  ],
+  "http_responses": {
+    "warmup": {
+      "requests": 128,
+      "http_200": 128,
+      "server_output_tokens": 64,
+      "server_output_ids_64": 128
+    },
+    "workload": {
+      "requests": 128,
+      "http_200": 128,
+      "server_output_tokens": 64,
+      "server_output_ids_64": 128
+    }
+  },
+  "expected_stop_evidence": {
+    "original_HTTP_status": 500,
+    "original_HTTP_body": "Internal Server Error",
+    "original_driver_already_stopped_flag": false,
+    "interpretation": "Source num_steps auto-stop plus DECODE export-complete log precede the manual stop500; traceback says Profiling is not in progress. FastAPI hid that exception behind a generic body. This supports expected auto-stop but does not rewrite the original INCONCLUSIVE result.",
+    "server_log_excerpts": [
+      {
+        "line": 184,
+        "text": "[2026-11-09 17:31:30] INFO:     127.0.0.1:45756 - \"POST /start_profile HTTP/1.1\" 200 OK"
+      },
+      {
+        "line": 205,
+        "text": "[2026-11-09 17:31:31] Profiling starts for EXTEND. Traces will be saved to: /home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile (with profile id: a3b0f3ec142a468abaf2eef396d4f803)"
+      },
+      {
+        "line": 323,
+        "text": "[2026-11-09 17:31:34] Stop profiling-EXTEND..."
+      },
+      {
+        "line": 325,
+        "text": "[2026-11-09 17:31:35] Profiling done. Traces are saved to: /home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile"
+      },
+      {
+        "line": 326,
+        "text": "[2026-11-09 17:31:35] Profiling starts for DECODE. Traces will be saved to: /home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile (with profile id: a3b0f3ec142a468abaf2eef396d4f803)"
+      },
+      {
+        "line": 330,
+        "text": "[2026-11-09 17:31:36] Stop profiling-DECODE..."
+      },
+      {
+        "line": 332,
+        "text": "[2026-11-09 17:31:36] Profiling done. Traces are saved to: /home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile"
+      },
+      {
+        "line": 334,
+        "text": "[2026-11-09 17:31:38] INFO:     127.0.0.1:36544 - \"POST /stop_profile HTTP/1.1\" 500 Internal Server Error"
+      },
+      {
+        "line": 405,
+        "text": "RuntimeError: Profiling is not in progress. Call /start_profile first."
+      }
+    ]
+  },
+  "cleanup": {
+    "shutdown": {
+      "status": "SUCCEEDED",
+      "reason": "bf16-c128-torch-final",
+      "started_at": "2026-11-09T17:31:38.323766+00:00",
+      "scope": "server lifecycle outside all benchmark measurement clocks",
+      "gpu_release_required": true,
+      "launched_pid": 717874,
+      "identity": {
+        "pid": 717874,
+        "pgid": 717874,
+        "sid": 717874,
+        "start_ticks": 243206992,
+        "state": "R"
+      },
+      "signals": [
+        15
+      ],
+      "signal_targets": [
+        {
+          "signal": 15,
+          "verified_members": {
+            "717874": {
+              "pid": 717874,
+              "pgid": 717874,
+              "sid": 717874,
+              "start_ticks": 243206992,
+              "state": "S"
+            },
+            "718598": {
+              "pid": 718598,
+              "pgid": 717874,
+              "sid": 717874,
+              "start_ticks": 243207605,
+              "state": "S"
+            },
+            "718599": {
+              "pid": 718599,
+              "pgid": 717874,
+              "sid": 717874,
+              "start_ticks": 243207605,
+              "state": "R"
+            },
+            "718600": {
+              "pid": 718600,
+              "pgid": 717874,
+              "sid": 717874,
+              "start_ticks": 243207605,
+              "state": "S"
+            }
+          }
+        }
+      ],
+      "gpu_observations": [
+        {
+          "at": "2026-11-09T17:31:44.580991+00:00",
+          "processes": []
+        }
+      ],
+      "last_owned_members": {},
+      "group_released": true,
+      "known_pids": {
+        "717874": 243206992,
+        "718598": 243207605,
+        "718599": 243207605,
+        "718600": 243207605
+      },
+      "owned_pids_remaining": [],
+      "gpu_released": true,
+      "ended_at": "2026-11-09T17:31:44.581002+00:00"
+    },
+    "post_gpu_apps": "EMPTY",
+    "post_lock": {
+      "state": "FREE",
+      "content": {},
+      "path": "/var/lib/tierengine/gpu.lock",
+      "device": 66306,
+      "inode": 2103737
+    },
+    "reservation_released_at": "2026-11-09T17:33:19+00:00"
+  },
+  "collection": {
+    "status": "PASS",
+    "remote_root": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1",
+    "local_root": "/home/dodo/Projects/TierEngine/runs/rsi-continuous/continuous-20261109-01/diagnostics/bf16-c128/remote-attempt-1",
+    "file_count": 803,
+    "total_bytes": 30922643,
+    "all_sha256_match": true
+  },
+  "interpretation_boundary": "All durations are from this same instrumented DECODE trace only. CPU step spans measure model-runner enqueue scopes, not all host work. Inter-step regions can overlap GPU execution; kernel-free regions can include copies and profiler/launch overhead and are not automatically host starvation. No extrapolation to all requests, runtime families, quality, speedup, or a formal Gate."
+}

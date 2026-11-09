@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""CPU-only, reproducible analysis of this one immutable diagnostic attempt."""
+import collections
+import gzip
+import hashlib
+import json
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parent
+ATTEMPT = ROOT / 'remote-attempt-1'
+RUN = ATTEMPT / 'bf16-c128'
+COMMIT = '15fd7f47856305e3fbab6383d1579e0754db9423'
+UUID = 'a3b0f3ec142a468abaf2eef396d4f803'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def union(intervals):
+    merged = []
+    for start, end in sorted(intervals):
+        if end <= start:
+            continue
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(end, merged[-1][1])
+        else:
+            merged.append([start, end])
+    return merged
+
+
+def intervals(events):
+    return [(e['ts'], e['ts'] + e['dur']) for e in events]
+
+
+def length(intervals):
+    return sum(end - start for start, end in union(intervals))
+
+
+def clipped(intervals, start, end):
+    return [(max(a, start), min(b, end)) for a, b in intervals if a < end and b > start]
+
+
+def envelope(events):
+    return [min(e['ts'] for e in events), max(e['ts'] + e['dur'] for e in events)]
+
+
+def ms(us):
+    return round(us / 1000, 6)
+
+
+def main():
+    result = json.loads((RUN / 'result.json').read_text())
+    assert result['commit'] == COMMIT and result['actual_run_uuid'] == UUID
+    assert result['status'] == 'INCONCLUSIVE'  # preserve the original control outcome
+    trace_path = RUN / 'torch-profile' / f'bf16-m-c128-{UUID}-TP-0-DECODE.trace.json.gz'
+    trace_sha = sha(trace_path)
+    assert trace_sha == '09e8dcb9352c1809e05b10b1673420c543a12c5ebccdc57fc864c3ad4372e4b1'
+    with gzip.open(trace_path, 'rt') as source:
+        trace = json.load(source)
+    events = [e for e in trace['traceEvents'] if isinstance(e, dict) and e.get('ph') == 'X'
+              and isinstance(e.get('dur'), (float, int)) and e['dur'] > 0]
+    kernels = [e for e in events if e.get('cat') == 'kernel']
+    cpu_ops = [e for e in events if e.get('cat') == 'cpu_op']
+    annotations = [e for e in events if e.get('cat') == 'user_annotation']
+    steps = [e for e in events if e.get('name') == 'step[DECODE bs=128]']
+    cpu_steps = sorted([e for e in steps if e.get('cat') == 'user_annotation'], key=lambda e: e['ts'])
+    gpu_steps = sorted([e for e in steps if e.get('cat') == 'gpu_user_annotation'], key=lambda e: e['ts'])
+    cpu_by_id = {e['args']['External id']: e for e in cpu_steps}
+    gpu_by_id = {e['args']['External id']: e for e in gpu_steps}
+    assert len(cpu_steps) == len(gpu_steps) == len(cpu_by_id) == 16
+    assert cpu_by_id.keys() == gpu_by_id.keys()
+    assert {e.get('args', {}).get('device') for e in kernels} == {0}
+    kernel_start, kernel_end = envelope(kernels)
+    cpu_start, cpu_end = envelope(cpu_steps)
+    gpu_start, gpu_end = envelope(gpu_steps)
+    capture_spans = [e for e in events if e.get('cat') == 'Trace' and e.get('name') == 'PyTorch Profiler (0)']
+    assert len(capture_spans) == 1
+    capture_start, capture_end = envelope(capture_spans)
+    file_start, file_end = envelope(events)
+    busy = union(intervals(kernels))
+    kernel_gaps = sorted([{'start_us': a[1], 'end_us': b[0], 'duration_ms': ms(b[0] - a[1])}
+                          for a, b in zip(busy, busy[1:])], key=lambda row: row['duration_ms'], reverse=True)
+    host_gaps = sorted([{'left_forward': i + 1, 'right_forward': i + 2,
+                         'start_us': a['ts'] + a['dur'], 'end_us': b['ts'],
+                         'duration_ms': ms(b['ts'] - a['ts'] - a['dur'])}
+                        for i, (a, b) in enumerate(zip(cpu_steps, cpu_steps[1:]))],
+                       key=lambda row: row['duration_ms'], reverse=True)
+    largest_host = host_gaps[0]
+    largest_host['kernel_union_during_gap_ms'] = ms(length(clipped(busy, largest_host['start_us'], largest_host['end_us'])))
+    largest_kernel = kernel_gaps[0]
+    sync = [e for e in events if e.get('cat') == 'cuda_runtime'
+            and re.search(r'synchron|streamwait', e['name'], re.I)]
+    grouped_sync = collections.defaultdict(list)
+    grouped_kernels = collections.defaultdict(list)
+    for e in sync:
+        grouped_sync[e['name']].append(e)
+    for e in kernels:
+        grouped_kernels[e['name']].append(e)
+    sync_stats = {}
+    for name, rows in grouped_sync.items():
+        sync_stats[name] = {'calls': len(rows), 'inclusive_api_duration_sum_ms': ms(sum(e['dur'] for e in rows)),
+                            'max_api_duration_ms': ms(max(e['dur'] for e in rows)),
+                            'kernel_union_during_api_intervals_ms': ms(sum(length(clipped(busy, a, b)) for a, b in intervals(rows)))}
+    top_kernels = [{'name': name, 'calls': len(rows), 'summed_event_duration_ms': ms(sum(e['dur'] for e in rows)),
+                    'max_instance_ms': ms(max(e['dur'] for e in rows))}
+                   for name, rows in sorted(grouped_kernels.items(), key=lambda item: sum(e['dur'] for e in item[1]), reverse=True)[:8]]
+    grouped_annotations = collections.defaultdict(list)
+    for e in annotations:
+        grouped_annotations[e['name']].append(e)
+    cpu_scopes = {name: {'events': len(rows), 'union_ms': ms(length(intervals(rows)))}
+                  for name, rows in grouped_annotations.items()}
+    graph_launch = [e for e in events if e.get('cat') == 'cuda_runtime' and e['name'] == 'cudaGraphLaunch']
+    memcpy = [e for e in events if e.get('cat') == 'gpu_memcpy']
+    log_path = RUN / 'server.log'
+    log_lines = log_path.read_bytes().decode(errors='replace').split('\n')
+    stop_lines = [{'line': i + 1, 'text': line} for i, line in enumerate(log_lines)
+                  if re.search(r'Profiling starts|Stop profiling|Profiling done|POST /start_profile|POST /stop_profile|Profiling is not in progress', line)]
+    post = json.loads((ROOT / 'post-cleanup-lock-admission.json').read_text())
+    release = json.loads((ROOT / 'reservation-release.json').read_text())
+    summary = {
+        'schema_version': 1, 'original_driver_result_status': 'INCONCLUSIVE',
+        'original_Controller_worker_status': json.loads((ATTEMPT / 'worker-state.json').read_text())['status'],
+        'trace_coverage_status': 'OBSERVED',
+        'purpose': 'read_only_CPU_Analyzer_of_instrumented_16_forward_fragment', 'eligible_for_baseline': False,
+        'identity': {'campaign': result['campaign'], 'worker': result['worker'], 'node': result['node'],
+                     'actual_run_uuid': UUID, 'commit': COMMIT, 'job_id': result['job_id'],
+                     'overlay_tree_sha256': result['overlay_manifest']['tree_sha256']},
+        'source_sha256': {'analyzer_script': sha(Path(__file__)), 'driver': result['driver_artifact'],
+                          'shared_recorder': result['shared_recorder_artifact'], 'profiler_sources': result['profiler_sources'],
+                          'trusted_helpers': result['trusted_helpers'], 'server_log': sha(log_path)},
+        'trace': {'path': str(trace_path), 'sha256': trace_sha, 'bytes': trace_path.stat().st_size,
+                  'unit': 'Chrome ts/dur are microseconds; displayTimeUnit=ms is presentation only',
+                  'device': trace['deviceProperties'], 'category_event_counts': dict(collections.Counter(e.get('cat') for e in events))},
+        'forward_coverage': {'distinct_forwards': 16, 'CPU_step_labels': len(cpu_steps), 'GPU_step_labels': len(gpu_steps),
+                             'binding': 'One-to-one equality of explicit External id sets, not nearest timestamps',
+                             'CPU_pid_tid': sorted({(e['pid'], e['tid']) for e in cpu_steps}),
+                             'GPU_pid_tid': sorted({(e['pid'], e['tid']) for e in gpu_steps}),
+                             'actual_host_batch_label': 128, 'cudaGraphLaunch_calls': len(graph_launch)},
+        'time_windows': {'profiler_capture_start_us': capture_start, 'profiler_capture_end_us': capture_end,
+                         'profiler_capture_wall_ms': ms(capture_end - capture_start),
+                         'profiler_capture_scope': 'PyTorch Profiler (0) Trace marker window; not the envelope of every complete event',
+                         'all_complete_events_start_us': file_start, 'all_complete_events_end_us': file_end,
+                         'all_complete_events_envelope_ms': ms(file_end - file_start),
+                         'kernel_envelope_start_us': kernel_start, 'kernel_envelope_end_us': kernel_end,
+                         'kernel_envelope_ms': ms(kernel_end - kernel_start),
+                         'CPU_step_envelope_start_us': cpu_start, 'CPU_step_envelope_end_us': cpu_end,
+                         'CPU_step_envelope_ms': ms(cpu_end - cpu_start),
+                         'GPU_step_envelope_start_us': gpu_start, 'GPU_step_envelope_end_us': gpu_end,
+                         'GPU_step_envelope_ms': ms(gpu_end - gpu_start)},
+        'interval_union': {'kernel_union_busy_ms': ms(length(busy)),
+                           'kernel_union_fraction_of_profiler_capture': length(busy) / (capture_end - capture_start),
+                           'kernel_union_fraction_of_kernel_envelope': length(busy) / (kernel_end - kernel_start),
+                           'leading_capture_region_without_kernels_ms': ms(kernel_start - capture_start),
+                           'trailing_capture_region_without_kernels_ms': ms(capture_end - kernel_end),
+                           'kernel_free_total_within_kernel_envelope_ms': ms(kernel_end - kernel_start - length(busy)),
+                           'summed_kernel_event_duration_ms': ms(sum(e['dur'] for e in kernels)),
+                           'CPU_step_union_ms': ms(length(intervals(cpu_steps))),
+                           'CPU_step_fraction_of_CPU_step_envelope': length(intervals(cpu_steps)) / (cpu_end - cpu_start),
+                           'CPU_step_fraction_of_kernel_envelope': length(intervals(cpu_steps)) / (kernel_end - kernel_start),
+                           'boundary': 'Kernel union merges every observed kernel interval on device0 across streams. It is not SM utilization, bandwidth, or CPU utilization. Summed kernel event duration can overlap and is not wall time. Python float endpoint arithmetic has sub-microsecond rounding differences versus Decimal; six decimal ms formatting is not an accuracy guarantee.'},
+        'largest_host_inter_step_region': largest_host,
+        'largest_kernel_free_internal_region': largest_kernel,
+        'visible_synchronization': sync_stats,
+        'CPU_user_annotation_scopes': cpu_scopes,
+        'gpu_memcpy': {'events_by_name': dict(collections.Counter(e['name'] for e in memcpy)),
+                       'bytes_by_name': {name: sum(e.get('args', {}).get('bytes', 0) for e in memcpy if e['name'] == name) for name in {e['name'] for e in memcpy}}},
+        'top_kernels_by_summed_duration': top_kernels,
+        'http_responses': {'warmup': result['warmup_responses'], 'workload': result['workload_responses']},
+        'expected_stop_evidence': {'original_HTTP_status': result['profile_stop']['status_code'],
+                                   'original_HTTP_body': result['profile_stop'].get('body'),
+                                   'original_driver_already_stopped_flag': result['profile_stop']['already_stopped'],
+                                   'interpretation': 'Source num_steps auto-stop plus DECODE export-complete log precede the manual stop500; traceback says Profiling is not in progress. FastAPI hid that exception behind a generic body. This supports expected auto-stop but does not rewrite the original INCONCLUSIVE result.',
+                                   'server_log_excerpts': stop_lines},
+        'cleanup': {'shutdown': result['shutdown'], 'post_gpu_apps': post['compute_apps'], 'post_lock': post['lock'],
+                    'reservation_released_at': release['released_at_utc']},
+        'collection': json.loads((ROOT / 'collection-verification.json').read_text()),
+        'interpretation_boundary': 'All durations are from this same instrumented DECODE trace only. CPU step spans measure model-runner enqueue scopes, not all host work. Inter-step regions can overlap GPU execution; kernel-free regions can include copies and profiler/launch overhead and are not automatically host starvation. No extrapolation to all requests, runtime families, quality, speedup, or a formal Gate.'}
+    def excerpt(e):
+        return {'name': e['name'], 'category': e.get('cat'), 'pid': e.get('pid'), 'tid': e.get('tid'),
+                'ts_us': e['ts'], 'duration_us': e['dur'], 'start_relative_to_kernel_envelope_ms': ms(e['ts'] - kernel_start),
+                'args': e.get('args', {})}
+    def overlaps(e, region):
+        return e['ts'] < region['end_us'] and e['ts'] + e['dur'] > region['start_us']
+    excerpts = {'profiler_capture_span': excerpt(capture_spans[0]),
+                'forward_pairs': [{'external_id': key, 'CPU': excerpt(cpu_by_id[key]), 'GPU': excerpt(gpu_by_id[key])}
+                                  for key in cpu_by_id],
+                'largest_host_inter_step_region': largest_host,
+                'host_region_overlapping_CPU_annotations': [excerpt(e) for e in annotations if overlaps(e, largest_host)],
+                'host_region_overlapping_sync': [excerpt(e) for e in sync if overlaps(e, largest_host)],
+                'largest_kernel_free_internal_region': largest_kernel,
+                'kernel_free_region_overlapping_host_events': [excerpt(e) for e in events if e.get('cat') in {'user_annotation', 'cpu_op', 'cuda_runtime'} and overlaps(e, largest_kernel)],
+                'synchronization_events': [excerpt(e) for e in sync],
+                'top_5_host_inter_step_regions': host_gaps[:5], 'top_5_kernel_free_internal_regions': kernel_gaps[:5]}
+    (ROOT / 'analyzer-coverage.json').write_text(json.dumps(summary, indent=2) + '\n')
+    (ROOT / 'analyzer-excerpts.json').write_text(json.dumps(excerpts, indent=2) + '\n')
+    print(json.dumps({'status': 'ANALYZED_WITHOUT_CHANGING_ORIGINAL_INCONCLUSIVE',
+                      'distinct_forwards': 16, 'CPU_events': len(cpu_ops), 'CUDA_kernels': len(kernels),
+                      'profiler_capture_wall_ms': ms(capture_end - capture_start),
+                      'kernel_envelope_ms': ms(kernel_end - kernel_start), 'kernel_union_ms': ms(length(busy)),
+                      'CPU_step_union_ms': ms(length(intervals(cpu_steps))), 'max_host_inter_step_ms': largest_host['duration_ms'],
+                      'max_kernel_free_ms': largest_kernel['duration_ms'], 'coverage': str(ROOT / 'analyzer-coverage.json')}))
+
+
+if __name__ == '__main__':
+    main()

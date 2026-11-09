@@ -1,0 +1,36 @@
+{
+  "campaign": "continuous-20261109-01",
+  "kind": "Controller real DECODE trace evidence; not completed research",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2998,
+      "sha256": "6fb68df3df194bbf3da1f37b7b2b83eb71e662cb7774988d2e9872c810cbc1ea"
+    },
+    {
+      "path": "analyzer-coverage.json",
+      "bytes": 16937,
+      "sha256": "f9f65a4c24f5fcd66d5aa4ba9b303da6c9eee3e361d4c09fc94fcee66d463a2b"
+    },
+    {
+      "path": "analyzer-excerpts.json",
+      "bytes": 40748,
+      "sha256": "f5124558a14cce2758e1ffd09345c78abd59e3b261c4291051749fe5c9032c59"
+    },
+    {
+      "path": "controller_recompute.py.txt",
+      "bytes": 14617,
+      "sha256": "d13696deef05f2259fd4f5d5df622f4b355189c98db1da1792076696f05c8659"
+    },
+    {
+      "path": "decode.trace.json.gz",
+      "bytes": 410050,
+      "sha256": "09e8dcb9352c1809e05b10b1673420c543a12c5ebccdc57fc864c3ad4372e4b1"
+    },
+    {
+      "path": "original-result.json",
+      "bytes": 104917,
+      "sha256": "8301f7e7a54414a9cab02bd9638b3dbe8b3cb8dbf271d88f2fec293f7f640908"
+    }
+  ]
+}
