@@ -1,0 +1,111 @@
+{
+  "source": "/workspace/python/sglang/srt/layers/quantization/gguf.py",
+  "parsed_measured_table": {
+    "Q8_0": [
+      2,
+      2
+    ],
+    "Q4_K": [
+      2,
+      2
+    ],
+    "Q6_K": [
+      6,
+      2
+    ]
+  },
+  "imatrix_types": [
+    "IQ1_M",
+    "IQ1_S",
+    "IQ2_S",
+    "IQ2_XS",
+    "IQ2_XXS",
+    "IQ3_S",
+    "IQ3_XXS",
+    "IQ4_NL",
+    "IQ4_XS"
+  ],
+  "enum_type_count": 23,
+  "changed_selection_cells": [
+    {
+      "type": "Q4_K",
+      "band": "rows<=5120",
+      "batch": 3,
+      "old_mmvq": true,
+      "new_mmvq": false
+    },
+    {
+      "type": "Q4_K",
+      "band": "rows<=5120",
+      "batch": 4,
+      "old_mmvq": true,
+      "new_mmvq": false
+    },
+    {
+      "type": "Q4_K",
+      "band": "rows<=5120",
+      "batch": 5,
+      "old_mmvq": true,
+      "new_mmvq": false
+    },
+    {
+      "type": "Q4_K",
+      "band": "rows<=5120",
+      "batch": 6,
+      "old_mmvq": true,
+      "new_mmvq": false
+    },
+    {
+      "type": "Q8_0",
+      "band": "rows<=5120",
+      "batch": 3,
+      "old_mmvq": true,
+      "new_mmvq": false
+    },
+    {
+      "type": "Q8_0",
+      "band": "rows<=5120",
+      "batch": 4,
+      "old_mmvq": true,
+      "new_mmvq": false
+    },
+    {
+      "type": "Q8_0",
+      "band": "rows<=5120",
+      "batch": 5,
+      "old_mmvq": true,
+      "new_mmvq": false
+    },
+    {
+      "type": "Q8_0",
+      "band": "rows<=5120",
+      "batch": 6,
+      "old_mmvq": true,
+      "new_mmvq": false
+    }
+  ],
+  "changed_cell_count": 8,
+  "changed_types": [
+    "Q4_K",
+    "Q8_0"
+  ],
+  "changed_bands": [
+    "rows<=5120"
+  ],
+  "changed_batches": [
+    3,
+    4,
+    5,
+    6
+  ],
+  "changed_cells_at_gate_batches": 0,
+  "changed_cells_at_batch_ge_16": 0,
+  "selection_identical_from_batch": 7,
+  "gate_batches_checked": [
+    16,
+    32,
+    64,
+    128,
+    256
+  ]
+}
