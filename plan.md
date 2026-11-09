@@ -1,39 +1,56 @@
-# G3 trial 8 — deepseek-a — NGRAM topology oracle: real-source conventions + independent golden
+# G3 trial 9 — deepseek-a — plan
 
-## Objective
-Bounded CPU falsifier for the NGRAM greedy-correctness bug (F1), following controller
-proposal queue a3: verify the tree-attention topology oracle against the REAL
-implementation and the root/pending-token convention, with an independent golden that
-does not share code with the model under test.
+## State entering the trial
+- Canonical F1: NGRAM self-speculation is BUG_CONFIRMED (G2-E1). Throughput +21.6% is real
+  but greedy outputs are not algorithm-preserving: divergences are exactly the ON
+  pass-nondeterminism set, committed tokens sit 1.0–3.9 nats behind the replay-stable
+  greedy argmax. Promotion forbidden until a fix is re-adjudicated ALGORITHM_PRESERVING.
+- Trial-3 source audit left two live candidates, neither closed:
+  - A: verify-row context misalignment (tree mask / positions / BFS order vs the flat
+    `target_predict` indexing in `eagle_utils.py:630-655`).
+  - B: post-commit KV/bonus misalignment (`move_accept_tokens_to_target_kvcache` /
+    `out_cache_loc`, `spec_utils.py:859-910`).
+- Prior CPU oracles (i4–i7) are only partially accepted: hand-ported models shared
+  assumptions with their own expectations (missing diagonal, reversed ancestor test).
+  Review rule now in force: stop hand-porting. Extract and execute the REAL source
+  expressions with independent golden fixtures; preserve raw output.
 
-## Context (canonical)
-- F1: NGRAM self-speculation BUG_CONFIRMED. Throughput +21.6% real, greedy correctness
-  broken; must not be promoted until fixed and re-judged ALGORITHM_PRESERVING.
-- Trial 3: 12/48 ON/OFF divergences, first-diff positions {4,6}; ON pass-nondeterministic
-  6/24, OFF 0/24; divergence set == ON nondeterminism set. Two live candidates: (A)
-  verify-row context misalignment, (B) post-commit KV/bonus misalignment.
-- C8/i5 and C9/i6 mask oracles were NOT qualified: missing self-diagonal in both model
-  and expected; reversed ancestry direction (root saw future child); builder and expected
-  generated through the same faulty helper. i6 golden must be [[1,0],[1,1]] for a 2-node chain.
+## Chosen direction (new, falsifiable, CPU-only)
+Build a bounded oracle that (1) extracts the actual tree-build / accept-index / KV-move
+location expressions from the pinned tree via `ast`, (2) feeds them a real NGRAM tree
+shape for a repeat-heavy prompt, and (3) compares them against an independently computed
+golden (derived only from token-id parent chains, never through the helper under test).
 
-## Hypothesis for this trial
-H-T8: an independently-defined topology oracle (query i may attend to column j iff j is
-an ancestor-or-self of i), executed on the tree the real NGRAM code actually generates,
-will either (a) reproduce the real mask convention including root/pending-token handling,
-giving a usable invariant for the accept path, or (b) expose a concrete disagreement
-between real source conventions and the semantics assumed by the diverging rows.
-Any expected mask is derived from the DEFINITION, never from the builder under test.
+Primary question: for an accepted node sequence that is non-contiguous in the flat verify
+batch (e.g. rows [0,2,4], which canonical evidence says can occur even when
+`retrieve_index` is identity), does the host-side commit/KV-location code map each accepted
+node's KV to the position its token actually occupies in the committed sequence? Any
+mismatch is a concrete candidate-B defect, independent of GPU kernels.
 
-## Approach
-1. Locate the real mask/accept code paths (fillResult kernel, tree/ngram builders).
-2. Extract the real source expressions via `ast` and execute them on CPU with minimal
-   shims (torch-free) — the AST-execution pattern proven on this tree.
-3. Independent oracle: hand-derived semantics; golden [[1,0],[1,1]] on a 2-node chain,
-   root row = diagonal only; brute-force ancestry from the parent array.
-4. Compare on real NGRAM tree shape and on the root/pending convention; preserve raw JSON.
-5. Commit evidence + iteration-proposal.json.
+Secondary (cheap) check: whether the flat `target_predict` index used at accept time is a
+per-request tree index or a global row index, and whether the reshape `[bs, draft_token_num]`
+is consistent with the actual flattened row count when per-request draft lengths differ
+(candidate A at the host level).
 
-## Verification / deliverables
-- Executed CPU oracle with raw JSON output committed; clear pass/fail vs independent golden.
-- Precise statement of what this does and does not prove about the live GPU bug.
-- No promotion claim, no measured throughput claim, no GPU/SSH attempts.
+## Method constraints
+- No GPU/SSH. All execution is CPU side. No evaluator, corpus, seed, reference changes.
+- Source of truth is the pinned engine tree; any model that reimplements rather than
+  extracts must be labelled as such and may not be used to claim engine behaviour.
+- Preserve raw oracle output as JSON; state limitations explicitly.
+- Do not claim EXACT / algorithm-preservation; a Fix is only a proposal until controller
+  re-adjudicates ON vs OFF.
+
+## Deliverables
+1. `iteration-proposal.json` with string fields bottleneck, hypothesis, patch, tests,
+   learning, next_proposal and boolean request_fast_gate.
+2. Executed oracle + raw evidence committed.
+3. If the oracle falsifies a concrete host-side invariant, a minimal source fix proposed
+   but explicitly UNGATED / pending controller adjudication.
+4. Negative findings recorded honestly if the invariant holds.
+
+## Budget
+45 turns / 20 minutes / USD 3 nominal. Checkpoint an initial commit early; reserve the
+last quarter for tests, iteration-proposal.json and final commit.
+
+## Outcome (executed)
+Dense-packed in-place compaction is safe for all 120 trees / 720 accepted paths (0 corruptions; monotone accept indices make read-before-write hold). A zero-tail positional fill layout would corrupt the root KV on 719/720 paths (duplicate destination 0, order-dependent) - conditional on the fill layout, decision rule in iteration-proposal.json. Candidate B copy-ordering closed NEGATIVE under dense packing; F1 remains OPEN.

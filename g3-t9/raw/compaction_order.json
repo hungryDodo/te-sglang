@@ -1,0 +1,141 @@
+{
+  "oracle": "g3-t9 compaction-order",
+  "source_anchors": [
+    {
+      "path": "python/sglang/kernels/jit/include/sgl_kernel/speculative/eagle.cuh",
+      "needles": [
+        "last_accepted_retrive_idx = retrive_index[bx * num_draft_tokens]",
+        "predicts[last_accepted_retrive_idx] = target_predict[last_accepted_retrive_idx]"
+      ],
+      "missing": []
+    },
+    {
+      "path": "python/sglang/kernels/ops/speculative/reconstruct_tree.py",
+      "needles": [
+        "positions = depth.to(tl.int64) + seq_len",
+        "retrieve_index_ptr + out, (b * n + idx)",
+        "first_child = tl.min(tl.where(ancestors, row, n), axis=0)"
+      ],
+      "missing": []
+    },
+    {
+      "path": "python/sglang/srt/mem_cache/memory_pool.py",
+      "needles": [
+        "for start in range(0, N, cap)",
+        "tgt_loc[start:end]",
+        "src_loc[start:end]"
+      ],
+      "missing": []
+    },
+    {
+      "path": "python/sglang/kernels/ops/speculative/cache_locs.py",
+      "needles": [
+        "\"\"\"Pack the first ``num_front[i]`` slots of request i's window in ``out_cache_loc``.\"\"\""
+      ],
+      "missing": []
+    }
+  ],
+  "extracted_chunk_loop": "for start in range(0, N, cap):\n            end = min(start + cap, N)\n            chunk_len = end - start\n            copy_all_layer_kv_cache_func(\n                self.data_ptrs,\n                self.data_strides,\n                tgt_loc[start:end],\n                src_loc[start:end],\n                chunk_len,\n                next_power_of_2(chunk_len),\n                cfg,\n            )",
+  "chunk_dispatch": {
+    "N": 40,
+    "cap": 16,
+    "chunk_first_indices": [
+      0,
+      16,
+      32
+    ],
+    "chunk_lengths": [
+      16,
+      16,
+      8
+    ],
+    "increasing_order": true
+  },
+  "tree_enumeration": {
+    "trees": 120,
+    "paths": 720,
+    "max_depth": 5,
+    "paths_with_src_gt_dst": 394,
+    "max_gap": 4
+  },
+  "contract_checks": {
+    "trees_checked": 120,
+    "violations": [],
+    "violation_count": 0
+  },
+  "layout_scheme_results": {
+    "dense/tiled": {
+      "paths_checked": 720,
+      "corrupt_paths": 0,
+      "first_corrupt": null,
+      "duplicate_destination_paths": 0
+    },
+    "dense/racy": {
+      "paths_checked": 720,
+      "corrupt_paths": 0,
+      "first_corrupt": null,
+      "duplicate_destination_paths": 0
+    },
+    "positional_zerotail/tiled": {
+      "paths_checked": 720,
+      "corrupt_paths": 719,
+      "first_corrupt": {
+        "parents": [
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "path": [
+          0
+        ],
+        "expected_slot0": [
+          "kv",
+          50
+        ],
+        "got_slot0": [
+          "kv",
+          55
+        ]
+      },
+      "duplicate_destination_paths": 719
+    },
+    "positional_zerotail/racy": {
+      "paths_checked": 720,
+      "corrupt_paths": 719,
+      "first_corrupt": {
+        "parents": [
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "path": [
+          0
+        ],
+        "expected_slot0": [
+          "kv",
+          50
+        ],
+        "got_slot0": [
+          "kv",
+          55
+        ]
+      },
+      "duplicate_destination_paths": 719
+    }
+  },
+  "theorem": "Accept indexes are strictly increasing (next_token/next_sibling only point to larger tid), so for every read at packed index i of source slot s_i and every write at packed index j of slot s_i=j we have i < j. Tiled copy loads each chunk before storing and chunks run in increasing order, so the read always precedes the write: in-place compaction cannot corrupt KV. The racy control must fail to show the oracle detects a real ordering hazard; the zero-tail layout is a negative control for duplicate destinations.",
+  "caveat": "Transliterations of documented contracts, not executed GPU kernels. The dense-pack layout model is inferred from fill_front_out_cache_loc_func -> assign_extend_cache_locs (cache_locs.py:752-780 vs kernel 500-531, which packs at the cumulative offset); fill_accept_out_cache_loc_func's layout was not re-read this trial, so the positional_zerotail branch states the consequence if that fill is not dense.",
+  "conclusion": {
+    "dense_tiled_corrupt_paths": 0,
+    "dense_racy_control_corrupt_paths": 0,
+    "zero_tail_corrupt_paths": 719,
+    "zero_tail_duplicate_destination_paths": 719,
+    "verdict": "REVIEW"
+  }
+}
