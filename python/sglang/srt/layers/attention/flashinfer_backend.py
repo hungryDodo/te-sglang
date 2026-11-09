@@ -1785,10 +1785,17 @@ class FlashInferIndicesUpdaterDecode:
         translator = self.attn_backend.kv_index_translator
         use_swa_source = use_sliding_window_kv_pool and translator.reads_are_translated
         read_kind = IdSpaceKind.SLIDING_WINDOW if use_swa_source else IdSpaceKind.FULL
+        host_indptr_last: Optional[int] = None
         if spec_info is None or getattr(spec_info, "kv_indptr", None) is None:
             bs = len(paged_kernel_lens)
             kv_indptr[1 : bs + 1] = torch.cumsum(paged_kernel_lens, dim=0)
             kv_indptr = kv_indptr[: bs + 1]
+            # kv_indptr[bs] == sum(paged_kernel_lens) == the host int the caller
+            # already computed for this same tensor. Slicing with the device
+            # scalar below would force a .item() D2H drain on every eager
+            # decode step; keep it as the redundant fallback only.
+            if isinstance(paged_kernel_lens_sum, int):
+                host_indptr_last = paged_kernel_lens_sum
 
             if wrapper.is_cuda_graph_enabled:
                 # Directly write to the cuda graph input buffer
@@ -1813,7 +1820,11 @@ class FlashInferIndicesUpdaterDecode:
 
         if use_sliding_window_kv_pool and not use_swa_source:
             assert self._swa_kv_pool is not None
-            kv_last_index = kv_indptr[-1]
+            # Host-known cumsum value when this call rebuilt kv_indptr from
+            # paged_kernel_lens; spec-decode keeps the device read.
+            kv_last_index = (
+                host_indptr_last if host_indptr_last is not None else kv_indptr[-1]
+            )
             kv_indices[:kv_last_index] = (
                 self._swa_kv_pool.translate_loc_from_full_to_swa(
                     kv_indices[:kv_last_index]
