@@ -1,0 +1,315 @@
+{
+  "trial": "G3 t11 deepseek-b",
+  "oracle": "frozen-workload KV-pool headroom",
+  "executed": true,
+  "provenance": {
+    "launch": "controller brief (frozen fast-gate launch), not read from repo (configs/rsi absent in candidate sandbox)",
+    "workload": "controller brief frozen workload table",
+    "baselines": "branch learning / canonical register, not re-measured here"
+  },
+  "frozen_launch": {
+    "tp": 1,
+    "dtype": "bfloat16",
+    "kv_cache_dtype": "bfloat16",
+    "context_length": 9216,
+    "max_total_tokens": 131072,
+    "mem_fraction_static": 0.6,
+    "cuda_graph_max_bs_decode": 64,
+    "chunked_prefill_size": 8192,
+    "max_running_requests": 256,
+    "max_queued_requests": 256,
+    "attention_backend": "flashinfer",
+    "disable_radix_cache": true
+  },
+  "branch_baselines_external": {
+    "prefill_heavy_c16": {
+      "tok_s": 59.3,
+      "ttft_ms": 4046
+    },
+    "decode_ceiling_c256_abs_tok_s": 5145
+  },
+  "source_anchor_checks": [
+    {
+      "file": "python/sglang/srt/mem_cache/kv_cache_configurator.py",
+      "needle": "token_capacity = min(token_capacity, user_limit)",
+      "why": "pool = min(profiled, --max-total-tokens)",
+      "found": true,
+      "line": 3105
+    },
+    {
+      "file": "python/sglang/srt/managers/schedule_batch.py",
+      "needle": "def check_decode_mem(",
+      "why": "decode capacity gate entry",
+      "found": true,
+      "line": 3432
+    },
+    {
+      "file": "python/sglang/srt/managers/schedule_batch.py",
+      "needle": "return self.token_to_kv_pool_allocator.check_decode_capacity(",
+      "why": "gate delegates to allocator capacity check",
+      "found": true,
+      "line": 3444
+    },
+    {
+      "file": "python/sglang/srt/managers/schedule_batch.py",
+      "needle": "def new_tokens_required_next_decode(",
+      "why": "per-decode-step token demand is page-rounded",
+      "found": true,
+      "line": 3403
+    },
+    {
+      "file": "python/sglang/srt/managers/schedule_batch.py",
+      "needle": "def retract_decode(self)",
+      "why": "retraction implementation",
+      "found": true,
+      "line": 3451
+    },
+    {
+      "file": "python/sglang/srt/managers/scheduler.py",
+      "needle": "retracted_reqs, new_token_ratio, reqs_to_abort = batch.retract_decode()",
+      "why": "scheduler call site",
+      "found": true,
+      "line": 4493
+    },
+    {
+      "file": "python/sglang/srt/managers/scheduler.py",
+      "needle": "self.metrics_reporter.num_retracted_reqs = len(retracted_reqs)",
+      "why": "retraction count is observable",
+      "found": true,
+      "line": 4502
+    },
+    {
+      "file": "python/sglang/srt/managers/scheduler.py",
+      "needle": "msg_details = f\"#retracted_reqs: {len(retracted_reqs)}",
+      "why": "retraction count is logged",
+      "found": true,
+      "line": 4530
+    },
+    {
+      "file": "python/sglang/srt/mem_cache/kv_cache_builder.py",
+      "needle": "disable=disable_radix_cache",
+      "why": "radix cache disabled in the frozen launch",
+      "found": true,
+      "line": 390
+    },
+    {
+      "file": "python/sglang/srt/models/spark2_5.py",
+      "needle": "return config.sliding_window - 1",
+      "why": "sliding window is config-1 (511 for window=512)",
+      "found": true,
+      "line": 48
+    },
+    {
+      "file": "python/sglang/srt/models/spark2_5.py",
+      "needle": "max_position_embeddings: int = 8192",
+      "why": "arch default max positions",
+      "found": true,
+      "line": 99
+    }
+  ],
+  "all_anchors_present": true,
+  "per_point": {
+    "short": {
+      "input_tokens": 128,
+      "output_tokens": 32,
+      "weight": 0.1,
+      "cases": [
+        {
+          "concurrency": 32,
+          "prompt_demand": 4096,
+          "max_demand": 5120,
+          "pool": 131072,
+          "headroom_after_prompt": 126976,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 4096,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        },
+        {
+          "concurrency": 128,
+          "prompt_demand": 16384,
+          "max_demand": 20480,
+          "pool": 131072,
+          "headroom_after_prompt": 114688,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 1024,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        }
+      ]
+    },
+    "medium": {
+      "input_tokens": 512,
+      "output_tokens": 64,
+      "weight": 0.15,
+      "cases": [
+        {
+          "concurrency": 32,
+          "prompt_demand": 16384,
+          "max_demand": 18432,
+          "pool": 131072,
+          "headroom_after_prompt": 114688,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 4096,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        },
+        {
+          "concurrency": 128,
+          "prompt_demand": 65536,
+          "max_demand": 73728,
+          "pool": 131072,
+          "headroom_after_prompt": 65536,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 1024,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        }
+      ]
+    },
+    "standard": {
+      "input_tokens": 1024,
+      "output_tokens": 128,
+      "weight": 0.15,
+      "cases": [
+        {
+          "concurrency": 32,
+          "prompt_demand": 32768,
+          "max_demand": 36864,
+          "pool": 131072,
+          "headroom_after_prompt": 98304,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 4096,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        },
+        {
+          "concurrency": 64,
+          "prompt_demand": 65536,
+          "max_demand": 73728,
+          "pool": 131072,
+          "headroom_after_prompt": 65536,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 2048,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        }
+      ]
+    },
+    "decode_heavy": {
+      "input_tokens": 256,
+      "output_tokens": 512,
+      "weight": 0.25,
+      "cases": [
+        {
+          "concurrency": 64,
+          "prompt_demand": 16384,
+          "max_demand": 49152,
+          "pool": 131072,
+          "headroom_after_prompt": 114688,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 2048,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        },
+        {
+          "concurrency": 128,
+          "prompt_demand": 32768,
+          "max_demand": 98304,
+          "pool": 131072,
+          "headroom_after_prompt": 98304,
+          "overcommit_tokens_at_max_output": 0,
+          "tokens_per_request_when_pool_full": 1024,
+          "first_output_token_index_that_cannot_all_be_resident": null,
+          "classification": "FITS_AT_MAX_OUTPUT"
+        }
+      ]
+    },
+    "prefill_heavy": {
+      "input_tokens": 8192,
+      "output_tokens": 32,
+      "weight": 0.15,
+      "cases": [
+        {
+          "concurrency": 16,
+          "prompt_demand": 131072,
+          "max_demand": 131584,
+          "pool": 131072,
+          "headroom_after_prompt": 0,
+          "overcommit_tokens_at_max_output": 512,
+          "tokens_per_request_when_pool_full": 8192,
+          "first_output_token_index_that_cannot_all_be_resident": 1,
+          "classification": "PROMPT_ALONE_EXHAUSTS_POOL"
+        }
+      ]
+    },
+    "decode_ceiling": {
+      "input_tokens": 32,
+      "output_tokens": 512,
+      "weight": 0.2,
+      "cases": [
+        {
+          "concurrency": 256,
+          "prompt_demand": 8192,
+          "max_demand": 139264,
+          "pool": 131072,
+          "headroom_after_prompt": 122880,
+          "overcommit_tokens_at_max_output": 8192,
+          "tokens_per_request_when_pool_full": 512,
+          "first_output_token_index_that_cannot_all_be_resident": 481,
+          "classification": "OVERCOMMITS_DURING_DECODE"
+        }
+      ]
+    }
+  },
+  "overcommitted_cases": [
+    {
+      "category": "prefill_heavy",
+      "concurrency": 16,
+      "prompt_demand": 131072,
+      "max_demand": 131584,
+      "pool": 131072,
+      "headroom_after_prompt": 0,
+      "overcommit_tokens_at_max_output": 512,
+      "tokens_per_request_when_pool_full": 8192,
+      "first_output_token_index_that_cannot_all_be_resident": 1,
+      "classification": "PROMPT_ALONE_EXHAUSTS_POOL"
+    },
+    {
+      "category": "decode_ceiling",
+      "concurrency": 256,
+      "prompt_demand": 8192,
+      "max_demand": 139264,
+      "pool": 131072,
+      "headroom_after_prompt": 122880,
+      "overcommit_tokens_at_max_output": 8192,
+      "tokens_per_request_when_pool_full": 512,
+      "first_output_token_index_that_cannot_all_be_resident": 481,
+      "classification": "OVERCOMMITS_DURING_DECODE"
+    }
+  ],
+  "headline": {
+    "prefill_heavy_c16_prompt_demand": 131072,
+    "prefill_heavy_c16_pool": 131072,
+    "prefill_heavy_c16_prompt_headroom": 0,
+    "prefill_heavy_c16_overcommit_at_max_output": 512,
+    "decode_ceiling_c256_overcommit_at_max_output": 8192,
+    "decode_ceiling_c256_first_starved_output_index": 481
+  },
+  "predictions_for_controller_artifacts": {
+    "P1": "If the pool arithmetic binds at runtime, the PrefillHeavy C16 point shows retraction activity (num_retracted_reqs>0 or '#retracted_reqs:' log lines), because prompt demand equals the pool exactly (131072) and every decode token is over capacity.",
+    "P2": "If pool pressure is the mechanism, prefill_heavy retraction counts scale with decode steps (chunked prefill greedily refills the space freed by a retraction, starving the next decode step), not with request arrivals.",
+    "P3": "DecodeCeiling C256 only enters the over-committed regime after request length exceeds 512 tokens total (32 prompt + 480 output); its retraction activity, if any, should appear in the last ~6.25% of each generation, not at the start.",
+    "P4": "Control points short/medium/standard/decode_heavy (all <=98304 token demand) should show ~zero retractions; a nonzero count there falsifies the capacity reading and points at a different pressure source."
+  },
+  "limitations": [
+    "No SGLang execution, no GPU, no token throughput measured here.",
+    "The frozen workload constants are external (controller brief); if the actual harness uses different C or output budgets the arithmetic changes.",
+    "The pool value 131072 assumes the profiled capacity at --mem-fraction-static 0.6 exceeds the user cap, i.e. the cap binds (source: min(profiled, user_limit)). The startup log line 'max_total_num_tokens=' is the authoritative check.",
+    "Hybrid SWA exposes separate full and SWA per-layer pools; this oracle bounds the FULL-attention pool only. Whether the binding allocator is the full pool or the SWA pool is not resolved here (swa.py sizes both; --max-total-tokens caps the full capacity).",
+    "The scheduler's new-token-ratio reservation and chunked-prefill admission policy are NOT modeled; they can change whether the pool actually fills. P1-P4 are the runtime falsifiers.",
+    "Requests may end early on EOS in the real harness; the contract states fixed input/output token counts and the fixed-output-budget gate, so full-length output is assumed.",
+    "Branch baselines (59.3 tok/s, 4046 ms, 5145 tok/s) are recorded history, not re-measured."
+  ],
+  "verdict": "ARITHMETIC_BINDS"
+}
