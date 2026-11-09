@@ -2046,10 +2046,6 @@ class FlashInferIndicesUpdaterPrefill:
             raise RuntimeError(
                 "NVFP4 custom KV indices are only supported by the single-wrapper FlashInfer path."
             )
-        # extend_prefix_lens_cpu mirrors prefix_lens only when it was passed
-        # in by the caller; a derived prefix_lens (spec verify) has no host
-        # mirror, so those paths must keep the device reads.
-        prefix_lens_given = prefix_lens is not None
         if prefix_lens is None:
             num_accept_tokens = getattr(spec_info, "num_accept_tokens", None)
             # Spec verify keeps its query block outside seq_lens, so an unset
@@ -2078,36 +2074,11 @@ class FlashInferIndicesUpdaterPrefill:
                         prefix_lens - sliding_window_size, min=0
                     )
                     paged_kernel_lens = prefix_lens - effective_start
-                    # Host mirror of min(prefix_lens, window): avoids a
-                    # blocking D2H per extend batch. Exact integer match with
-                    # the device math above.
-                    host_lens_ok = (
-                        prefix_lens_given
-                        and extend_prefix_lens_cpu is not None
-                        and len(extend_prefix_lens_cpu) == prefix_lens.numel()
-                        and seq_lens_cpu is not None
-                        and seq_lens_cpu.numel() == prefix_lens.numel()
-                    )
-                    if host_lens_ok:
-                        prefix_cpu = list(extend_prefix_lens_cpu)
-                        paged_kernel_lens_sum = sum(
-                            min(p, sliding_window_size) for p in prefix_cpu
-                        )
-                    else:
-                        paged_kernel_lens_sum = paged_kernel_lens.sum().item()
+                    paged_kernel_lens_sum = paged_kernel_lens.sum().item()
                     kv_start_idx = effective_start
-                    if host_lens_ok:
-                        swa_paged_custom_mask = self._build_swa_prefix_custom_mask(
-                            prefix_lens,
-                            seq_lens,
-                            effective_start,
-                            prefix_lens_cpu=prefix_cpu,
-                            seq_lens_cpu=seq_lens_cpu,
-                        )
-                    else:
-                        swa_paged_custom_mask = self._build_swa_prefix_custom_mask(
-                            prefix_lens, seq_lens, effective_start
-                        )
+                    swa_paged_custom_mask = self._build_swa_prefix_custom_mask(
+                        prefix_lens, seq_lens, effective_start
+                    )
                 else:
                     # window attention use paged only; the trim below is
                     # request-granular, exactness comes from plan-time window_left
@@ -2173,8 +2144,6 @@ class FlashInferIndicesUpdaterPrefill:
         prefix_lens: torch.Tensor,
         seq_lens: torch.Tensor,
         kv_start_idx: torch.Tensor,
-        prefix_lens_cpu: Optional[List[int]] = None,
-        seq_lens_cpu: Optional[torch.Tensor] = None,
     ) -> Optional[torch.Tensor]:
         """Custom SWA mask for the paged wrapper in the ragged merge_state EXTEND path.
 
@@ -2185,25 +2154,9 @@ class FlashInferIndicesUpdaterPrefill:
         if window is None or window < 0:
             return None
 
-        if (
-            prefix_lens_cpu is not None
-            and seq_lens_cpu is not None
-            and seq_lens_cpu.numel() == len(prefix_lens_cpu)
-        ):
-            # Host mirrors of the three device lists below: each .cpu() is a
-            # blocking D2H on every extend batch, even when the mask ends up
-            # None. kv_start = clamp(prefix - window, 0) mirrors the caller's
-            # effective_start exactly.
-            prefix_lens_cpu = list(prefix_lens_cpu)
-            extend_lens_cpu = [
-                int(s) - p
-                for s, p in zip(seq_lens_cpu.tolist(), prefix_lens_cpu)
-            ]
-            kv_start_cpu = [max(0, p - window) for p in prefix_lens_cpu]
-        else:
-            prefix_lens_cpu = prefix_lens.detach().cpu().tolist()
-            extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()
-            kv_start_cpu = kv_start_idx.detach().cpu().tolist()
+        prefix_lens_cpu = prefix_lens.detach().cpu().tolist()
+        extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()
+        kv_start_cpu = kv_start_idx.detach().cpu().tolist()
         if all(p == 0 for p in prefix_lens_cpu):
             return None
 
@@ -2391,16 +2344,7 @@ class FlashInferIndicesUpdaterPrefill:
 
         if use_sliding_window_kv_pool and not use_swa_source:
             assert self._swa_kv_pool is not None
-            # kv_indptr[-1] is a device scalar: slicing kv_indices with it
-            # forces a blocking D2H every prefill batch. In the normal-extend
-            # branch kv_indptr[1:bs+1] = cumsum(paged_kernel_lens), so its last
-            # entry is exactly the host-int paged_kernel_lens_sum that every
-            # wrapper-0 caller computed from that same tensor. Spec/custom
-            # paths keep the device read.
-            if spec_info is None and custom_kv_indices is None:
-                kv_last_index = paged_kernel_lens_sum
-            else:
-                kv_last_index = kv_indptr[-1]
+            kv_last_index = kv_indptr[-1]
             kv_indices[:kv_last_index] = (
                 self._swa_kv_pool.translate_loc_from_full_to_swa(
                     kv_indices[:kv_last_index]
