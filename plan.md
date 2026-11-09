@@ -1,95 +1,88 @@
-# G3 trial 11 — deepseek-b — plan
+# G3 trial 12 — deepseek-b — plan
 
-Campaign `continuous-20261109-01`, Iteration 11. Worker deepseek-b (node a4).
+Campaign `continuous-20261109-01`, Iteration 12. Worker deepseek-b (node a4).
 Bounds: 45 turns / 20 min / USD 5 nominal. No GPU, no SSH, no evaluator.
 
-## 0. Hard constraints I will not violate
+## 0. Hard constraints (unchanged)
 
-- Cannot and will not run GPU/SSH measurements. All official gates are the
-  controller's.
-- Will not change evaluator, scoring, corpus, seed, reference, or protocol.
-- Will not claim EXACT / Promotion / best_verified. No numeric arrays exist in
-  this sandbox; canonical numeric stays INCONCLUSIVE.
-- `request_fast_gate=true` only if the patch is an applicable BF16 candidate
-  and I have a plausible semantics argument. A BF16 Fast screen structurally
-  cannot evaluate GGUF/MMVQ (`f263262`, canonical F3): the frozen gate loads
-  BF16 safetensors and passes no GGUF/quantization flags
-  (applicability-001). I will not request a BF16 gate "to evaluate F3".
+- No GPU/SSH measurement; official gates are the controller's.
+- No evaluator/corpus/seed/reference/protocol change. No EXACT / Promotion /
+  best_verified claim. Canonical numeric stays INCONCLUSIVE (no raw top-k here).
+- F3 (`f263262`, MMVQ thresholds) stays **UNGATED**: the frozen BF16 Fast screen
+  loads BF16 safetensors and passes no GGUF/quantization flag
+  (controller `applicability-001`). I will not spend a BF16 gate on F3 and will
+  not claim it is evaluated by one.
+- `request_fast_gate=true` only for an applicable BF16 engine candidate with a
+  semantics argument. This trial expects `false` unless a verified patch lands.
 
-## 1. State re-establishment (first)
+## 1. Question for this trial (new, CPU-falsifiable)
 
-- `git log`, `git status`, diff vs the G3 base. Confirm whether `f263262`
-  (MMVQ threshold) is present in HEAD and whether any worktree change exists.
-- Re-read the remaining open questions from the canonical register that are
-  actually CPU-addressable for this branch:
-  - F3 UNGATED: applicability boundary only; no in-sandbox evaluator.
-  - C11/C14 host-mirror family: still open, but i6/i8 were partial and the
-    last two rounds produced premise errors (guard duplication, capacity
-    sufficiency != exact equality). Do not repeat the same sweep.
-  - a4 proposal queue: "verify host-mirror oracle/branch guards" — do this
-    with a *new* bounded falsifier if, and only if, there is a concrete
-    testable inversion; otherwise choose a different question.
+Canonical C16 corrected trial-9's premise: the PrefillAdder's governing prefill
+budget is the **whole-batch `rem_chunk_tokens`** (`chunked_prefill_size` = 8192
+from the frozen launch), not `max_prefill_tokens` (16384). Trial 9 therefore
+predicted **2 x 8192-token requests per prefill batch / 8 waves** for the
+15%-weight PrefillHeavy C16 point. Trial 11 then built a KV-pool headroom story
+on top of the frozen concurrency.
 
-## 2. Candidate question (pick after source check)
+This trial tests the concrete, previously unexecuted claim:
 
-Prefer a genuinely new, CPU-falsifiable question over re-running a blocked
-promotion request. Ranked:
+> **H1:** `PrefillAdder` debits the full extend length of every admitted request
+> from `rem_chunk_tokens`; hence with `chunked_prefill_size=8192` the first
+> 8192-token request zeroes the batch chunk budget and the real admission
+> predicate rejects any second 8192-token request in the same batch. PrefillHeavy
+> therefore runs **1 request per prefill batch (16 admission events per wave of
+> 16 concurrent requests), not 2**.
+>
+> **H2 (mixed-decode variant):** if mixed chunking is active, the budget is
+> further reduced by `num_mixed_decode_tokens = running_bs`, so even the first
+> 8192-token prompt is truncated to `8192 - running_bs` and continues as a tail
+> chunk - a mechanism that can appear in PrefillHeavy TTFT.
 
-1. **F3 applicability audit, executed not asserted.** Build a small script
-   that proves from the *pinned source in this tree* which run path the frozen
-   BF16 launch takes through `fused_mul_mat` and whether any `gguf.py` call
-   site is reachable without a GGUF-quantized model config. Deliverable is a
-   falsifier that would FAIL (i.e. show reachability) if the BF16 gate could
-   touch the MMVQ cells. This converts the controller's prose applicability
-   finding into an executable, attackable check — and it is honest: it does
-   NOT gate F3, it bounds what a BF16 Fast can ever mean for F3.
-2. **Host-mirror reachability** — only if I find a concrete new inversion
-   (e.g. a caller sequence where the guard is bypassed). Otherwise declare
-   the line saturated and say so.
-3. **Prefill-heavy C16 structural accounting** — chunk/token-budget
-   arithmetic from source (131072 = 16 x 8192 exactly; decode space after
-   prefill). CPU-only, but risk: already partially covered by trial-2 notes.
+Method: AST-extract and execute the real budget plumbing (`scheduler.py`
+PrefillAdder construction arguments, `PrefillAdder.__init__` chunk-budget
+initialisation, the real `add_one_req`/`add_chunked_req` guard predicates, the
+real `_update_prefill_budget` charge expression), with hard exit-2 on any
+anchor drift and negative controls that flip the deciding term. This is
+arithmetic over executed source, not a throughput measurement.
 
-## 3. Deliverables
+## 2. Deliverables
 
-- `seis/trials/deepseek-b/g3-t11/` : script + raw output JSON + short README.
-- `plan.md` (this file, updated with outcome).
-- `iteration-proposal.json` with the required string fields and
-  `request_fast_gate` boolean.
-- Git commit(s) with the evidence.
+- `seis/trials/deepseek-b/g3-t12/verify_prefill_chunk_budget.py` (stdlib,
+  `python3 -I`, real-source extraction + execution).
+- `seis/trials/deepseek-b/g3-t12/prefill-chunk-budget.json` raw output.
+- `seis/trials/deepseek-b/g3-t12/README.md`.
+- Updated `plan.md` (outcome), `iteration-proposal.json`, git commit.
 
-## 4. Kill criteria
+No engine change unless the oracle exposes a semantics-preserving defect I can
+argue and gate.
 
-- If the chosen question cannot be executed and falsified CPU-side within the
-  remaining budget, record a bounded negative (what was checked, what is
-  unknown) instead of a speculative patch.
-- If work + tests exceed ~75% of turns, stop starting work and write the
-  proposal.
+## 3. Kill criteria
 
-## 5. Outcome (executed, 2026-11-09)
+- Anchor drift or a contradicted premise → record the negative with raw output,
+  do not soften it.
+- If the oracle cannot settle H1/H2 from executed source inside the budget,
+  report what executed and what remains unknown rather than claiming either.
 
-Chosen question: **KV-pool headroom arithmetic of the frozen points** (new for
-this branch; the host-mirror, GGUF-unreachable and sliding-window lanes were
-already closed or blocked).
+## 4. Outcome (executed)
 
-Executed: `python3 -I seis/trials/deepseek-b/g3-t11/verify_pool_headroom.py
---root . --out .../pool-headroom.json` -> exit 0, 11/11 source anchors present,
-verdict `ARITHMETIC_BINDS`.
+`python3 -I seis/trials/deepseek-b/g3-t12/verify_prefill_chunk_budget.py --root .
+--out .../prefill-chunk-budget.json` -> exit 0, 15/15 anchors, verdict
+`H1_CONFIRMED_ON_SOURCE__T9_2_PER_BATCH_FALSIFIED`.
 
-- `prefill_heavy` C16: prompt demand `16 x 8192 = 131072` **equals**
-  `--max-total-tokens`; decode headroom is exactly 0 while 512 output tokens
-  are required. With radix cache disabled, the source-anchored pressure valve
-  is `retract_decode()` -> re-queue/re-prefill.
-- `decode_ceiling` C256: max demand 139,264, over by 8,192 (6.25%); pool is
-  exactly full at 480 generated tokens per request.
-- All other points fit at max output (largest 98,304 = 74.8% of pool).
-
-This is **arithmetic + source anchors, not a throughput measurement**. Runtime
-causality is unproven: `new_token_ratio` reservation, chunked-prefill
-admission, full-vs-SWA allocator binding and possible EOS truncation are not
-modeled. The zero-gate falsifier is retraction counts
-(`num_retracted_reqs` / `#retracted_reqs:`) in **existing** Fast artifacts;
-zero at PrefillHeavy kills the hypothesis.
-
-No engine change. F3 (`f263262`) remains UNGATED; a BF16 Fast screen cannot
-exercise the GGUF/MMVQ cells (applicability-001), so none was requested.
+- **H1 confirmed:** `_update_prefill_budget` debits every admitted request's
+  full extend from the whole-batch `rem_chunk_tokens`. With
+  `chunked_prefill_size=8192`, one 8192-token prompt zeroes the budget and the
+  real guard rejects a second: **1 request per prefill batch, 16 admission
+  events per wave at C16**, not t9's 2/batch and 8 waves. The same guard exists
+  in the `ignore_eos` path, so the result is independent of output-length
+  pinning. Negative controls: `rem_chunk=None` or 16384 both admit 2.
+- **H2 rejected:** `enable_mixed_chunk` source default is `False`; the frozen
+  command passes no flag, so `num_mixed_decode_tokens=0` and no mixed-decode
+  squeeze occurs (the 8176-token chunk is a sensitivity control only).
+- Limits: arithmetic over executed source, no measurement; `max_prefill_bs`,
+  prefill delayer, memory-budget rejection and real step counts are unmodeled.
+  Exposed lever (NOT implemented): `max_prefill_tokens=16384` allows a wider
+  prefill batch than the chunk debit currently permits, i.e. 2 x 8192 per batch;
+  buffer/activation-memory safety is unverified.
+- F3 (`f263262`) remains UNGATED; no BF16 Fast was requested (no engine change
+  and a BF16 screen cannot exercise GGUF/MMVQ cells).

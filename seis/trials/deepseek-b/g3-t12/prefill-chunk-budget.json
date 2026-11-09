@@ -1,0 +1,87 @@
+{
+  "trial": "g3-t12 deepseek-b",
+  "kind": "CPU-executed source oracle; arithmetic, NOT_A_MEASUREMENT",
+  "anchors_present": true,
+  "executed_source": {
+    "enable_mixed_chunk_default": false,
+    "PrefillAdder.rem_input_tokens_init": "rem_input_tokens - num_mixed_decode_tokens",
+    "PrefillAdder.rem_chunk_tokens_init": "rem_chunk_tokens",
+    "compute_charge_expr": "(raw_extend_input_len if self.exact_chunk_fill else extend_input_len) + replay_len"
+  },
+  "frozen_contract": {
+    "max_prefill_tokens(source default)": 16384,
+    "chunked_prefill_size(launch)": 8192,
+    "extend_tokens(PrefillHeavy)": 8192,
+    "enable_mixed_chunk_launch_flag": "ABSENT -> source default"
+  },
+  "runs": {
+    "frozen_chunked": {
+      "admitted_per_batch": 1,
+      "chunk_tokens": [
+        8192
+      ],
+      "rem_input_after": 8192,
+      "rem_chunk_after": 0
+    },
+    "frozen_ignore_eos_path_same_budget": {
+      "admitted_per_batch": 1,
+      "chunk_tokens": [
+        8192
+      ],
+      "rem_input_after": 8192,
+      "rem_chunk_after": 0
+    },
+    "ctrl_chunk_disabled(None)": {
+      "admitted_per_batch": 2,
+      "chunk_tokens": [
+        8192,
+        8192
+      ],
+      "rem_input_after": 0,
+      "rem_chunk_after": null
+    },
+    "ctrl_chunk_budget_16384": {
+      "admitted_per_batch": 2,
+      "chunk_tokens": [
+        8192,
+        8192
+      ],
+      "rem_input_after": 0,
+      "rem_chunk_after": 0
+    },
+    "ctrl_mixed_chunk_on_bs16": {
+      "admitted_per_batch": 1,
+      "chunk_tokens": [
+        8176
+      ],
+      "rem_input_after": 8208,
+      "rem_chunk_after": 0
+    }
+  },
+  "H1": {
+    "claim": "rem_chunk_tokens is a whole-batch budget; one 8192-token request zeroes it and the real guard rejects a second",
+    "admitted_per_batch_frozen": 1,
+    "waves_for_16_concurrent": 16,
+    "t9_prediction_waves": 8,
+    "t9_falsified": true
+  },
+  "H2_mixed_decode_squeeze": {
+    "applicable_under_frozen_launch": false,
+    "first_chunk_tokens_if_on_bs16": [
+      8176
+    ],
+    "note": "enable_mixed_chunk default False; frozen launch passes no flag, so num_mixed_decode_tokens=0 and H2 does NOT apply"
+  },
+  "discriminating_control": {
+    "chunk_disabled_gives_t9_2_per_batch": true,
+    "chunk_16384_gives_2_per_batch": true
+  },
+  "limits": [
+    "Arithmetic over executed source, not a throughput measurement.",
+    "Assumes page_size=1 (flashinfer); ceil(8192) unchanged for any page dividing 8192.",
+    "Assumes ignores retraction/re-queue and dynamic chunk sizer; those can add steps.",
+    "Does not model max_prefill_bs, prefill delayer, or memory-budget rejection.",
+    "Request count 64 (max(32,4C)) means 64 admission events at C16, not 16."
+  ],
+  "verdict": "H1_CONFIRMED_ON_SOURCE__T9_2_PER_BATCH_FALSIFIED"
+}
