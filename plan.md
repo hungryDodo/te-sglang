@@ -49,3 +49,34 @@ vs populated top-k slots.
 45 turns / 1200 s hard / USD 3. Reserve final quarter for proposal + commits.
 No GPU here: everything measured stays a controller-side request; nothing is
 claimed without controller raw evidence.
+
+## Outcome (executed this session)
+
+H1 **CONFIRMED CPU-side**, H0 (engine drop-bug on chat/native) **falsified**.
+`g3-t4/probe_top_logprobs_recipe.py` extracts the real assignment/guard
+expressions via `ast` from `io_struct.py` / `serving_chat.py` /
+`serving_completions.py` / `logprob_result_processor.py` and executes them
+against 7 request shapes (raw JSON in `g3-t4/raw/falsifier_output.json`):
+
+- native `{"return_logprob": true}` → `top_logprobs_num` None→0 → guard skips
+  → **null top_logprobs with chosen present** (io_struct.py:569-570,
+  logprob_result_processor.py:60/92/256/268). Reproduces numeric-coverage-001.
+- chat `{"logprobs": true}` → `request.top_logprobs or 0` → 0 → same null
+  (serving_chat.py:1372-1374). Also reproduces.
+- Fix shapes `{"return_logprob": true, "top_logprobs_num": 20}` (native) /
+  `{"logprobs": true, "top_logprobs": 20}` (chat) → populated(k=20). The
+  engine fully supports top-k once asked; no engine change needed.
+- Documented quirk, NOT fixed (off the frozen measurement path, and cannot
+  produce null): `/v1/completions` ignores standard OpenAI `top_logprobs`;
+  its `logprobs` is typed `Optional[int]` and doubles as k
+  (protocol.py:377, serving_completions.py:119-120) → standard shape yields
+  k=1 silently.
+
+`git diff 2c854e0 HEAD -- python/` stays EMPTY by design: the promotion
+candidate remains bit-identical to the twice-proven engine tree. Ask of the
+controller: re-run the numeric coverage probe with the corrected shape on
+reference AND candidate (lossless raw variant available:
+`return_flat_raw_output_top_logprobs`, single-item, non-stream,
+io_struct.py:250-254/457-476). request_fast_gate=false — there is no engine
+change to screen and screens claim no slots.
+

@@ -1,0 +1,139 @@
+{
+  "results": [
+    {
+      "endpoint": "native_generate",
+      "request_shape": {
+        "return_logprob": true
+      },
+      "return_logprob_effective": true,
+      "logprob_start_len_effective": -1,
+      "top_logprobs_num_effective": 0,
+      "top_logprobs_in_meta_info": null
+    },
+    {
+      "endpoint": "native_generate",
+      "request_shape": {
+        "return_logprob": true,
+        "top_logprobs_num": 20
+      },
+      "return_logprob_effective": true,
+      "logprob_start_len_effective": -1,
+      "top_logprobs_num_effective": 20,
+      "top_logprobs_in_meta_info": "populated(k=20)"
+    },
+    {
+      "endpoint": "openai_chat",
+      "request_shape": {
+        "logprobs": true
+      },
+      "return_logprob_effective": true,
+      "logprob_start_len_effective": -1,
+      "top_logprobs_num_effective": 0,
+      "top_logprobs_in_meta_info": null
+    },
+    {
+      "endpoint": "openai_chat",
+      "request_shape": {
+        "logprobs": true,
+        "top_logprobs": 20
+      },
+      "return_logprob_effective": true,
+      "logprob_start_len_effective": -1,
+      "top_logprobs_num_effective": 20,
+      "top_logprobs_in_meta_info": "populated(k=20)"
+    },
+    {
+      "endpoint": "openai_completions",
+      "request_shape": {
+        "logprobs": true
+      },
+      "return_logprob_effective": true,
+      "logprob_start_len_effective": -1,
+      "top_logprobs_num_effective": true,
+      "top_logprobs_in_meta_info": "populated(k=True)"
+    },
+    {
+      "endpoint": "openai_completions",
+      "request_shape": {
+        "logprobs": true,
+        "top_logprobs": 20
+      },
+      "return_logprob_effective": true,
+      "logprob_start_len_effective": -1,
+      "top_logprobs_num_effective": true,
+      "top_logprobs_in_meta_info": "populated(k=True)"
+    },
+    {
+      "endpoint": "openai_completions",
+      "request_shape": {
+        "logprobs": 20
+      },
+      "return_logprob_effective": true,
+      "logprob_start_len_effective": -1,
+      "top_logprobs_num_effective": 20,
+      "top_logprobs_in_meta_info": "populated(k=20)"
+    }
+  ],
+  "verdicts": {
+    "observation_being_explained": "numeric-coverage-001: probes collected output IDs and CHOSEN logprobs but raw top_logprobs was null for reference and candidate",
+    "shapes_reproducing_the_observation": [
+      {
+        "return_logprob": true
+      },
+      {
+        "logprobs": true
+      }
+    ],
+    "shapes_yielding_populated_topk": [
+      {
+        "return_logprob": true,
+        "top_logprobs_num": 20
+      },
+      {
+        "logprobs": true,
+        "top_logprobs": 20
+      },
+      {
+        "logprobs": true
+      },
+      {
+        "logprobs": true,
+        "top_logprobs": 20
+      },
+      {
+        "logprobs": 20
+      }
+    ],
+    "completions_quirk": "/v1/completions ignores the standard OpenAI `top_logprobs` field entirely; its `logprobs` field is typed Optional[int] (protocol.py:377) and doubles as the k count (serving_completions.py:120). A standard-shape {logprobs:true, top_logprobs:20} request silently yields k=1.",
+    "engine_bug": "NONE FOUND on the chat/native paths: with the top-k field set, sampler + logprob_result_processor + tokenizer_manager all consume top_logprobs_num (guards at logprob_result_processor.py:60/92/256/268; tokenizer_manager.py:1590-1591). The null is the engine correctly reporting that no top-k was requested.",
+    "recommended_probe_recipe": {
+      "native_generate_single_item": {
+        "return_logprob": true,
+        "top_logprobs_num": 20,
+        "logprob_start_len": -1
+      },
+      "raw_evidence_variant": "add return_flat_raw_output_top_logprobs=true (+ optionally return_flat_raw_top_logprobs_b64=true): flat raw arrays of top-k values + token ids, no detokenized strings; single-item requests only, not with stream=true (io_struct.py:250-254, 457-476)",
+      "openai_chat_variant": {
+        "logprobs": true,
+        "top_logprobs": 20
+      },
+      "uncertainty": "no engine-side cap on top_logprobs_num was found by grep; k=20 chosen to match the OpenAI-style ceiling. If a cap exists elsewhere the populated(k=...) result would show it immediately on re-run."
+    },
+    "extracted_expressions": {
+      "io_struct_normalize_defaults": {
+        "return_logprob": "if self.return_logprob is None:\n            self.return_logprob = False",
+        "logprob_start_len": "if self.logprob_start_len is None:\n            self.logprob_start_len = -1",
+        "top_logprobs_num": "if self.top_logprobs_num is None:\n            self.top_logprobs_num = 0"
+      },
+      "serving_chat_keywords": {
+        "return_logprob": "request.logprobs",
+        "top_logprobs_num": "request.top_logprobs or 0"
+      },
+      "serving_completions_keywords": {
+        "return_logprob": "request.logprobs is not None",
+        "top_logprobs_num": "request.logprobs if request.logprobs is not None else 0"
+      },
+      "logprob_guard": "req.logprob.top_logprobs_num <= 0"
+    }
+  }
+}
