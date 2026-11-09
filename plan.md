@@ -128,3 +128,60 @@ Two distinct surfaces, and they must not be conflated:
 Backend identity remains **UNVERIFIED_BACKEND_VERSION** for this session; the
 provider reports model names only, which do not prove which model executed.
 This plan makes no identity claim.
+
+## 7. Trial 2 results (this session, GPU-free)
+
+### F3 evaluation (required first item)
+
+- Re-read the shipped selection path at HEAD. Policy is `MMVQ iff batch <=
+  _mmvq_safe_batch(type, rows)`; measured overrides are Q8_0 (2,2), Q4_K (2,2),
+  Q6_K (6,2); Q8_1 and I-Matrix keep legacy fallbacks (2/6 and 8/16); all other
+  types keep 2/6. No defect found in the mapping.
+- Re-ran the GPU-free replay (`g3-t1/verify_mmvq_selection.py`) against the
+  current tree: 8 changed cells, exactly Q8_0/Q4_K rows<=5120 at batch 3..6,
+  zero changed cells at any gate batch (16/32/64/128/256) or batch >=7.
+- Conclusion (not overstated): `f263262` is selection-correct as far as the
+  measured table goes, and is **score-neutral by construction** on the frozen
+  BF16 workload, which never imports `gguf.py` at all. It is **not** promoted,
+  and no gain is attributed to it. What is missing is runtime dispatch evidence
+  and token-level correctness at the changed cells.
+- Delivered to close that gap: an observation-only, env-gated dispatch tracer
+  in `gguf.py` (`SGLANG_GGUF_DISPATCH_TRACE`), default off, recording
+  `(weight_type, rows_band, batch, kernel, mmvq_safe)` counts and dumping JSON
+  every 1024 calls and at exit; a GPU-free pre-registration script that emits
+  the exact expectation table the live trace must match; and a controller
+  protocol (`GGUF_DISPATCH_EXPERIMENT.md`) with phases for dispatch, greedy
+  token-id A/B vs the parent commit, and optional engine timing at the changed
+  cells. The protocol requires `--disable-cuda-graph` for phase 1 because graph
+  replay does not re-execute Python dispatch.
+
+### Full-engine BF16 exploration (negative, precise)
+
+- Confirmed at this commit: the `extend_no_prefix` ragged prefill branch
+  (`flashinfer_backend.py:1460-1471`) calls `prefill_wrapper_ragged.forward(...)`
+  without `window_left`, while the prefix-present branch (`:1473-1490`) passes
+  `window_left=layer.sliding_window_size`. With `spark2_5.py:47-48,176-184`
+  setting 511 for sliding layers, 21/28 layers therefore do full 8192^2
+  attention on PrefillHeavy's 8192-token point. This is the largest identified
+  exact-cost lever on the 0.15-weight point, and it is **semantics-blocked**:
+  the reference wheel behaves the same, so applying the window flips greedy
+  tokens when it binds, and `rsi_equivalence.py` (<=511-token prompts) cannot
+  certify parity at 8192. It is COMPUTE_DIFFERS, not ALGORITHM_PRESERVING, and
+  was not implemented.
+- No other exact BF16 lever was found that is not already closed: decode at
+  gate batches is bandwidth-bound at roster-proven roofline; eager plan syncs
+  are inert on a4 (trial 1); graph coverage >64 and triton attention are
+  measured negatives; raising the chunk cap is boot-coupled with no headroom
+  (16 x 8192 = max-total-tokens) and changes reduction order.
+- Therefore this trial makes no BF16 performance claim and requests no fast
+  gate; the honest next step is the controller-run GGUF experiment plus a
+  >512-token parity harness before any window change.
+
+### Uncertainty
+
+- The tracer proves selection, not speed or numerics. F3 stays UNGATED until
+  the controller's experiment returns. If the GGUF artifact has no Q8_0/Q4_K
+  weight with rows<=5120, the changed cells are absent and F3 is unexercised
+  by that artifact (protocol says to fall back to a synthetic matrix).
+- Token divergence at batches 3..6 is possible (MMVQ->MMQ accumulation order);
+  no EXACT claim is made. Quality budget remains NOT_CLOSED_QUALITY_BUDGET.
