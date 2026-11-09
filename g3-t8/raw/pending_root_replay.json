@@ -1,0 +1,657 @@
+{
+  "script": "g3-t8/pending_root_replay.py",
+  "scope": "pure-stdlib host bookkeeping + accept/KV index model; no torch/CUDA/GPU",
+  "source_anchors": {
+    "ast_executed_comprehensions": {
+      "input_tails": "[\n            list(req.origin_input_ids_unpadded[-self.max_trie_depth :])\n            for req in batch.reqs\n        ]",
+      "output_tails": "[\n            list(req.output_ids[-self.max_trie_depth :]) for req in batch.reqs\n        ]",
+      "base_lens": "[\n            len(req.origin_input_ids_unpadded) + len(req.output_ids)\n            for req in batch.reqs\n        ]"
+    },
+    "host_prev_slice": [
+      "self.prev_token_ids[i * stride : i * stride + self.prev_accept_lens[i]]",
+      "self.prev_token_ids[i * stride : i * stride + self.prev_accept_lens[i]]"
+    ],
+    "host_total_lens": [
+      "total_lens.append(base_lens[i] + len(prev_tokens))"
+    ],
+    "corpus_last_token": [
+      "TrieResultBuildFn trie_result_build_fn;",
+      "trie_result_build_fn = &Trie::buildRecency;",
+      "trie_result_build_fn = &Trie::buildFrequency;",
+      "auto res = (trie_.get()->*trie_result_build_fn)(",
+      "suffix.data(), suffix.size(), suffix.back(), total_draft_token_num, param_, state, total_lens[i]);"
+    ]
+  },
+  "model": {
+    "vocab": 32,
+    "prompt": [
+      3,
+      1,
+      4,
+      1,
+      5,
+      9
+    ],
+    "draft_chain_len": 3
+  },
+  "results": {
+    "correct_pending_chain": {
+      "exact_vs_greedy": true,
+      "first_divergence": null,
+      "generated": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5,
+        9,
+        5,
+        17,
+        21,
+        25,
+        21
+      ],
+      "reference": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5,
+        9,
+        5,
+        17,
+        21,
+        25,
+        21
+      ],
+      "root_is_pending_all_steps": true,
+      "steps": [
+        {
+          "true_pending": 5,
+          "draft_root": 5,
+          "root_is_pending": true,
+          "check_token_tail": [
+            5,
+            9,
+            5
+          ],
+          "total_len": 7,
+          "committed": [
+            17,
+            21,
+            25
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 6,
+          "kv_phys_before": 6
+        },
+        {
+          "true_pending": 25,
+          "draft_root": 25,
+          "root_is_pending": true,
+          "check_token_tail": [
+            17,
+            21,
+            25
+          ],
+          "total_len": 10,
+          "committed": [
+            21,
+            1,
+            5
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 9,
+          "kv_phys_before": 9
+        },
+        {
+          "true_pending": 5,
+          "draft_root": 5,
+          "root_is_pending": true,
+          "check_token_tail": [
+            21,
+            1,
+            5
+          ],
+          "total_len": 13,
+          "committed": [
+            9,
+            5,
+            17
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 12,
+          "kv_phys_before": 12
+        },
+        {
+          "true_pending": 17,
+          "draft_root": 17,
+          "root_is_pending": true,
+          "check_token_tail": [
+            9,
+            5,
+            17
+          ],
+          "total_len": 16,
+          "committed": [
+            21,
+            25,
+            21
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 15,
+          "kv_phys_before": 15
+        }
+      ]
+    },
+    "correct_pending_branch": {
+      "exact_vs_greedy": true,
+      "first_divergence": null,
+      "generated": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5,
+        9,
+        5,
+        17,
+        21,
+        25,
+        21
+      ],
+      "reference": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5,
+        9,
+        5,
+        17,
+        21,
+        25,
+        21
+      ],
+      "root_is_pending_all_steps": true,
+      "steps": [
+        {
+          "true_pending": 5,
+          "draft_root": 5,
+          "root_is_pending": true,
+          "check_token_tail": [
+            5,
+            9,
+            5
+          ],
+          "total_len": 7,
+          "committed": [
+            17,
+            21,
+            25
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 6,
+          "kv_phys_before": 6
+        },
+        {
+          "true_pending": 25,
+          "draft_root": 25,
+          "root_is_pending": true,
+          "check_token_tail": [
+            17,
+            21,
+            25
+          ],
+          "total_len": 10,
+          "committed": [
+            21,
+            1,
+            5
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 9,
+          "kv_phys_before": 9
+        },
+        {
+          "true_pending": 5,
+          "draft_root": 5,
+          "root_is_pending": true,
+          "check_token_tail": [
+            21,
+            1,
+            5
+          ],
+          "total_len": 13,
+          "committed": [
+            9,
+            5,
+            17
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 12,
+          "kv_phys_before": 12
+        },
+        {
+          "true_pending": 17,
+          "draft_root": 17,
+          "root_is_pending": true,
+          "check_token_tail": [
+            9,
+            5,
+            17
+          ],
+          "total_len": 16,
+          "committed": [
+            21,
+            25,
+            21
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 15,
+          "kv_phys_before": 15
+        }
+      ]
+    },
+    "fault_stale_root": {
+      "exact_vs_greedy": false,
+      "first_divergence": 1,
+      "generated": [
+        5,
+        21,
+        25,
+        9,
+        9,
+        9,
+        25,
+        9,
+        25
+      ],
+      "reference": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5,
+        9,
+        5
+      ],
+      "root_is_pending_all_steps": false,
+      "steps": [
+        {
+          "true_pending": 5,
+          "draft_root": 9,
+          "root_is_pending": false,
+          "check_token_tail": [
+            5,
+            9,
+            5
+          ],
+          "total_len": 7,
+          "committed": [
+            21
+          ],
+          "accept_lens": 1,
+          "k_eng_before": 6,
+          "kv_phys_before": 6
+        },
+        {
+          "true_pending": 21,
+          "draft_root": 9,
+          "root_is_pending": false,
+          "check_token_tail": [
+            9,
+            5,
+            21
+          ],
+          "total_len": 8,
+          "committed": [
+            25,
+            9,
+            9
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 7,
+          "kv_phys_before": 7
+        },
+        {
+          "true_pending": 9,
+          "draft_root": 9,
+          "root_is_pending": true,
+          "check_token_tail": [
+            25,
+            9,
+            9
+          ],
+          "total_len": 11,
+          "committed": [
+            9,
+            25,
+            9
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 10,
+          "kv_phys_before": 10
+        },
+        {
+          "true_pending": 9,
+          "draft_root": 25,
+          "root_is_pending": false,
+          "check_token_tail": [
+            9,
+            25,
+            9
+          ],
+          "total_len": 14,
+          "committed": [
+            25
+          ],
+          "accept_lens": 1,
+          "k_eng_before": 13,
+          "kv_phys_before": 13
+        }
+      ]
+    },
+    "fault_no_prev_splice": {
+      "exact_vs_greedy": false,
+      "first_divergence": 4,
+      "generated": [
+        5,
+        17,
+        21,
+        25,
+        1,
+        9,
+        29
+      ],
+      "reference": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5
+      ],
+      "root_is_pending_all_steps": false,
+      "steps": [
+        {
+          "true_pending": 5,
+          "draft_root": 5,
+          "root_is_pending": true,
+          "check_token_tail": [
+            5,
+            9,
+            5
+          ],
+          "total_len": 7,
+          "committed": [
+            17,
+            21,
+            25
+          ],
+          "accept_lens": 3,
+          "k_eng_before": 6,
+          "kv_phys_before": 6
+        },
+        {
+          "true_pending": 25,
+          "draft_root": 5,
+          "root_is_pending": false,
+          "check_token_tail": [
+            5,
+            9,
+            5
+          ],
+          "total_len": 7,
+          "committed": [
+            1
+          ],
+          "accept_lens": 1,
+          "k_eng_before": 9,
+          "kv_phys_before": 9
+        },
+        {
+          "true_pending": 1,
+          "draft_root": 25,
+          "root_is_pending": false,
+          "check_token_tail": [
+            17,
+            21,
+            25
+          ],
+          "total_len": 10,
+          "committed": [
+            9
+          ],
+          "accept_lens": 1,
+          "k_eng_before": 10,
+          "kv_phys_before": 10
+        },
+        {
+          "true_pending": 9,
+          "draft_root": 1,
+          "root_is_pending": false,
+          "check_token_tail": [
+            21,
+            25,
+            1
+          ],
+          "total_len": 11,
+          "committed": [
+            29
+          ],
+          "accept_lens": 1,
+          "k_eng_before": 11,
+          "kv_phys_before": 11
+        }
+      ]
+    },
+    "fault_drop_bonus": {
+      "exact_vs_greedy": false,
+      "first_divergence": 4,
+      "generated": [
+        5,
+        17,
+        21,
+        25,
+        29,
+        1,
+        5
+      ],
+      "reference": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5
+      ],
+      "root_is_pending_all_steps": true,
+      "steps": [
+        {
+          "true_pending": 5,
+          "draft_root": 5,
+          "root_is_pending": true,
+          "check_token_tail": [
+            5,
+            9,
+            5
+          ],
+          "total_len": 7,
+          "committed": [
+            17,
+            21,
+            25
+          ],
+          "accept_lens": 2,
+          "k_eng_before": 6,
+          "kv_phys_before": 6
+        },
+        {
+          "true_pending": 25,
+          "draft_root": 25,
+          "root_is_pending": true,
+          "check_token_tail": [
+            17,
+            21,
+            25
+          ],
+          "total_len": 10,
+          "committed": [
+            29
+          ],
+          "accept_lens": 0,
+          "k_eng_before": 8,
+          "kv_phys_before": 9
+        },
+        {
+          "true_pending": 29,
+          "draft_root": 29,
+          "root_is_pending": true,
+          "check_token_tail": [
+            21,
+            25,
+            29
+          ],
+          "total_len": 11,
+          "committed": [
+            1
+          ],
+          "accept_lens": 0,
+          "k_eng_before": 8,
+          "kv_phys_before": 10
+        },
+        {
+          "true_pending": 1,
+          "draft_root": 1,
+          "root_is_pending": true,
+          "check_token_tail": [
+            25,
+            29,
+            1
+          ],
+          "total_len": 12,
+          "committed": [
+            5
+          ],
+          "accept_lens": 0,
+          "k_eng_before": 8,
+          "kv_phys_before": 11
+        }
+      ]
+    },
+    "fault_seq_len_plus_one": {
+      "exact_vs_greedy": false,
+      "first_divergence": 4,
+      "generated": [
+        5,
+        17,
+        21,
+        25,
+        23,
+        15,
+        7
+      ],
+      "reference": [
+        5,
+        17,
+        21,
+        25,
+        21,
+        1,
+        5
+      ],
+      "root_is_pending_all_steps": true,
+      "steps": [
+        {
+          "true_pending": 5,
+          "draft_root": 5,
+          "root_is_pending": true,
+          "check_token_tail": [
+            5,
+            9,
+            5
+          ],
+          "total_len": 7,
+          "committed": [
+            17,
+            21,
+            25
+          ],
+          "accept_lens": 4,
+          "k_eng_before": 6,
+          "kv_phys_before": 6
+        },
+        {
+          "true_pending": 25,
+          "draft_root": 25,
+          "root_is_pending": true,
+          "check_token_tail": [
+            17,
+            21,
+            25
+          ],
+          "total_len": 10,
+          "committed": [
+            23
+          ],
+          "accept_lens": 2,
+          "k_eng_before": 10,
+          "kv_phys_before": 9
+        },
+        {
+          "true_pending": 23,
+          "draft_root": 23,
+          "root_is_pending": true,
+          "check_token_tail": [
+            21,
+            25,
+            23
+          ],
+          "total_len": 11,
+          "committed": [
+            15
+          ],
+          "accept_lens": 2,
+          "k_eng_before": 12,
+          "kv_phys_before": 10
+        },
+        {
+          "true_pending": 15,
+          "draft_root": 15,
+          "root_is_pending": true,
+          "check_token_tail": [
+            25,
+            23,
+            15
+          ],
+          "total_len": 12,
+          "committed": [
+            7
+          ],
+          "accept_lens": 2,
+          "k_eng_before": 14,
+          "kv_phys_before": 11
+        }
+      ]
+    }
+  },
+  "interpretation": {
+    "pending_root_convention": "corpus fillResult root = suffix.back() = check_token[-1]; with the overlap splice prev_tokens = accept_tokens[i*D : i*D+accept_lens] that token is the pending token at position seq_lens, and row-0 logits are its greedy continuation.",
+    "splice_is_load_bearing": "without the splice the draft root is the last already-cached token; the stale root changes the committed greedy output, so a stale/mis-spliced root is a correctness fault, not draft quality.",
+    "accept_lens_includes_bonus": "accept_lens = num_correct_drafts + 1 must advance both seq_lens and the KV front; dropping the bonus desyncs the engine prefix from physical KV and diverges.",
+    "limits": "perfect corpus + linear chain; no real trie, attention kernel, FlashInfer packing, CUDA graph, overlap scheduling or batch nondeterminism."
+  }
+}

@@ -1,66 +1,39 @@
-# G3 trial 7 — deepseek-a — NGRAM accept-path bounded CPU oracle (with self-diagonal)
+# G3 trial 8 — deepseek-a — NGRAM topology oracle: real-source conventions + independent golden
+
+## Objective
+Bounded CPU falsifier for the NGRAM greedy-correctness bug (F1), following controller
+proposal queue a3: verify the tree-attention topology oracle against the REAL
+implementation and the root/pending-token convention, with an independent golden that
+does not share code with the model under test.
 
 ## Context (canonical)
-- **F1**: NGRAM self-speculation throughput +21.6% real, but greedy correctness NOT preserved
-  (divergence set == ON nondeterminism set; committed tokens 1.0–3.9 nat behind replay argmax).
-  **No promotion** until fixed and re-adjudicated ALGORITHM_PRESERVING.
-- Previous a3/i3, i4, i5 results are **partial**: i4 model was correct only on its own
-  assumptions; i5 mask model (and its expected rows) **omitted the self diagonal**, while real
-  `fillResult` sets `mask[i*n+i]=1`. So i5's 12/12 does NOT certify real mask assembly.
-- Next-task directive (completion-and-controller-capabilities-001 /
-  ngram-mask-width-review-005): a **bounded fixed CPU topology/accept-index oracle** that
-  *includes the current token + ancestors*, compares **exact source conventions**, preserves
-  fault controls, and states its synthetic scope. Not another whole-source sweep.
+- F1: NGRAM self-speculation BUG_CONFIRMED. Throughput +21.6% real, greedy correctness
+  broken; must not be promoted until fixed and re-judged ALGORITHM_PRESERVING.
+- Trial 3: 12/48 ON/OFF divergences, first-diff positions {4,6}; ON pass-nondeterministic
+  6/24, OFF 0/24; divergence set == ON nondeterminism set. Two live candidates: (A)
+  verify-row context misalignment, (B) post-commit KV/bonus misalignment.
+- C8/i5 and C9/i6 mask oracles were NOT qualified: missing self-diagonal in both model
+  and expected; reversed ancestry direction (root saw future child); builder and expected
+  generated through the same faulty helper. i6 golden must be [[1,0],[1,1]] for a 2-node chain.
 
-## Objective (this trial, CPU only; no GPU/SSH)
-Build and *execute* one bounded oracle that models the real NGRAM verify/accept path from
-extracted source expressions, including the self diagonal, and determine whether a concrete
-off-by-one / indexing defect explains the F1 divergence signature (first-diff at positions
-4 and 6, ON nondeterminism, wrong committed token reported as its own top-1).
+## Hypothesis for this trial
+H-T8: an independently-defined topology oracle (query i may attend to column j iff j is
+an ancestor-or-self of i), executed on the tree the real NGRAM code actually generates,
+will either (a) reproduce the real mask convention including root/pending-token handling,
+giving a usable invariant for the accept path, or (b) expose a concrete disagreement
+between real source conventions and the semantics assumed by the diverging rows.
+Any expected mask is derived from the DEFINITION, never from the builder under test.
 
-Sub-questions, ranked:
-1. **Q1 (accept-index semantics).** In the flat verify layout
-   `target_predict = argmax(logits).reshape(bs, draft_token_num)`, does the C++ accept loop
-   compare the *child* draft token against the **parent** row's argmax, or against its own
-   row? Model both variants over the exact BFS/`retrieve_index` topology produced by
-   `ngram_info`/`spec_tree` for CUDA, with the self-diagonal mask semantics of real
-   `fillResult`. Which variant reproduces greedy on a synthetic controlled corpus, and which
-   reproduces the observed divergence pattern?
-2. **Q2 (bonus row).** `bonus = target_predict[last_accepted_retrive_idx]` — is the bonus the
-   argmax of the last accepted row (correct: next-token distribution after accepted prefix)
-   or off by one under any accept-length (esp. accept_len == 1, the untested discriminator
-   from trial 3)?
-3. **Q3 (commit slice).** `predict[accept_index]` commit set: does it include exactly the
-   accepted draft tokens plus the bonus, in tree order, and is it consistent with the KV
-   compaction rows? Fault controls: empty accept, full accept, single-node accept.
+## Approach
+1. Locate the real mask/accept code paths (fillResult kernel, tree/ngram builders).
+2. Extract the real source expressions via `ast` and execute them on CPU with minimal
+   shims (torch-free) — the AST-execution pattern proven on this tree.
+3. Independent oracle: hand-derived semantics; golden [[1,0],[1,1]] on a 2-node chain,
+   root row = diagonal only; brute-force ancestry from the parent array.
+4. Compare on real NGRAM tree shape and on the root/pending convention; preserve raw JSON.
+5. Commit evidence + iteration-proposal.json.
 
-## Method
-- Extract the **real source expressions** with `ast` (like glm-b's successful pattern) from
-  `ngram_info.py`, `spec_tree.py`, `eagle_utils.py`, `ngram_worker.py`; assert line anchors.
-- Build a pure-stdlib oracle with an explicit, documented mask including `mask[i][i] = 1`
-  (self), ancestors, and root handling; compare two independent mask conventions where the
-  source is ambiguous.
-- Ground truth = greedy reference decode on the same token distribution (synthetic
-  deterministic logits with known repeats, plus fault-injected logits).
-- Fault controls that must FAIL the oracle (sensitivity): missing self diagonal, ancestor
-  omitted, off-by-one accept index, bonus taken from wrong row.
-- Preserve raw JSON output under `g3-t7/raw/`.
-- State limits: synthetic CPU model, not a live CUDA/overlap reproduction.
-
-## Deliverables
-- `g3-t7/topology_accept_oracle.py` (+ raw output).
-- `reports/rsi/g3-t7-ngram-accept-oracle.md` — what is falsified, what remains open.
-- `iteration-proposal.json` with bottleneck/hypothesis/patch/tests/learning/next_proposal
-  and `request_fast_gate` (false unless a BF16-applicable engine candidate is justified —
-  NGRAM must NOT be promoted while unresolved).
-- Git commit(s), early recoverable checkpoint.
-
-## Budget / stop rule
-45 turns, 20 min, USD 3. Reserve final quarter for proposal JSON + tests + final commit.
-A precise executed negative finding is a valid Iteration.
-
-## RESULT (executed, 2026-11-09)
-- Oracle `g3-t7/accept_oracle.py` exit 0; raw `g3-t7/raw/accept_oracle.json`.
-- Clean scenarios all exact (bs1 D8, bs3 mixed trees, branch tops, D12); sanitize drops 0 bits; KV mapping exact.
-- Faults diverge: no_self, wrong_root, bonus_from_parent. ancestor_dropped is rejection-only => exact (new narrowing: under-attention cannot explain F1).
-- No engine change; request_fast_gate=false; NGRAM remains non-promotable.
+## Verification / deliverables
+- Executed CPU oracle with raw JSON output committed; clear pass/fail vs independent golden.
+- Precise statement of what this does and does not prove about the live GPU bug.
+- No promotion claim, no measured throughput claim, no GPU/SSH attempts.
