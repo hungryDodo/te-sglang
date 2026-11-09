@@ -1,113 +1,98 @@
-# G3 Trial 5 — deepseek-a — NGRAM accept-path bounded CPU oracle
+# G3 trial 6 — deepseek-a: NGRAM accept-path correctness (diagnose / fix)
 
-Status: IN_PROGRESS. Base: session HEAD (unchanged 47030d8 lineage). No claim of measurement.
+## Context
 
-## Canonical constraints carried in
+Canonical F1: NGRAM self-speculation is **BUG_CONFIRMED** (G2-E1). Throughput
++21.6% is real but greedy t=0 output diverges (12/48 comparable passes; ON
+pass-nondeterministic 6/24, OFF 0/24; committed token 1.0–3.9 nat behind a
+replay-stable argmax). Promotion is forbidden until an ALGORITHM_PRESERVING fix
+is demonstrated.
 
-- F1: NGRAM self-speculation is BUG_CONFIRMED at greedy t=0 (12/48 divergent instance-passes,
-  divergence set == ON pass-nondeterminism set, ON committed tokens 1.0–3.9 nats behind
-  replay-stable argmax). **No promotion of NGRAM is possible** until a fix passes an
-  ALGORITHM_PRESERVING adjudication.
-- Branch i3 (qualified negative): normal `fillResult` ancestor-copy + diagonal construction is
-  causal for the H1 family; a "sanitize guard" is NOT an established fix.
-- Branch i3 leaves open: the **KV mover is NOT excluded**. Accepted draft rows can be
-  non-contiguous (e.g. [0,2,4]) even when `retrieve_index` is identity, which requires
-  compaction to [0,1,2]. H2–H4, overlap behavior and the original NGRAM bug remain open.
-- Controller direction for a3: *bounded fixed CPU topology/accept-index oracle with real raw
-  results*, not another whole-source sweep.
+Trial-3 source audit narrowed the fault to two live candidates:
 
-## This trial's question (one falsifiable question)
+- **A** — verify-row context misalignment: the flat `target_predict` indexed by
+  `last_accepted_retrive_idx` (eagle_utils.py:630-655) does not correspond to
+  the tree node the draft token came from, i.e. logits argmax is computed under
+  the wrong prefix (mask/positions/BFS order vs flat index).
+- **B** — post-commit KV/bonus misalignment (`move_accept_tokens_to_target_kvcache`
+  / `out_cache_loc`/`accept_index`), so the committed context is polluted.
 
-**Q:** Does the pinned NGRAM accept→commit→KV-move bookkeeping preserve per-row token/KV
-identity for *non-contiguous* accepted draft rows under a fixed draft-tree topology?
+C4 adds: `retrieve_index` identity does **not** exclude accepted rows `[0,2,4]`
+needing compaction to `[0,1,2]`.
 
-Two mechanisms are distinguishable:
-- **A (verify-row context)**: `target_predict = argmax(logits).reshape(bs, draft_token_num)`
-  indexed by the flat retrieve index → argmax read from a row whose context differs from the
-  row the draft token came from.
-- **B (post-commit KV placement)**: the accepted rows' KV is written to destination slots that
-  do not correspond to the committed token order (compaction bug), so the next step's context
-  is polluted and the wrong token becomes self-consistent.
+## Plan (bounded, ~20 min, CPU only)
 
-The i3 note ("accepted rows [0,2,4] require compaction to [0,1,2]") is the concrete B-shaped
-falsifier. A CPU oracle can decide *whether the pinned code performs exactly that compaction*
-without a GPU.
+1. Read the pinned NGRAM accept path: `ngram_worker.py` (`_prepare_draft_tokens`,
+   accept/commit), `eagle_utils.py` (tree mask/position/target_predict),
+   `spec_utils.py` (KV move), `ngram_info.py` (tree construction).
+2. Build a **pure-CPU, deterministic topology oracle** that replicates the
+   exact index arithmetic from the pinned source (extract expressions where
+   possible) for a small BFS tree, and checks the invariant:
+   for every accepted draft token, its verify row's logits must be computed
+   under the prefix that ends at that draft token's parent; the bonus token
+   taken from `target_predict[last_accepted_retrive_idx]` must be the argmax
+   continuation of the *committed* context.
+3. Falsifier: if the oracle finds a concrete (tree, accept-path) where the row
+   used for the bonus/commit is NOT the row whose prefix equals the committed
+   prefix, that is candidate A confirmed with an exact mechanism; if instead
+   the tree arithmetic is causal for all reachable accept paths, A is refuted
+   and the remaining blame shifts to B (KV move), which this trial will state
+   as the precise open question rather than re-sweeping the whole source.
+4. Preserve raw oracle output + the extracted source anchors under
+   `reports/rsi/` (or a dedicated trial dir). No GPU/SSH; do not claim live
+   measurement.
+5. Write `iteration-proposal.json` with string fields
+   `bottleneck,hypothesis,patch,tests,learning,next_proposal` and boolean
+   `request_fast_gate`, commit.
 
-## Method (bounded, executable here)
+## Decision rules
 
-1. Read the pinned implementation of:
-   - `ngram_worker.py` accept/commit block (`predict[accept_index]`, `retrieve_index` use),
-   - `spec_utils.py` `move_accept_tokens_to_target_kvcache` (destination-slot write),
-   - `eagle_utils.py` `target_predict` construction and `accept_index`/`retrieve_index` fill,
-   - `ngram_info.py` tree construction (`draft_token_num` depth / parents).
-2. Build a **standalone CPU oracle** that takes a fixed draft tree (parent array, BFS order) and
-   a fixed accept path, derives `accept_index`/`retrieve_index` exactly as the pinned code does,
-   and checks the destination mapping of the KV move against the required compacted order.
-   Prefer executing the *real* pinned functions with tiny `torch` CPU tensors if torch is
-   importable; otherwise replicate their index arithmetic line-for-line and keep the
-   correspondence marked in comments. Either way the raw output is preserved as JSON.
-3. Enumerate all valid accept paths for small fixed trees (single chain, one branch, two
-   branches) and report every case where destination != expected compaction, plus cases where
-   consecutive-step context would be polluted.
-4. If (and only if) a concrete bookkeeping defect is found, implement the minimal fix in the
-   source overlay and state the exact invariant it restores. Do not claim correctness without a
-   controller-run adjudication.
+- **Kill rule**: if the CPU oracle cannot be tied to the pinned source
+  expressions (anchors drift / semantics are not faithful), record
+  INCONCLUSIVE and do not patch.
+- Any patch must be a *correctness* patch (ALGORITHM_PRESERVING direction), not
+  a speed patch; no promotion claim is made this trial.
+- `request_fast_gate=false` unless a genuinely BF16-applicable, correctness-
+  clean candidate exists. NGRAM must not be promoted while unresolved.
+- Negative findings are a valid iteration; no invented measurements.
 
-## Deliverables
+## Constraints
 
-- `evidence/ngram-accept-oracle/` : `oracle.py`, `raw-output.json`, `README.md` with commands run
-  and interpretation limits.
-- Source patch only if the oracle identifies a concrete defect (otherwise: negative finding).
-- `iteration-proposal.json` (required string fields + `request_fast_gate` boolean) and a final
-  commit. The proposal must state explicitly what is NOT claimed (no NGRAM promotion, no
-  EXACT precision, no performance number from this CPU oracle).
-
-## Kill / stop rules
-
-- Stop the oracle line if the pinned functions cannot be executed or faithfully replicated
-  within ~8 minutes of work; record the limitation instead of inventing results.
-- Never report a GPU/throughput/probe number. Every number in the evidence must come from an
-  actual command run in this sandbox.
-- Reserve the final quarter of turns for tests, proposal JSON and commit.
+- Frozen workload/evaluator/corpus/seed/reference untouched.
+- No precision change; BF16 frozen. Quality budgets remain NOT_CLOSED where
+  undefined.
+- Provider identity claims remain unverified without gateway evidence.
 
 ---
 
 ## RESULTS (executed, CPU-only, this session)
 
-Prior sessions on this branch: t3 = mask-contract audit + `_sanitize_tree_mask`
-no-op guard; t4 = topology/accept-index oracle (KV compaction excluded *given a
-valid root*; negative controls fire). This session does **not** repeat either.
+Prior branch state: t3 mask-contract audit + `_sanitize_tree_mask` no-op guard;
+t4 topology/accept-index/KV-mover oracle (compaction excluded given a valid
+root); t5 single-request mask-width oracle (latent h_i != d_i hazard). This
+session does not repeat them.
 
-New component tested: the **verify attention-mask assembly vs KV read width**
-(the unmodeled half of the verify input — t4 took per-row logits as given).
+New component: **batched flat-mask block alignment** on the FA2 CUDA-graph
+verify path — builder uses host per-request widths, packer uses
+device-cumulative offsets.
 
-- Artifact: `ngram_oracle/mask_width_oracle.py`; raw output
-  `ngram_oracle/results/mask_width_oracle.json`; write-up
-  `ngram_oracle/README-mask-width.md`. `python3 -I`, stdlib only, exit 0.
-- Ported width arithmetic: `ngram_worker.py:352-361`
-  (`ones_masks` width = host `seq_lens_cpu[i]`) vs `ngram_info.py:60-117`
-  (`paged_kernel_lens + D` with device `seq_lens`, `mask_numel` formula,
-  silent append-True branch).
-- Result: consistent host/device 12/12 exact on two tree shapes; legitimate
-  CUDA-graph batch padding 12/12 exact on real rows; host-lags-device by 1 or
-  2 tokens -> **0/12** real rows exact (extra draft column attended, pending
-  column missed); host-ahead by 1 -> 2/12. No exception in any case.
+- Artifact: `ngram_oracle/verify_window_oracle.py`; raw output
+  `ngram_oracle/results/verify_window_oracle.json`; write-up
+  `ngram_oracle/README-verify-window.md`. `python3 -I`, stdlib only, exit 0.
+- Ported: `ngram_worker.py:352-361` build; `ngram_info.py:76-117`
+  device-derived `mask_numel` + global True padding;
+  `flashinfer_backend.py:263-285` packed_indptr capacity-only assert;
+  `pack_verify_mask.py:12-24` `kv_start*Q` block read.
+- Result: aligned 32/32, 36/36, 40/40 bits exact. Mid-batch drift (req1
+  d=6/h=5): req0 exact, req1 18/40 bits wrong, **req2 16/40 bits wrong while
+  req2 is itself aligned** — cross-request contamination. First-request drift:
+  all three requests wrong (12/28, 16/36, 16/40). No exception anywhere.
+- Interpretation: exactness requires `h_i == d_i` for every request; a single
+  drift shifts all later blocks in the same flat buffer and the True padding
+  hides the size mismatch. Reachability of drift is **NOT established**
+  (FutureMap audit argues equality), so this is a sharper latent hazard +
+  falsifier, not the F1 root cause and not a fix.
 
-Findings:
-
-1. The mask assembly is exact **iff** host prefix used for the prefix block
-   equals device `paged_kernel_lens`; under the documented FutureMap equality
-   this holds and the contract is sound.
-2. The `numel`-based recovery branch cannot distinguish legitimate graph
-   padding from a host/device width drift: a one-token drift is silently
-   absorbed as an all-True tail that is consumed as real mask columns.
-3. Reachability of a drift is **NOT established** (FutureMap audit argues
-   against it; first-diff positions 4/6 also fit poorly). This is a latent
-   hazard + a falsifier (log-only host/device width-delta counter inside the
-   existing batch-pinned probe), not a root-cause claim and not a fix.
-
-Not measured: CUDA kernels, `pack_read_stream` / `assign_extend_cache_locs`
-physical slot plan, target-model numerics. No throughput, quality or EXACT
-claim; no NGRAM promotion. `request_fast_gate=false` — this trial ships no
-engine change to measure, and a CPU negative is the deliverable.
-
+No engine change; no GPU/fast gate (`request_fast_gate=false`); no throughput,
+quality, EXACT or promotion claim. NGRAM remains non-promotable until an
+ALGORITHM_PRESERVING adjudication on a fixed commit.

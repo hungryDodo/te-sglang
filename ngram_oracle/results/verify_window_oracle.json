@@ -1,0 +1,267 @@
+{
+  "aligned": {
+    "host_lens": [
+      4,
+      5,
+      6
+    ],
+    "device_lens": [
+      4,
+      5,
+      6
+    ],
+    "mask_numel_device": 108,
+    "raw_built_bits": 108,
+    "appended_true_bits": 0,
+    "host_block_starts": [
+      0,
+      32,
+      68
+    ],
+    "device_block_starts": [
+      0,
+      32,
+      68
+    ],
+    "start_shift_bits": [
+      0,
+      0,
+      0
+    ],
+    "packed_indptr_bytes": [
+      0,
+      4,
+      9,
+      14
+    ],
+    "per_request": [
+      {
+        "req": 0,
+        "host_prefix": 4,
+        "device_prefix": 4,
+        "builder_block_start": 0,
+        "packer_block_start": 0,
+        "block_bits": 32,
+        "bits_checked": 32,
+        "bits_mismatch": 0,
+        "first_mismatch": null,
+        "exact": true
+      },
+      {
+        "req": 1,
+        "host_prefix": 5,
+        "device_prefix": 5,
+        "builder_block_start": 32,
+        "packer_block_start": 32,
+        "block_bits": 36,
+        "bits_checked": 36,
+        "bits_mismatch": 0,
+        "first_mismatch": null,
+        "exact": true
+      },
+      {
+        "req": 2,
+        "host_prefix": 6,
+        "device_prefix": 6,
+        "builder_block_start": 68,
+        "packer_block_start": 68,
+        "block_bits": 40,
+        "bits_checked": 40,
+        "bits_mismatch": 0,
+        "first_mismatch": null,
+        "exact": true
+      }
+    ],
+    "all_requests_exact": true
+  },
+  "single_req_drift_h_lags_d": {
+    "host_lens": [
+      4,
+      5,
+      6
+    ],
+    "device_lens": [
+      4,
+      6,
+      6
+    ],
+    "mask_numel_device": 112,
+    "raw_built_bits": 112,
+    "appended_true_bits": 0,
+    "host_block_starts": [
+      0,
+      32,
+      68
+    ],
+    "device_block_starts": [
+      0,
+      32,
+      72
+    ],
+    "start_shift_bits": [
+      0,
+      0,
+      4
+    ],
+    "packed_indptr_bytes": [
+      0,
+      4,
+      9,
+      14
+    ],
+    "per_request": [
+      {
+        "req": 0,
+        "host_prefix": 4,
+        "device_prefix": 4,
+        "builder_block_start": 0,
+        "packer_block_start": 0,
+        "block_bits": 32,
+        "bits_checked": 32,
+        "bits_mismatch": 0,
+        "first_mismatch": null,
+        "exact": true
+      },
+      {
+        "req": 1,
+        "host_prefix": 5,
+        "device_prefix": 6,
+        "builder_block_start": 32,
+        "packer_block_start": 32,
+        "block_bits": 40,
+        "bits_checked": 40,
+        "bits_mismatch": 18,
+        "first_mismatch": {
+          "row": 0,
+          "col": 9,
+          "expected": 0,
+          "delivered": 1
+        },
+        "exact": false
+      },
+      {
+        "req": 2,
+        "host_prefix": 6,
+        "device_prefix": 6,
+        "builder_block_start": 68,
+        "packer_block_start": 72,
+        "block_bits": 40,
+        "bits_checked": 40,
+        "bits_mismatch": 16,
+        "first_mismatch": {
+          "row": 1,
+          "col": 2,
+          "expected": 1,
+          "delivered": 0
+        },
+        "exact": false
+      }
+    ],
+    "all_requests_exact": false
+  },
+  "single_req_drift_h_ahead_d": {
+    "host_lens": [
+      4,
+      5,
+      6
+    ],
+    "device_lens": [
+      3,
+      5,
+      6
+    ],
+    "mask_numel_device": 104,
+    "raw_built_bits": 108,
+    "appended_true_bits": 0,
+    "host_block_starts": [
+      0,
+      32,
+      68
+    ],
+    "device_block_starts": [
+      0,
+      28,
+      64
+    ],
+    "start_shift_bits": [
+      0,
+      -4,
+      -4
+    ],
+    "packed_indptr_bytes": [
+      0,
+      4,
+      9,
+      14
+    ],
+    "per_request": [
+      {
+        "req": 0,
+        "host_prefix": 4,
+        "device_prefix": 3,
+        "builder_block_start": 0,
+        "packer_block_start": 0,
+        "block_bits": 28,
+        "bits_checked": 28,
+        "bits_mismatch": 12,
+        "first_mismatch": {
+          "row": 1,
+          "col": 4,
+          "expected": 0,
+          "delivered": 1
+        },
+        "exact": false
+      },
+      {
+        "req": 1,
+        "host_prefix": 5,
+        "device_prefix": 5,
+        "builder_block_start": 32,
+        "packer_block_start": 28,
+        "block_bits": 36,
+        "bits_checked": 36,
+        "bits_mismatch": 16,
+        "first_mismatch": {
+          "row": 0,
+          "col": 0,
+          "expected": 1,
+          "delivered": 0
+        },
+        "exact": false
+      },
+      {
+        "req": 2,
+        "host_prefix": 6,
+        "device_prefix": 6,
+        "builder_block_start": 68,
+        "packer_block_start": 64,
+        "block_bits": 40,
+        "bits_checked": 40,
+        "bits_mismatch": 16,
+        "first_mismatch": {
+          "row": 0,
+          "col": 0,
+          "expected": 1,
+          "delivered": 0
+        },
+        "exact": false
+      }
+    ],
+    "all_requests_exact": false
+  },
+  "summary": {
+    "aligned_all_exact": true,
+    "drift_mid_batch": {
+      "req0_exact": true,
+      "req1_exact": false,
+      "req2_exact": false,
+      "req2_bits_mismatch": 16
+    },
+    "drift_first_req": {
+      "0": false,
+      "1": false,
+      "2": false
+    },
+    "cross_request_contamination": true
+  }
+}
