@@ -1,99 +1,65 @@
-# G3 trial 2 (glm-a) — SWA extend-path sync elimination, round 2
+# G3 trial 3 (glm-a) — exact-BF16 decomposition candidate (fp8-KV remap default-off)
 
-Campaign continuous-20261109-01, Iteration 2. Base: 699c332 (= 83e7b75 fp8-KV remap
-+ SWA decode hunk + e063d72 SWA extend `paged_kernel_lens_sum` host mirror; fast
-gate 1.1361 GATE_VALID/PASS on a1). Direction per brief: revisit SWA/FP8+SWA
-history, prefer exact runtime alternatives. No GPU/SSH here; controller gates.
+Campaign continuous-20261109-01, Iteration 3. Base: HEAD 999f93e (= fp8-KV remap
+e463d72 + SWA decode hunk 83e7b75 + SWA extend mirrors e063d72/2f3a916; fast gate
+on 699c332 scored 1.1361 GATE_VALID/PASS on a1). Direction per brief: revisit
+SWA/FP8+SWA history; precision quality unresolved → prefer exact runtime
+alternatives. No GPU/SSH here; controller gates. Status of my trial-2 requests
+(fast gate on 2f3a916, candidate×3, optional C1 probe) is unknown to me — no
+receipt reached this session; this trial's request supersedes, not repeats, them.
 
-## Bottleneck (from trial-1 static audit + this trial's code reading)
+## Bottleneck (pipeline, not engine)
 
-The fp8-KV+SWA lineage still drains the CUDA stream on every SWA-bearing extend
-batch in `flashinfer_backend.py` `FlashInferIndicesUpdaterPrefill`:
+The fp8+SWA candidate×3 (F4 closure) is blocked upstream: numeric verification is
+INCONCLUSIVE (numeric-coverage-001: probes collected 64 output IDs + chosen
+logprobs but top_logprobs null), and fp8-KV stays COMPUTE_DIFFERS /
+NOT_CLOSED_QUALITY_BUDGET (F2). Re-requesting it verbatim is not progress.
 
-- **B** `_build_swa_prefix_custom_mask` (l.2136-2138): 3× `.detach().cpu().tolist()`
-  per call, **plus one `bool(block.all())` D2H per lane** inside the loop — the
-  per-lane bool is a sync glm-b's concurrent input-mirror patch (shared sync
-  evidence) does NOT remove. It runs even when the mask ends up None.
-- **C** prefill `call_begin_forward` (l.2326): `kv_last_index = kv_indptr[-1]`
-  device scalar read per SWA extend batch — the exact pattern 83e7b75 removed on
-  decode (+8-9 ms/step TPOT there).
-- **D** l.2068-2075: non-ragged wrapper-0 `paged_kernel_lens.sum().item()` fires
-  for every real extend (prefix_lens is passed ⇒ `prefix_is_full_seq` False); the
-  existing clamp mirror only covers the spec-less prefix==seq case.
+Meanwhile a1 has NEVER measured the exact (ALGORITHM_PRESERVING) sync-removal
+lineage alone: every a1 gate (1.1273, 1.1361) ran with the fp8 remap active, so
+the exact hunks' a1 contribution is unattributed. F5 says a2 measured the exact
+lineage at ×1.0543/×1.0411/×1.0920 standalone, but on a1 the SWA hunk's marginal
+OVER fp8-KV was only +0.19% min (G2 t2) — either a1 hides these syncs, or fp8's
+shorter steps un-hide them. Unknown. That is this trial's testable question.
 
 ## Hypothesis
 
-H2-exact (this trial's code): replacing B/C/D with host-integer mirrors is
-compute-exact by construction (metadata-only; same host lists that H2D-built the
-device tensors — forward_batch_info.py:1230-1241 — so lane-for-lane equal), same
-class as 83e7b75 (C1 vs parent agree=1.0, meanDlogprob=0.0) and e063d72.
-Removes 4+ blocking D2H reads per SWA extend batch. Expected effect concentrated
-in standard/medium/prefill-heavy; likely small on aggregate (extend batches are a
-minority of steps) — a within-noise result is a valid outcome and will be
-recorded. No EXACT claim is made without the C1 probe evidence.
+H1: env-gating the fp8-KV remap OFF (default off) yields an exact BF16 engine —
+delta vs campaign baseline = metadata-only sync-removal hunks (decode 83e7b75:
+host kv_indices bound; extend e063d72+2f3a916: sites A/B/C/D host mirrors, all
+with device-read fallbacks; construction-exactness proofs in trial-2 plan.md).
+Its fast gate on a1 decomposes 1.1361 into exact-part + fp8-part:
+  - score ≥ ~1.04, integrity clean → exact lineage transfers to a1; a1 gets a
+    promotion-track candidate that needs NO quality acceptance contract; next
+    trials run candidate×3 on this head (3 distinct accepted slots, min-of-3).
+  - score ~1.00-1.02 → precise negative: a1's overlap scheduler hides decode/extend
+    plan syncs at BF16 step lengths; a1's exact lane is bounded; 1.13-class gains
+    on a1 are precision-owned. fp8 lane then remains a1's only lever, blocked on
+    the quality contract — recorded, not re-requested.
+No EXACT claim without evidence; for a BF16 engine the gate's 10-point integrity
+check is the exactness screen (glm-b's equivalent lineage passed 10/10 twice on
+a2; metadata-only class).
 
-H1 (statistics, primary ask unchanged from trial 1): F4 requires candidate×3 for
-the fp8-KV+SWA lineage in G3's own namespace; fast-gate 1.1361 screens the head
-but is not candidate evidence. fp8-KV stays COMPUTE_DIFFERS /
-NOT_CLOSED_QUALITY_BUDGET (F2); no promotion is requested.
+## Change
 
-## Exactness arguments (static, to be confirmed by gate/probe)
-
-- **D**: device `min(seq, window + seq - prefix)`; host `min(s, w + (s - p))` over
-  mirrors — identical arithmetic. When `prefix_is_full_seq` (p=s) both give
-  `min(s, w)`, so the new mirror subsumes the old clamp branch.
-- **B inputs**: `prefix_lens_cpu = extend_prefix_lens_cpu` (same host list);
-  `extend_lens = seq_lens_cpu - prefix_cpu`; `kv_start = max(0, p - window)`
-  = `clamp(prefix_lens - window, min=0)` = `effective_start`.
-- **B need_mask**: `not block.all()` ⟺ ∃(q,k): `k_abs < q_abs - window` ⟺
-  `kv_start < prefix_len + extend_len - 1 - window` (k_abs min at k=0 is
-  kv_start; q_abs max at q=e-1 is p+e-1; extremes independently attainable).
-  Replaces the per-lane device bool with host arithmetic — provably identical,
-  and the returned mask is bit-identical (same ints, same arange blocks).
-  Note: I first conjectured the mask was always all-ones (dead code) — WRONG:
-  for extend_len ≥ 2 and prefix ≥ window the last extend queries do exclude
-  early prefix keys (e.g. w=4, p=10, e=3: query 12 sees keys 8,9 only). The
-  mask is live; only the syncs are removed.
-- **C**: in the non-spec branch `kv_indptr[1:bs+1] = cumsum(paged_kernel_lens)`
-  ⇒ `kv_indptr[-1] == paged_kernel_lens_sum` (the host int already computed);
-  `update_sliding_window` rejects `custom_kv_indices` (l.2013) and the spec
-  branch rebuilds kv_indptr in `generate_attn_arg_prefill` — hence guard
-  `spec_info is None and custom_kv_indices is None`, device read kept otherwise.
-  Same invariant glm-b proved for their :2347; independent implementation here.
-- Guards: `host_lens_mirror` requires extend_prefix_lens_cpu + seq_lens_cpu
-  present with `len == len(prefix_lens) == seq_lens_cpu.numel()`; gpu_only
-  batches (device tensors handed in, *_cpu unset) and spec-verify fall back to
-  the device reads. Site A (e063d72) guard tightened with the same length check.
-
-## Overlap disclosure
-
-glm-b's iteration-1 proposal (shared sync evidence) patches equivalent sites
-A/B/C on the a2 aa45af5-lineage (BF16-KV) as b196fd4, gates NOT_REQUESTED at
-their session end. This trial implements B+C+D on the a1 fp8-KV lineage. F5
-shows cross-node non-transfer at this magnitude (a2 standalone SWA ×1.0543 vs
-a1 marginal +0.19% over fp8-KV), so these are distinct measurements, but the
-controller should attribute with both in view. The B transform here is strictly
-stronger than an input mirror (kills the per-lane `bool(block.all())` syncs).
+Single file `python/sglang/srt/arg_groups/overrides.py`, `_muse_spark_overrides`:
+the `kv_cache_dtype == "auto"` → fp8_e4m3 default now fires only when
+`SGLANG_SPARK_FP8_KV=1`; default logs the disabled state and leaves "auto"
+(→ bfloat16, same resolution as the pre-remap baseline edecc81 that gated 1.0021).
+fp8 lineage stays reachable verbatim at 2f3a916/999f93e or via the env var — no
+history rewritten, F4 artifact intact.
 
 ## Worklog
 
-- Read updater family on 699c332; confirmed sites B (2136-2138 + per-lane bool),
-  C (2326), D (2075) unguarded; decode side already mirrored (83e7b75).
-- Implemented B/C/D + host_lens_mirror block; py_compile clean; committed.
-- Negative result kept: `_build_swa_prefix_custom_mask` is NOT dead code (proof
-  attempt failed as above); `update_cross_attention` l.2195 device read is
-  multimodal-only — left alone.
-- Unresolved: all perf/quality claims await controller gates; no GPU run here.
+- Read git log + trial-1/2 plan.md and iteration-proposal.json (above).
+- Located the single fp8 activation point: overrides.py:318-320 (remap commit
+  e463d72; E2 boot evidence: resolved args showed fp8_e4m3 + warning when firing).
+- Edit + py_compile + grep-verify no other Muse-Spark fp8 path (only
+  overrides.py:319-320 matched Muse+fp8).
+- Checkpoint commit, then iteration-proposal.json + final commit.
 
-## Requests (recorded in iteration-proposal.json)
+## Explicitly not requested
 
-1. Fast gate on the new head (screen B/C/D; expect neutral-to-small-positive,
-   standard/medium/prefill-heavy sensitive; within-noise is valid).
-2. Primary: candidate×3 on the fp8-KV+SWA lineage head (new commit; delta vs
-   83e7b75 = exact-metadata hunks A/B/C/D only) on 3 distinct accepted slots,
-   min-of-3 with per-slot values — F4 namespace closure.
-3. Optional: C1 deterministic probe new head vs 83e7b75 (expect agree=1.0,
-   meanDlogprob=0.0) to certify the metadata hunks EXACT; no claim without it.
-4. NOT requested: promotion (fp8-KV quality budget NOT_CLOSED_QUALITY_BUDGET);
-   if the operator later promotes, first re-run the E2 probe with 128-512 token
-   windows per the registered-contract suggestion.
+Promotion claims; any precision-quality closure; NGRAM/MMVQ lanes (other
+workers' entries); triton attention / graph-coverage>64 / Q8_0 GGUF re-gates
+(binding negatives); a verbatim repeat of trial-2's blocked candidate×3 ask.

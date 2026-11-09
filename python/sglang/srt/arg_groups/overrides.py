@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import os
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from sglang.srt.arg_groups import model_override_base
@@ -316,8 +317,14 @@ def _muse_spark_overrides(server_args: Any, hf_config: Any) -> dict:
         overrides["enable_tf32_matmul"] = True
         logger.info("Enable TF32 matmul by default for Muse Spark")
     if cfg.kv_cache_dtype == "auto":
-        logger.info("Use fp8_e4m3 KV cache by default for Muse Spark")
-        overrides["kv_cache_dtype"] = "fp8_e4m3"
+        if os.environ.get("SGLANG_SPARK_FP8_KV", "0") == "1":
+            logger.info("Use fp8_e4m3 KV cache by default for Muse Spark")
+            overrides["kv_cache_dtype"] = "fp8_e4m3"
+        else:
+            logger.info(
+                "Muse Spark fp8_e4m3 KV default is off (exact-BF16 candidate); "
+                "set SGLANG_SPARK_FP8_KV=1 to restore it"
+            )
     if cfg.mm_enable_dp_encoder is None and cfg.attn_dp_size > 1:
         # NaViT shards over the full TP group only, so attention TP narrower
         # than TP needs the replicated (data-parallel) encoder.
