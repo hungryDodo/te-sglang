@@ -1,0 +1,96 @@
+{
+ "source": "python/sglang/srt/layers/attention/flashinfer_backend.py",
+ "expect_val": 4242,
+ "anchors": {
+  "prefill_direct": true,
+  "decode_mirror": true,
+  "decode_fallback": true
+ },
+ "verdicts": {
+  "V1_prefill_site_two_blocking_reads_and_translates": false,
+  "V2_decode_mirror_zero_reads_value_preserved": false,
+  "V3_decode_none_falls_back_two_reads": true,
+  "V4_decode_bs_mismatch_falls_back_two_reads": true,
+  "V5_branch_dead_no_reads": true,
+  "anchors_verbatim": true
+ },
+ "all_ok": false,
+ "V1_prefill_unfixed": {
+  "d2h_reads": 2,
+  "cpu_sums": 0,
+  "slice_bounds": [
+   4242
+  ],
+  "translated_bound": [
+   4242
+  ],
+  "log": [
+   "d2h_sync_read",
+   "('slice', 4242)",
+   "('translate', 4242)",
+   "d2h_sync_read",
+   "('write', 4242)"
+  ]
+ },
+ "V2_decode_mirror_control": {
+  "d2h_reads": 0,
+  "cpu_sums": 0,
+  "slice_bounds": [
+   4242
+  ],
+  "translated_bound": [
+   4242
+  ],
+  "log": [
+   "('slice', 4242)",
+   "('translate', 4242)",
+   "('write', 4242)"
+  ]
+ },
+ "V3_decode_none": {
+  "d2h_reads": 2,
+  "cpu_sums": 0,
+  "slice_bounds": [
+   4242
+  ],
+  "translated_bound": [
+   4242
+  ],
+  "log": [
+   "d2h_sync_read",
+   "('slice', 4242)",
+   "('translate', 4242)",
+   "d2h_sync_read",
+   "('write', 4242)"
+  ]
+ },
+ "V4_decode_bs_mismatch": {
+  "d2h_reads": 2,
+  "cpu_sums": 0,
+  "slice_bounds": [
+   4242
+  ],
+  "translated_bound": [
+   4242
+  ],
+  "log": [
+   "d2h_sync_read",
+   "('slice', 4242)",
+   "('translate', 4242)",
+   "d2h_sync_read",
+   "('write', 4242)"
+  ]
+ },
+ "V5_branch_dead": {
+  "d2h_reads": 0,
+  "cpu_sums": 0,
+  "slice_bounds": [],
+  "translated_bound": [],
+  "log": []
+ },
+ "candidate_mirror": "paged_kernel_lens_sum is typed int at flashinfer_backend.py:1770 and eagle_info.py:442 sets it to cum_kv_seq_len[-1]; kv_indptr[-1] == that total is plausible but UNVERIFIED across spec_info variants/read kinds - pre-registered next-trial check, do not patch yet",
+ "limits": [
+  "mock tensors; no torch/CUDA; proves dataflow of the blocking read in the real extracted statements, not wall-time cost or real pool semantics",
+  "value-preservation checked only on the coherent fixture (device last == cpu sum); prefix-trimmed paged-lens equivalence NOT established here"
+ ]
+}
