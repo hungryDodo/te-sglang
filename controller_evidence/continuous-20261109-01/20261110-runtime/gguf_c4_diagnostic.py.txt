@@ -1,0 +1,330 @@
+#!/usr/bin/env python3
+"""One-shot a4 GGUF C4 dispatch diagnostic; never a formal Gate or baseline.
+
+Prepared artifact only: --help does not acquire a lock or touch the GPU.
+Execution requires the deployed trusted TierEngine helpers and a committed
+overlay containing the optional dispatch tracer. No Provider/Reservation API.
+"""
+from __future__ import annotations
+
+import argparse
+import asyncio
+import datetime as dt
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import re
+import signal
+import socket
+import subprocess
+import sys
+import time
+import urllib.request
+import uuid
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+CAMPAIGN = 'continuous-20261109-01'
+WORKER = 'deepseek-b'
+NODE = 'a4'
+ORIGINAL_DEADLINE = 1794278254.0812237
+CLEANUP_RESERVE = 90
+HF_DIR = Path('/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b')
+GGUF = HF_DIR.parent / 'gguf-llamacpp-18ab62a8-from-e6406af8/Spark-X2.6-1.7B-Q8_0.gguf'
+
+
+def utc():
+    return dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def digest(path):
+    before = path.stat()
+    result = hashlib.sha256()
+    with path.open('rb') as source:
+        for chunk in iter(lambda: source.read(4 * 1024 * 1024), b''):
+            result.update(chunk)
+    after = path.stat()
+    if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns):
+        raise RuntimeError(f'Artifact changed while hashing: {path}')
+    return {'path': str(path), 'sha256': result.hexdigest(), 'bytes': after.st_size}
+
+
+def install_http_recorder(directory):
+    """Tee received body chunks before the frozen runner parses SSE JSON.
+
+    Body files preserve received HTTP entity bytes, not HTTP/2/TCP framing.
+    Flushing each chunk preserves partial/error responses on interruption.
+    """
+    import httpx
+    from scripts.run_engine_job import atomic
+
+    directory.mkdir()
+    original = httpx.Response.aiter_raw
+    counter = 0
+
+    async def recorded(response, chunk_size=None):
+        nonlocal counter
+        counter += 1
+        stem = directory / f'http-{counter:02d}-{uuid.uuid4().hex}'
+        metadata = {'started_at': utc(), 'method': response.request.method,
+                    'url': str(response.request.url), 'status': response.status_code,
+                    'http_version': response.http_version,
+                    'request_headers': [[k.decode('latin1'), v.decode('latin1')] for k, v in response.request.headers.raw],
+                    'response_headers': [[k.decode('latin1'), v.decode('latin1')] for k, v in response.headers.raw],
+                    'request_body_path': str(stem.with_suffix('.request.bin')),
+                    'response_body_path': str(stem.with_suffix('.response.bin')),
+                    'response_bytes': 0, 'transport_iterator_exhausted': False}
+        stem.with_suffix('.request.bin').write_bytes(response.request.content)
+        atomic(stem.with_suffix('.json'), metadata)
+        try:
+            with stem.with_suffix('.response.bin').open('wb') as output:
+                async for chunk in original(response, chunk_size=chunk_size):
+                    output.write(chunk)
+                    output.flush()
+                    metadata['response_bytes'] += len(chunk)
+                    yield chunk
+            metadata['transport_iterator_exhausted'] = True
+        except BaseException as error:
+            metadata['iteration_error'] = f'{type(error).__name__}: {error}'
+            raise
+        finally:
+            metadata['ended_at'] = utc()
+            atomic(stem.with_suffix('.json'), metadata)
+
+    httpx.Response.aiter_raw = recorded
+    return lambda: setattr(httpx.Response, 'aiter_raw', original)
+
+
+def inspect_dispatch(path):
+    if not path.is_file():
+        return {'status': 'INCONCLUSIVE', 'reason': 'No durable dispatch trace', 'changed_cells': []}
+    trace = json.loads(path.read_text())
+    cells = trace.get('cells')
+    if not isinstance(cells, list) or not isinstance(trace.get('trace_calls'), int):
+        raise RuntimeError('Malformed dispatch trace')
+    changed = [cell for cell in cells if cell.get('weight_type') == 'Q8_0'
+               and cell.get('rows_band') == 'rows<=5120' and cell.get('batch') in (3, 4, 5, 6)
+               and isinstance(cell.get('count'), int) and cell['count'] > 0]
+    wrong = [cell for cell in changed if cell.get('kernel') != 'mmq' or cell.get('mmvq_safe') != 2]
+    return {'status': 'FAILED' if wrong else ('OBSERVED' if changed else 'INCONCLUSIVE'),
+            'reason': 'Changed-cell dispatch mismatch' if wrong else ('Actual changed-cell calls observed' if changed else 'C4 did not prove an actual Q8_0 rows<=5120 batch3..6 call'),
+            'changed_cells': changed, 'mismatched_cells': wrong, 'trace_calls': trace['trace_calls'],
+            'observed_batches': sorted({cell['batch'] for cell in cells if isinstance(cell.get('batch'), int)}),
+            'trace_sha256': digest(path)['sha256'],
+            'scope': 'Warmup and measured requests combined; tracer observes Python dispatch arguments, not device occupancy'}
+
+
+def run(args):
+    from controller.gpu_lock import acquire_node_lock, gpu_admission_check
+    from scripts.rsi_node import build_command, load_gate_config, phase0_env, verify_overlay
+    from scripts.run_engine_job import atomic, readiness_probe, spawn_owned_process, stop_owned_server
+
+    nodes = json.loads((ROOT / 'configs/nodes.json').read_text())['nodes']
+    node = next(item for item in nodes if item['name'] == NODE)
+    if socket.gethostname() != node['hostname'] or ROOT != Path(node['workdir']).resolve():
+        raise RuntimeError('This artifact may execute only in the configured a4 checkout')
+    if Path(sys.prefix).resolve() != (ROOT / '.venvs/sglang').resolve():
+        raise RuntimeError('Launch this artifact with the existing .venvs/sglang/bin/python')
+    if not math.isfinite(args.deadline_epoch) or not time.time() + CLEANUP_RESERVE < args.deadline_epoch <= ORIGINAL_DEADLINE:
+        raise RuntimeError('Deadline must leave cleanup time and cannot extend the original campaign')
+    overlay, directory = args.overlay_dir.resolve(), args.out_dir.resolve()
+    if not overlay.is_relative_to(ROOT / 'runs/rsi/overlays') or not directory.is_relative_to(ROOT / 'runs'):
+        raise RuntimeError('Use a deployed runs/rsi/overlays snapshot and a new runs/ output directory')
+    if not GGUF.is_file() or not HF_DIR.is_dir():
+        raise RuntimeError('Local Q8_0 artifact or independent HF tokenizer is missing')
+    directory.mkdir(parents=True, exist_ok=False)
+    result_paths = [directory / 'result.json']
+    if os.environ.get('TE_RESULT_PATH'):
+        controller_dir = Path(os.environ['TE_RUN_DIR']).resolve()
+        controller_result = Path(os.environ['TE_RESULT_PATH']).resolve()
+        if not directory.is_relative_to(controller_dir) or not controller_result.is_relative_to(controller_dir):
+            raise RuntimeError('Controller result/evidence must stay inside this attempt')
+        result_paths.append(controller_result)
+    actual_run_id = uuid.uuid4().hex
+    work_deadline = args.deadline_epoch - CLEANUP_RESERVE
+    state = {'schema_version': 1, 'campaign': CAMPAIGN, 'worker': WORKER, 'node': NODE,
+             'job_id': os.environ.get('TE_JOB_ID'), 'actual_run_uuid': actual_run_id,
+             'commit': args.commit, 'status': 'RUNNING', 'started_at': utc(),
+             'original_deadline_epoch': ORIGINAL_DEADLINE, 'effective_deadline_epoch': args.deadline_epoch,
+             'purpose': 'gguf_dispatch_diagnostic_only', 'eligible_for_baseline': False, 'metrics': {},
+             'evidence_boundary': 'One instrumented C4 point; no formal Gate, speedup, numerical-equivalence or full F3 claim. Raw HTTP entity bytes/headers plus full parsed SSE are retained; interrupted responses remain explicitly partial.'}
+
+    def publish():
+        for path in result_paths:
+            atomic(path, state)
+
+    def remaining(limit):
+        budget = min(limit, work_deadline - time.time())
+        if budget <= 0:
+            raise TimeoutError('Original campaign work deadline reached; cleanup reserve starts')
+        return budget
+
+    def interrupted(signum, frame):
+        raise InterruptedError(f'Diagnostic interrupted by signal {signum}')
+
+    previous = {sig: signal.signal(sig, interrupted) for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGALRM)}
+    guard, slot, clean = None, {}, False
+    try:
+        signal.setitimer(signal.ITIMER_REAL, remaining(args.startup_timeout + args.request_deadline_seconds + 180))
+        publish()
+        guard = acquire_node_lock('gguf-c4-diagnostic', purpose=f'{CAMPAIGN}/{WORKER}/{actual_run_id}',
+                                  node=NODE, worktree=str(ROOT), job_id=os.environ.get('TE_JOB_ID'))
+        lock_info = os.fstat(int(guard.child_env()['TE_GPU_LOCK_FD']))
+        state['gpu_lock'] = {'path': str(guard.path), 'device': lock_info.st_dev, 'inode': lock_info.st_ino,
+                             'adopted': guard.adopted, 'holder_pid': guard.holder_pid, 'driver_pid': os.getpid()}
+        gpu_admission_check(out_json=directory / 'gpu-admission.json')
+        manifest = verify_overlay(overlay)
+        if manifest['base_commit'] != args.commit or manifest['tree_sha256'] != args.overlay_sha256:
+            raise RuntimeError('Actual overlay commit/tree SHA differs from requested candidate')
+        gguf_source = overlay / 'python/sglang/srt/layers/quantization/gguf.py'
+        if 'SGLANG_GGUF_DISPATCH_TRACE_EVERY' not in gguf_source.read_text():
+            raise RuntimeError('Candidate lacks the configurable durable dispatch tracer')
+        state.update(overlay_dir=str(overlay), overlay_manifest=manifest,
+                     overlay_manifest_artifact=digest(overlay / 'OVERLAY-MANIFEST.json'), gguf_source=digest(gguf_source),
+                     driver_artifact=digest(Path(__file__).resolve()))
+        provenance = GGUF.parent / 'PROVENANCE.json'
+        state['model_provenance'] = {'gguf': digest(GGUF), 'provenance': digest(provenance),
+            'tokenizer_dir': str(HF_DIR), 'tokenizer_files': [digest(path) for path in sorted(HF_DIR.iterdir())
+                if path.is_file() and (path.name.startswith('tokenizer') or path.name in {'config.json', 'special_tokens_map.json', 'added_tokens.json', 'vocab.json', 'merges.txt'})]}
+        atomic(directory / 'model-PROVENANCE.json', json.loads(provenance.read_text()))
+        env, env_dir, _, environment_id = phase0_env('overlay', overlay)
+        env.update(guard.child_env(), SGLANG_GGUF_DISPATCH_TRACE=str(directory / 'dispatch.json'),
+                   SGLANG_GGUF_DISPATCH_TRACE_EVERY='16')
+        probe = subprocess.run([str(env_dir / 'bin/python'), str(ROOT / 'scripts/rsi_node.py'), 'importpath',
+                                '--overlay-dir', str(overlay)], cwd=ROOT, env=env, capture_output=True, text=True,
+                               timeout=remaining(120))
+        (directory / 'importpath.stdout').write_text(probe.stdout)
+        (directory / 'importpath.stderr').write_text(probe.stderr)
+        if probe.returncode or not any(line.startswith(str(overlay) + '/') for line in probe.stdout.splitlines()):
+            raise RuntimeError('Candidate runtime import-path proof failed')
+        with socket.socket() as check:
+            check.settimeout(1)
+            if check.connect_ex(('127.0.0.1', args.port)) == 0:
+                raise RuntimeError('Diagnostic port occupied; no existing process will be stopped')
+        gate_config, _ = load_gate_config()
+        command = build_command(argparse.Namespace(model_path=str(GGUF), tokenizer_dir=str(HF_DIR), port=args.port), gate_config)
+        command += ['--load-format', 'gguf', '--quantization', 'gguf', '--disable-cuda-graph']
+        from benchmarks import runner
+        client_argv = ['--base-url', f'http://127.0.0.1:{args.port}', '--engine', 'sglang', '--model', 'XHToken/Spark-X2.6-1.7B',
+            '--tokenizer', str(HF_DIR), '--protocol', 'sglang', '--node', NODE, '--git-sha', args.commit,
+            '--environment-id', environment_id or 'unverified', '--precision', 'Q8_0', '--baseline', 'common',
+            '--context-length', '9216', '--thinking-mode', 'raw_token_ids_no_chat_template',
+            '--input-tokens', '512', '--output-tokens', '64', '--concurrency', '4', '--requests', '8', '--warmup', '4',
+            '--seed', '421337', '--cache', 'no_shared', '--mode', 'closed', '--timeout', '30', '--queue-timeout', '30',
+            '--max-queue', '32', '--record-full-sse', '--workload', 'GGUF_DISPATCH_DIAGNOSTIC_C4',
+            '--run-id', actual_run_id, '--output-dir', str(directory / 'workload'), '--result-path', str(directory / 'workload/summary.json')]
+        state.update(server_argv=command, client_argv=[str(env_dir / 'bin/python'), '-m', 'benchmarks.runner', *client_argv],
+                     client_execution='Frozen benchmarks.runner.execute in this driver, with HTTP entity-byte recorder',
+                     environment_id=environment_id, server_environment={key: env.get(key) for key in ('PYTHONPATH', 'CPATH', 'CUDA_HOME', 'SGLANG_GGUF_DISPATCH_TRACE', 'SGLANG_GGUF_DISPATCH_TRACE_EVERY')},
+                     trusted_helpers=[digest(ROOT / name) for name in ('scripts/rsi_node.py', 'scripts/run_engine_job.py', 'controller/gpu_lock.py', 'benchmarks/runner.py', 'benchmarks/corpus.py', 'benchmarks/metrics.py', 'configs/rsi/fast-gate.json')])
+        publish()
+        with (directory / 'server.log').open('ab') as log:
+            server = spawn_owned_process(command, slot=slot, cwd=ROOT, env=env, stdin=subprocess.DEVNULL,
+                stdout=log, stderr=subprocess.STDOUT, pass_fds=(int(guard.child_env()['TE_GPU_LOCK_FD']),))
+        state['owned_server_identity'] = slot['identity']
+        publish()
+        startup_deadline = time.monotonic() + remaining(args.startup_timeout)
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        while time.monotonic() < startup_deadline:
+            if server.poll() is not None:
+                raise RuntimeError(f'Owned server exited {server.returncode}; inspect server.log')
+            state['readiness'] = readiness_probe('sglang', opener, args.port)
+            if state['readiness']['ready']:
+                break
+            time.sleep(min(1, remaining(1)))
+        else:
+            raise TimeoutError('Bounded server startup timed out')
+        restore_http = install_http_recorder(directory / 'raw-http')
+        try:
+            async def benchmark():
+                return await asyncio.wait_for(runner.execute(runner.parser().parse_args(client_argv)),
+                                              timeout=remaining(args.request_deadline_seconds))
+            code = asyncio.run(benchmark())
+        finally:
+            restore_http()
+        summary = json.loads((directory / 'workload/summary.json').read_text())
+        records = [json.loads(line) for line in (directory / 'workload/requests.jsonl').read_text().splitlines()]
+        warmup = [json.loads(line) for line in (directory / 'workload/warmup.jsonl').read_text().splitlines()]
+        all_records = warmup + records
+        raw = list((directory / 'raw-http').glob('*.response.bin'))
+        if code or summary.get('run_id') != actual_run_id or len(records) != 8 or len(warmup) != 4 or len(raw) != 12 or any(
+                record.get('status') != 'SUCCEEDED' or record.get('http_status') != 200 or not record.get('events')
+                or record.get('output_tokens') != 64 for record in all_records):
+            raise RuntimeError('Twelve successful full-SSE request archives were not established')
+        state.update(response_archive={'status': 'APPLICATION_COMPLETE', 'warmup': 4, 'measured': 8,
+            'raw_response_bodies': [digest(path) for path in sorted(raw)],
+            'boundary': 'All received entity chunks retained before parsing; per-response metadata separately records whether transport iteration reached EOF. Application completion is the runner finish_reason/DONE plus exact token-budget check.',
+            'server_output_ids_available': sum(isinstance(record.get('output_ids'), list) for record in all_records)},
+            runner_summary_path=str(directory / 'workload/summary.json'), status='INCONCLUSIVE')
+    except BaseException as error:
+        state.update(status='FAILED', error=f'{type(error).__name__}: {error}')
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            signal.signal(sig, signal.SIG_IGN)  # finish bounded owned cleanup after first cancellation
+        try:
+            if slot.get('process'):
+                state['shutdown'] = stop_owned_server(slot, directory / 'lifecycle/shutdown.json',
+                    reason='gguf-c4-final', require_gpu=True, term_grace=10, kill_grace=5, gpu_grace=20)
+            if guard:
+                gpu_admission_check(out_json=directory / 'gpu-release.json')
+                if slot.get('process'):
+                    with socket.socket() as check:
+                        check.settimeout(1)
+                        if check.connect_ex(('127.0.0.1', args.port)) == 0:
+                            raise RuntimeError('Endpoint still open after owned cleanup; no foreign process was stopped')
+                clean = True
+        except BaseException as error:
+            state.update(status='RECOVERY_REQUIRED', cleanup_error=f'{type(error).__name__}: {error}')
+        finally:
+            if guard:
+                guard.release(clean=clean)
+            for sig, handler in previous.items():
+                signal.signal(sig, handler)
+        try:
+            if state.get('overlay_manifest'):
+                after = verify_overlay(overlay)
+                if after['base_commit'] != args.commit or after['tree_sha256'] != args.overlay_sha256:
+                    raise RuntimeError('Overlay changed across the diagnostic lifecycle')
+                state['overlay_verified_after_cleanup'] = True
+            state['dispatch'] = inspect_dispatch(directory / 'dispatch.json')
+            if state['status'] == 'INCONCLUSIVE':
+                state['status'] = {'OBSERVED': 'SUCCEEDED', 'FAILED': 'FAILED', 'INCONCLUSIVE': 'INCONCLUSIVE'}[state['dispatch']['status']]
+        except (OSError, ValueError, RuntimeError) as error:
+            state['dispatch_error'] = f'{type(error).__name__}: {error}'
+            if state['status'] != 'RECOVERY_REQUIRED':
+                state['status'] = 'FAILED'
+        state.update(ended_at=utc(), gpu_release_proven=clean)
+        publish()
+    print(json.dumps({'status': state['status'], 'actual_run_uuid': actual_run_id,
+                      'result': str(result_paths[0]), 'eligible_for_baseline': False}))
+    return 0 if state['status'] == 'SUCCEEDED' else (2 if state['status'] == 'INCONCLUSIVE' else 1)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--overlay-dir', type=Path, required=True)
+    parser.add_argument('--commit', required=True, help='Full actual candidate commit (40 lowercase hex)')
+    parser.add_argument('--overlay-sha256', required=True, help='Expected verified OVERLAY-MANIFEST tree_sha256')
+    parser.add_argument('--out-dir', type=Path, required=True, help='New directory under runs/ (inside TE_RUN_DIR for Controller)')
+    parser.add_argument('--port', type=int, default=31340)
+    parser.add_argument('--deadline-epoch', type=float, default=ORIGINAL_DEADLINE, help='May shorten, never extend original campaign deadline')
+    parser.add_argument('--startup-timeout', type=float, default=1200)
+    parser.add_argument('--request-deadline-seconds', type=float, default=120)
+    args = parser.parse_args()
+    if not re.fullmatch('[0-9a-f]{40}', args.commit) or not re.fullmatch('[0-9a-f]{64}', args.overlay_sha256):
+        parser.error('Full commit/tree SHA required')
+    if not 1 <= args.port <= 65535 or not 1 <= args.startup_timeout <= 1200 or not 1 <= args.request_deadline_seconds <= 120:
+        parser.error('Port 1..65535, startup 1..1200s, request lifecycle 1..120s')
+    try:
+        return run(args)
+    except Exception as error:
+        print(f'gguf_c4_diagnostic: {type(error).__name__}: {error}', file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

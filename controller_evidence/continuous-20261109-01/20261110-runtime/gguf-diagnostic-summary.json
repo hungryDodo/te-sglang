@@ -1,0 +1,199 @@
+{
+  "status": "SUCCEEDED",
+  "purpose": "ordinary_GGUF_dispatch_diagnostic",
+  "eligible_for_baseline": false,
+  "campaign": "continuous-20261109-01",
+  "worker": "deepseek-b",
+  "node": "a4",
+  "actual_run_uuid": "c396018ff91145348e9bc8342f128911",
+  "commit": "5131e2a4cae198df40c6441e29f80eaf92c01ad5",
+  "overlay_tree_sha256": "aba96c9ba3d9b8e8c7caf9978958fb1db2f671605de61c864db5b98a75729c6a",
+  "started_at": "2026-11-09T16:54:41.809464+00:00",
+  "ended_at": "2026-11-09T16:56:11.979021+00:00",
+  "job": {
+    "id": "20261109T165441-aef1c4b186",
+    "node": "a4",
+    "status": "SUCCEEDED",
+    "attempt": 1,
+    "max_retries": 0,
+    "error": null
+  },
+  "http_response_checks": {
+    "warmup": 4,
+    "measured": 8,
+    "all_http_200": true,
+    "all_requested_input_ids": 512,
+    "all_server_output_tokens": 64,
+    "all_server_output_ids_length": 64,
+    "all_raw_DONE_sentinels": true,
+    "full_parsed_SSE": true,
+    "raw": [
+      {
+        "body": "http-01-5543fd9f30b34095893c0674d7cf06e1.response.bin",
+        "sha256": "876e0641dec5e27cb9483816f7b62196d1c313b325180ea306f1750afb84cc43",
+        "received_bytes": 44174,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-02-7a4ed14df8c24c79a14ba0f500305f30.response.bin",
+        "sha256": "dced3477d88e6d5f0933f8b17138011f931c8f07b3d36acdc7ff48f782119604",
+        "received_bytes": 46127,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-03-377bbe3c0c5545de833865867ddc57f9.response.bin",
+        "sha256": "53aea80d41bc87131905566a58e2dce6f8a5a8bb3e5fedde0c127be154787f89",
+        "received_bytes": 47312,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-04-0ccd6264084444629c25c2a5476a7cf3.response.bin",
+        "sha256": "38f48e67de433079d571399ca5e35935a333d56bb94bf18c44241375234961d9",
+        "received_bytes": 44176,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-05-318441b5e7fa4522a214d7af821291a1.response.bin",
+        "sha256": "87f417ad3a1874821eb7a3572f53bdca7a25afe45f951851be592a8752f73a79",
+        "received_bytes": 46005,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-06-24565bb76b0249d0a426dd56fa68613d.response.bin",
+        "sha256": "6f7790821d143e120b3a61abd6bc864647ba884747ecc99e7ffd12773ab7424d",
+        "received_bytes": 48488,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-07-908cbdae265f40959969e6813c95c5d0.response.bin",
+        "sha256": "6691896902de1da9453f346c9388f740f63f026b7ddd973010691b2b4e620dc6",
+        "received_bytes": 47405,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-08-d46e1744f0144228a73394047af317ec.response.bin",
+        "sha256": "2957b7ea0141e353642b0d6c00da5335c1edfaf2a7406fb63aecc2437b56b174",
+        "received_bytes": 51282,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-09-002cd79f53f046bb92856c74d953aaff.response.bin",
+        "sha256": "b2aa1bca2b7d0c1ce18fe6504825dca6dd24d8fe124a8f615db5ff1e38a39905",
+        "received_bytes": 54574,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-10-c1b2a4eeddd6486f83a1ae228cac693a.response.bin",
+        "sha256": "2f36823973d031af726b81b05b3bda87b80108ae39ed2f3afb680dbe041aa62c",
+        "received_bytes": 53815,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-11-7fa5f37ed99443d6949a4df838711853.response.bin",
+        "sha256": "ecdeee1ecd2554905913571b68365fc21a4dbfe72a0c16ac8ecb3070b15da8f4",
+        "received_bytes": 42093,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      },
+      {
+        "body": "http-12-8cad4da766ba45f29e23fdfec131b311.response.bin",
+        "sha256": "dfc555d214e5a9c072d9f1e7f08cf4c5446de807215618ca4b3738fc9c6882f9",
+        "received_bytes": 43261,
+        "done_sentinel": true,
+        "transport_iterator_exhausted": false
+      }
+    ]
+  },
+  "dispatch": {
+    "trace_calls": 28608,
+    "trace_sha256": "85679db7ab11fb632a450f1cf8bc972e22d4a4601531071757f27d5f39abd13d",
+    "Q8_0_rows_le_5120_batch4_MMQ_safe2_calls": 15868,
+    "mismatched_changed_cells": [],
+    "startup_prefill_batch6_calls": 84,
+    "scope_correction": "The tracer covers server startup plus warmup plus measured requests. batch6 is attributable to the server startup 6-token prefill before readiness (server.log line40), not six concurrent C4 requests. Runtime decode #running-req4 appears at server.log lines51,58,59,66. Counts have no phase timestamps and are not device occupancy."
+  },
+  "cleanup": {
+    "shutdown_status": "SUCCEEDED",
+    "owned_group_released": true,
+    "gpu_released": true,
+    "known_pids": {
+      "3845494": 243001723,
+      "3848175": 243004944,
+      "3848176": 243004944,
+      "3848177": 243004944
+    },
+    "post_lock": {
+      "state": "FREE",
+      "content": {},
+      "path": "/var/lib/tierengine/gpu.lock",
+      "device": 66306,
+      "inode": 6573630
+    },
+    "compute_apps": "EMPTY",
+    "reservation_released_at": "2026-11-09T16:58:02+00:00"
+  },
+  "collection": {
+    "status": "PASS",
+    "remote_root": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T165441-aef1c4b186/attempt-1",
+    "local_root": "/home/dodo/Projects/TierEngine/runs/rsi-continuous/continuous-20261109-01/diagnostics/gguf-c4/remote-attempt-1",
+    "file_count": 59,
+    "total_bytes": 1496467,
+    "all_sha256_match": true
+  },
+  "model_provenance": {
+    "gguf": {
+      "path": "/data/models/XHToken/Spark-X2.6-1.7B/gguf-llamacpp-18ab62a8-from-e6406af8/Spark-X2.6-1.7B-Q8_0.gguf",
+      "sha256": "d1df86f9332b75424ab3f7e14fdc2cf20aec93fa1e4a86393bb4e75057f24180",
+      "bytes": 1820113856
+    },
+    "provenance": {
+      "path": "/data/models/XHToken/Spark-X2.6-1.7B/gguf-llamacpp-18ab62a8-from-e6406af8/PROVENANCE.json",
+      "sha256": "ee39c6c9d768bb75a8fb7419646ba49b18cad6ae8caa9dabba9caf1764746647",
+      "bytes": 4840
+    },
+    "tokenizer_dir": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b",
+    "tokenizer_files": [
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/config.json",
+        "sha256": "16aa5d3619d0d893e7157f2499675430844eb7b383c80ecc1b3e8e8928a75d52",
+        "bytes": 1838
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/merges.txt",
+        "sha256": "b06fc88940ae6a20f71142f06304c12547f58ab52c175e56af12a38c3dc62f36",
+        "bytes": 1567883
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/special_tokens_map.json",
+        "sha256": "48a257e3f5f20a004e7c30482a70ae19ae7d9cf713144f2a1394ba20af8c3cb5",
+        "bytes": 156
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/tokenizer.json",
+        "sha256": "710cce15cf3565674c499f9413997c6e8101f2bdd96245cff8f0311fb501248c",
+        "bytes": 10115786
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/tokenizer_config.json",
+        "sha256": "57b385dcc2ad031aef4a3786e97cd9a832ecb839cb27ed2cd829d627c90e1bfd",
+        "bytes": 5841
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/vocab.json",
+        "sha256": "9f42cb7e7af5afe27cae2337d272d60b5659e10143ef4bb952f642b847916fe1",
+        "bytes": 3032795
+      }
+    ]
+  },
+  "boundary": "F3 remains UNGATED by formal frozen BF16 Gate. This is actual candidate GGUF dispatch/path and response-archive evidence only: no parent/reference A/B, no correctness/quality closure, no performance gain or promotion, no Nsight/CUPTI kernel trace. No formal RSI DB or target counts changed."
+}
