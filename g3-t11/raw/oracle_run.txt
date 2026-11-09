@@ -1,0 +1,8 @@
+T1 bs=1 chain: ok=1 acc=3 commit=[11,12,13,21]
+T2 bs=1 branch_sibling: ok=1 acc=1 commit=[6,41]
+T3 bs=2 mixed: ok=1 acc=[3,1] commit0=[11,12,13,21] commit1=[6,41] (golden1 [6,41])
+T4 control_no_batch_offset: detected=1 commit1=[11] (golden1 [6,41])
+T5 control_mask_corrupt: baseline_ok=1 bit_was_zero=1 detected=0 corrupt_commit=[5,7,31] (golden [5,7,31])
+{"oracle":"g3-t11-accept-batch","components":{"tree":"result.cpp fillResult (compiled real)","links":"reconstruct_tree.py docstring contract (independent)","accept":"spec.cpp:47-92 verify_tree_greedy_kernel_impl (verbatim)"},"passed":4,"failed":1,"instrument_invalid":true}
+// T5_NOT_DETECTED
+EXIT=1

@@ -1,0 +1,10 @@
+{
+  "source": "python/sglang/kernels/aot/csrc/cpu/spec.cpp",
+  "source_sha256": "7459e239ce4a2f35d58c962b36adafa5884f4259ee99f74b4065eee36d51dc73",
+  "extracted_lines": [
+    47,
+    92
+  ],
+  "extracted_sha256": "4297875753b496968d23972217096c380aaba0d5c1031e20ee61c1d4f9e974e6",
+  "markers_ok": true
+}
