@@ -44,6 +44,30 @@
   (measured 1.0056 / 0.9733 — binding negatives).
 - No measurement claims without controller gates; static verification only here.
 
+## Sweep result (trial-2 session, static; extends i1's backend audit engine-wide)
+No new hot-path blocking read found. Every remaining `.item()/.tolist()/.cpu()` in
+per-step engine code is on a cold path for this workload:
+- memory_pool.py:362 `.item()` — guarded `scale.device.type=="cpu"` (host tensor, no sync).
+- memory_pool.py:2397 `data_strides[0].item()` — `_init_kv_copy_and_warmup`, one-time init.
+- memory_pool.py:1177-1186 — assert-on-failure inside cross-node KV transfer; mamba
+  ping-pong (1817) mamba-only; `_to_cpu_int_list` (3200, callers 3273-3274) serves the
+  GGUF dequant-on-the-fly workspace (falsified route, F10; BF16 gate never enters).
+- model_runner.py:2489 `timeout.item()` — elastic-EP scale path (MoE elastic), unused.
+- schedule_batch.py:670 `input_ids.flatten().tolist()` — `build_padded_input_ids`,
+  returns None unless mm_items present (multimodal-only, text gate never enters).
+- managers/prefill_delayer.py:204-271 — cluster of `.min/.max/.sum().item()`, but the
+  delayer is opt-in via `get_schedule().enable_prefill_delayer` (scheduler.py:1450);
+  cold unless the frozen contract enables it (nothing in branch learning indicates so;
+  flagged conditional-cold, not proven cold).
+- managers/mm_utils.py — all multimodal. sampler.py, speculative/ — no hits.
+- flashinfer_backend.py — closed by i1's file-wide audit + b196fd4 (5→0 on the SWA
+  standard-scheduler extend hot path).
+
+Reasoned closure (no new gate needed): torch.compile-for-eager-decode is closed by the
+existing G2 t2 in-situ C256 trace — GPU busy 99.2% means per-op CPU dispatch is already
+fully overlapped; compiled eager kernels cannot buy wall-clock when the GPU is
+saturated. It could only help if the trace showed idle gaps; it does not.
+
 ## Verification plan
 - Construction-equality proofs for any new mirror (same host list feeding device
   tensor and mirror), `python -m py_compile`, targeted greps to re-count blocking
