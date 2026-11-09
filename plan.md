@@ -44,8 +44,17 @@ over every referenced type x {rows<=5120, rows>5120} x batch 1..256. Result
   (MMVQ -> MMQ). Nothing else changes; Q6_K 6/2 and Q8_1/IMATRIX legacy
   thresholds are preserved.
 - `changed_cells_at_batch_ge_16 = 0`; selection is identical to legacy from
-  batch 7 upward, hence at every gate decode batch (16/32/64/128/256) and at
-  every prefill extend-token batch (thousands of tokens).
+  batch 7 upward, hence at every steady-state gate decode batch
+  (16/32/64/128/256) and at every prefill extend-token batch (thousands of
+  tokens).
+- Residual correctness surface: concurrency is not exactly the decode batch at
+  a point's tail — as requests complete, the batch can decay into 3..6, where
+  this patch does change the kernel (to MMQ, measured 17-24 % faster at batch
+  4). That can flip near-tie greedy tokens in principle. G2-t2 ran this exact
+  commit on the same surface: 9/10 points SUCCEEDED with the exact-token
+  baseline satisfied, and the 10th failed by pre-existing DecodeCeiling
+  timeouts, not token mismatch. The risk is therefore empirically bounded, not
+  structurally eliminated.
 - Live-path audit: `fused_mul_mat_gguf` is the only kernel-dispatch site that
   used the old inline `mmvq_safe` (no other `mmvq_safe` references remain in
   `python/sglang/srt`), and it is called from the GGUF linear method, the GGUF
@@ -58,8 +67,9 @@ an upper bound; G2-t2 already corrected its derived `mmvq_safe` column.
 
 ## Hypothesis (H-G3-1)
 
-`f263262` is *selection-identical* to the legacy rows-only policy at every
-frozen gate point. The only cells whose kernel choice changes are
+`f263262` is *selection-identical* to the legacy rows-only policy throughout
+the steady state of every frozen gate point. The only cells whose kernel
+choice changes are
 `Q8_0`/`Q4_K` with `rows <= 5120` at **decode batch 3..6** (MMVQ -> MMQ);
 every other `(type, rows band, batch)` cell — including all IMATRIX types and
 all batch >= 7 cells — selects the same kernel under old and new code.
