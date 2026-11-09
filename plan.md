@@ -1,85 +1,61 @@
-# G3 trial-6 plan (worker glm-a)
+# G3 trial-7 plan — glm-a (campaign continuous-20261109-01)
 
-Direction (brief): revisit SWA / FP8+SWA history; precision quality unresolved;
-prefer exact runtime alternatives when useful.
+Direction: revisit SWA/FP8+SWA history; prefer exact runtime alternatives. Status of
+that history on a1: the SWA/host-sync exact family is CLOSED both ways (t5 static
+enumeration of residual syncs + fast-plan gaps; t6 executed guard table proving the
+prefill mirrors are ENGAGED on the frozen path, so i4's x1.0017 measured the family
+fully engaged). fp8-KV x1.13 stays blocked (NOT_CLOSED_QUALITY_BUDGET, missing top-k).
+Decode side is hypothesis-starved pending the t6 trace request.
 
-## Starting facts (canonical + local lineage)
-- HEAD 988340d = i4 engine tree (44d49f8: fp8-KV remap gated behind
-  SGLANG_SPARK_FP8_KV, default OFF -> BF16 truly active) + t5 audit artifacts,
-  no python/ change after 44d49f8. i4 Fast x1.0017 = whole in-tree exact family
-  neutral on a1 BF16.
-- t5 executed audit (g3-t5/raw/sync_audit.json): decode SWA covered by
-  fast_decode_plan; plain-EXTEND replays never get fast_prefill_plan; 5
-  fallback device reads remain in the prefill updater (L1969/2082/2116/2124
-  `.sum().item()`, L2186-2188 `.detach().cpu().tolist()`), taken only when
-  host mirrors are absent. t5 explicitly left OPEN whether the mirrors are
-  actually populated on the prefill path under the frozen config.
+## Open surface this trial (new, not a repeat)
+t5's audit covered ONE file: `layers/attention/flashinfer_backend.py`. The rest of the
+per-decode-step host path was never audited for blocking device reads:
+- `managers/scheduler.py` (event loop, process_batch_result_*)
+- `managers/schedule_batch.py` (update/filter/prepare_for_*)
+- sampling: `managers/sampling/*` (logits processor, sampler, batch info)
+- `mem_cache/memory_pool.py` (per-step alloc/free)
+- `model_executor/model_runner.py` (forward-time work outside attention)
 
-## Trial-6 hypothesis (falsifiable, CPU-executable)
-H1_t6: "The e063d72/2f3a916 host mirrors are DORMANT on the prefill/extend
-path under the frozen BF16 config (callers do not propagate host lens into
-the updater, so the fallback device reads are the branches that actually
-run), which means i4's x1.0017 measured the family with its prefill half
-inactive -- the lane was not closed, it was unactivated."
-- Same failure shape as the i3 fp8 activation bug (code present, execution
-  condition never checked).
-- Falsifier: mechanical dataflow over the REAL source -- enumerate every
-  caller of the prefill indices updater and of _build_swa_prefix_custom_mask,
-  extract (ast) the actual argument expressions and branch guards, and decide
-  per call site whether host lens reach the mirror parameters under the
-  Spark SWA dispatch. Preserve raw JSON.
+## Hypothesis
+H1_t7: there exist per-step blocking device reads (.item/.cpu/.tolist/.nonzero/
+synchronize) on the frozen decode path OUTSIDE the attention backend that are NOT
+hidden by the overlap scheduler — i.e. they sit on the kernel-submission critical
+path (inside forward/sampling) or serialize the copy queue — and are exactly
+removable via the established host-mirror pattern (83e7b75/e063d72/2f3a916 style).
+  - If CONFIRMED with an engaged, semantics-identical site: patch it exactly,
+    verify (syntax + resolution check + guard execution), request Fast screen.
+  - If the only hot reads are scheduler-thread reads hidden by overlap (or cold
+    paths): executed NEGATIVE closure — the exact-runtime lane stays closed with
+    the last surface audited, and the t6 trace request becomes airtight.
 
-## Decision procedure after the probe
-1. If mirrors DO reach every Spark-SWA prefill call site (H1 falsified):
-   exact lane stays closed; deliver the executed negative + dossier; no gate.
-2. If any Spark-SWA prefill call site lacks host lens (H1 confirmed on that
-   site): implement the bounded exact fix(es) named by t5 -- paged-SWA branch
-   host sum + host lens into _build_swa_prefix_custom_mask callers -- syntax
-   check, re-run the probe to show the branch now resolves host-side, commit,
-   and request_fast_gate=true (frozen BF16 screen; new unmeasured exact tree).
-3. Also verify (cheap, same probe): fp8 gate still inert at BOTH remap sites
-   under frozen flags (extends g3-t4/raw/remap_gate_check.json to HEAD).
+Criticality model (stated up front, checked against source): overlap scheduling is
+ON in the frozen launch (no --disable-overlap-schedule). A device read only costs
+wall time if it (a) runs between kernel launches inside the forward/sampling
+critical path, or (b) blocks the copy/event queue the GPU waits on. Scheduler-thread
+reads one step behind are hidden. The audit must classify THIS, not just count
+calls.
 
-## Honesty constraints
-- i4's x1.0017 stands as the family-level measurement of what ran; if H1 is
-  confirmed, expected residual gain is bounded above by a2's whole-family
-  x1.0543 and could still be ~0 on a1 -- stated as uncertainty, not promise.
-- No EXACT claim without numeric evidence; no promotion request; no precision
-  change; no duplicate screens of known-neutral trees.
-- Budget: 45 turns / 20 min / $3; commit checkpoint early; last quarter
-  reserved for tests, iteration-proposal.json, final commit.
+## Method (proven t5/t6 pattern)
+1. ast-scan the target files for blocking calls; record file:line, enclosing
+   class/function, receiver expression.
+2. Classify hot (per-step: decode update/result processing/alloc/sample) vs cold
+   (init/capture/error/finish-cleanup-once).
+3. For each hot site: receiver host-mirror provenance (*_cpu, pinned buffers,
+   python ints/lists) vs device tensor -> real sync.
+4. For real syncs: call-path criticality — inside model_runner forward chain
+   (critical) vs scheduler loop / process_batch_result (overlap-hidden, one step
+   behind) — verified by reading the actual call sites, not name guesses.
+5. Raw JSON to g3-t7/raw/; negative controls included (known sync sites must be
+   rediscovered by the scanner, else the scanner is broken).
 
-## Outcome (executed, turn ~24)
-Decision branch 1 fired: H1_t6 is FALSIFIED. g3-t6/probe_mirror_propagation.py
-(python3 -I; raw g3-t6/raw/mirror_propagation.json) extracted the REAL guards
-from flashinfer_backend.py `update_sliding_window` (prefill instance) plus the
-population-side facts (schedule_batch prepare_for_extend / mix_with_running /
-merge_batch, forward_batch_info init_new) and executed them over a 5-scenario
-table:
+## Deliverables
+- g3-t7/host_path_sync_audit.py + g3-t7/raw/*.json (executed, python3 -I)
+- optional exact patch ONLY if H1 confirms an engaged critical-path site
+- plan.md outcome section, iteration-proposal.json (bottleneck/hypothesis/patch/
+  tests/learning/next_proposal + request_fast_gate), commits
+- No EXACT claims without evidence; no precision change; no protocol touches;
+  no duplicate of glm-b's probe-recipe lane or the blocked candidate-x3 request.
 
-1. FROZEN-CONFIG VERDICT: under the frozen BF16 launch (non-spec, no TBO, no
-   relay/dp staging, no gpu_only entry), all five fallback device-read sites
-   (S1 single-wrapper sum, S2 SWA-ragged w0 sum, S3 SWA-ragged mask builder,
-   S4 SWA-paged w0 sum, SWA-ragged w1 sum) resolve to MIRROR on every
-   applicable scenario (main extend, mixed chunked prefill). The fallback
-   branches are UNREACHABLE there. Structural corroboration: the extend
-   dispatcher runs `not any(forward_batch.extend_prefix_lens_cpu)` on EVERY
-   extend step, so a missing extend mirror is a TypeError crash, not a silent
-   slowdown.
-2. => i4's Fast x1.0017 measured the exact-runtime family with its prefill
-   mirrors fully ENGAGED. t5's lane closure ("exact-runtime SWA/host-sync work
-   on a1 is throughput-neutral") is now complete: no dormant-hunk escape hatch.
-3. Honest residual bounds (off-config only): with a gpu_only tensor entry
-   (device tensors handed to init_new) all five sites fall back; with a
-   relay/spec-relay merge that drops seq_lens_cpu, S3/S4 fall back while S2/S5
-   stay mirrored. Neither entry is on the frozen serving path (no spec draft,
-   no relay). These bound where a future config change could resurrect the
-   syncs; they are not frozen-config risks.
-4. fp8 gate re-verified at HEAD: g3-t6/raw/remap_gate_check_HEAD.json — frozen
-   launch (bfloat16, SGLANG_SPARK_FP8_KV unset) resolves to bfloat16 with an
-   empty post-process at BOTH remap sites; env=1 activates, env=0 stays BF16.
-5. NO engine change (python/ untouched since 44d49f8); no fast gate requested
-   — a screen of the unchanged tree would repeat i4's measurement, and branch
-   counters were rejected because every applicable path resolves MIRROR and
-   absence of the extend mirror is a crash (L1063), so a counter boot would
-   spend GPU to confirm a structural impossibility.
+## Budget
+45 turns / 20 min / $3. Checkpoint commit immediately after this file. Final
+quarter reserved for tests + proposal + final commit.
