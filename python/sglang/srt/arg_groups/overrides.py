@@ -1153,9 +1153,22 @@ def _rsi_trial_kv_cache_dtype(view: Any) -> dict:
     # --kv-cache-dtype bfloat16; remap to fp8_e4m3 to halve KV bytes per
     # decode step (decode on GB10 is memory-bandwidth-bound, trial-1).
     # Precision experiment, integrity-gated. Remove once decided.
+    # glm-a G3 trial-4: the i3 default-off guard only covered the Muse Spark
+    # auto-default site above; this explicit-flag remap still fired, so i3's
+    # Fast was FP8-lineage (glm-a-activation-failure-003). Same opt-in here:
+    # default now honors the frozen bfloat16 flag exactly (exact-BF16,
+    # exact-runtime candidate); SGLANG_SPARK_FP8_KV=1 restores the fp8 lineage.
     if view.kv_cache_dtype == "bfloat16":
-        logger.warning("RSI trial-2: remapping kv_cache_dtype bfloat16 -> fp8_e4m3.")
-        return {"kv_cache_dtype": "fp8_e4m3"}
+        if os.environ.get("SGLANG_SPARK_FP8_KV", "0") == "1":
+            logger.warning(
+                "RSI trial-2: remapping kv_cache_dtype bfloat16 -> fp8_e4m3 "
+                "(SGLANG_SPARK_FP8_KV=1)."
+            )
+            return {"kv_cache_dtype": "fp8_e4m3"}
+        logger.info(
+            "RSI trial-2 fp8-KV remap inactive (SGLANG_SPARK_FP8_KV unset/0); "
+            "exact-BF16 candidate."
+        )
     return {}
 
 

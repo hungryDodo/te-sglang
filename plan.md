@@ -1,74 +1,54 @@
-# G3 trial 3 (glm-a) — exact-BF16 decomposition candidate (fp8-KV remap default-off)
+# G3 trial-4 plan (glm-a) — fix the exact-BF16 activation so FP8-vs-runtime decomposition is measurable
 
-Campaign continuous-20261109-01, Iteration 3. Base: HEAD 999f93e (= fp8-KV remap
-e463d72 + SWA decode hunk 83e7b75 + SWA extend mirrors e063d72/2f3a916; fast gate
-on 699c332 scored 1.1361 GATE_VALID/PASS on a1). Direction per brief: revisit
-SWA/FP8+SWA history; precision quality unresolved → prefer exact runtime
-alternatives. No GPU/SSH here; controller gates. Status of my trial-2 requests
-(fast gate on 2f3a916, candidate×3, optional C1 probe) is unknown to me — no
-receipt reached this session; this trial's request supersedes, not repeats, them.
+## Context / bottleneck (not throughput directly)
+Canonical `glm-a-activation-failure-003`: G3 i3 (`e055f701`) intended to measure a
+true-BF16 candidate (FP8-KV default off) to decompose the ~x1.136 Fast gain of
+i1/i2 (`699c3322`/`999f93e6`) into [fp8-KV precision contribution] vs
+[exact-runtime hunks: SWA host-sync removal `83e7b75` + host-side metadata
+`e063d72`/`2f3a916`]. The i3 guard (`SGLANG_SPARK_FP8_KV`, default off) was
+added only to `_muse_spark_overrides` (auto-default path,
+`arg_groups/overrides.py:317-326`), but the frozen launch passes
+`--kv-cache-dtype bfloat16` explicitly, so the separate unconditional remap
+`_rsi_trial_kv_cache_dtype` (`overrides.py:1153-1161`) still fired; Fast 1.1335
+was FP8-lineage, activation condition failed.
 
-## Bottleneck (pipeline, not engine)
+## Hypothesis (H1, falsifiable)
+If `_rsi_trial_kv_cache_dtype` is gated behind the same `SGLANG_SPARK_FP8_KV=1`
+opt-in, then under the frozen BF16 launch (env unset):
+- resolved `kv_cache_dtype` stays `bfloat16` (no remap warning, no fp8 alloc), and
+- the engine tree diff vs the FP8 lineage is exactly the remap behavior — an
+  exact-runtime candidate (SWA sync-removal + host metadata hunks, BF16 KV).
+H0 (guard insufficient again — some third site forces fp8): falsified on CPU by
+executing the real post-process function with stub views covering
+bfloat16/auto/fp8_e4m3 × env {unset, 1}.
 
-The fp8+SWA candidate×3 (F4 closure) is blocked upstream: numeric verification is
-INCONCLUSIVE (numeric-coverage-001: probes collected 64 output IDs + chosen
-logprobs but top_logprobs null), and fp8-KV stays COMPUTE_DIFFERS /
-NOT_CLOSED_QUALITY_BUDGET (F2). Re-requesting it verbatim is not progress.
+Expected Fast band if H1 holds: above 1.0 but below the 1.136 combo — a2's
+standalone SWA hunk was x1.0543, i2 marginal over e46f99d was only +0.5%; the
+BF16-exact share is unknown, which is precisely what this measures. No claim
+until the controller's gate returns.
 
-Meanwhile a1 has NEVER measured the exact (ALGORITHM_PRESERVING) sync-removal
-lineage alone: every a1 gate (1.1273, 1.1361) ran with the fp8 remap active, so
-the exact hunks' a1 contribution is unattributed. F5 says a2 measured the exact
-lineage at ×1.0543/×1.0411/×1.0920 standalone, but on a1 the SWA hunk's marginal
-OVER fp8-KV was only +0.19% min (G2 t2) — either a1 hides these syncs, or fp8's
-shorter steps un-hide them. Unknown. That is this trial's testable question.
+## Patch (surgical, one hunk)
+`overrides.py` `_rsi_trial_kv_cache_dtype`: remap only when
+`SGLANG_SPARK_FP8_KV=1`; log inactivity otherwise. Opt-in path (env=1)
+reproduces the i1/i2 FP8 lineage unchanged.
 
-## Hypothesis
+## Verification (CPU-only, this sandbox; no GPU/SSH)
+1. `python -I` falsifier `g3-t4/remap_gate_check.py`: extract the REAL function
+   source via ast (anchor asserts), exec against stub views; assert:
+   env unset + bfloat16 -> no override; env=1 + bfloat16 -> fp8_e4m3;
+   fp8_e4m3 -> no-op; raw JSON to `g3-t4/raw/`.
+2. Grep sweep for any other forced-fp8 site in `python/` (the i3 lesson: one
+   guard is not activation proof).
+3. `git diff e46f99d..HEAD -- python/` reviewed: expected exact-runtime hunks +
+   this guard, nothing else touching numerics.
 
-H1: env-gating the fp8-KV remap OFF (default off) yields an exact BF16 engine —
-delta vs campaign baseline = metadata-only sync-removal hunks (decode 83e7b75:
-host kv_indices bound; extend e063d72+2f3a916: sites A/B/C/D host mirrors, all
-with device-read fallbacks; construction-exactness proofs in trial-2 plan.md).
-Its fast gate on a1 decomposes 1.1361 into exact-part + fp8-part:
-  - score ≥ ~1.04, integrity clean → exact lineage transfers to a1; a1 gets a
-    promotion-track candidate that needs NO quality acceptance contract; next
-    trials run candidate×3 on this head (3 distinct accepted slots, min-of-3).
-  - score ~1.00-1.02 → precise negative: a1's overlap scheduler hides decode/extend
-    plan syncs at BF16 step lengths; a1's exact lane is bounded; 1.13-class gains
-    on a1 are precision-owned. fp8 lane then remains a1's only lever, blocked on
-    the quality contract — recorded, not re-requested.
-No EXACT claim without evidence; for a BF16 engine the gate's 10-point integrity
-check is the exactness screen (glm-b's equivalent lineage passed 10/10 twice on
-a2; metadata-only class).
+## Request
+`request_fast_gate=true`: frozen BF16 Fast screen on the new commit = the
+exact-runtime candidate's first true-BF16 measurement (decomposition point for
+C1/i1-i2). Numeric verification and candidate-x3 remain controller-gated;
+quality budget for FP8 stays NOT_CLOSED_QUALITY_BUDGET — this trial claims
+nothing precision-related.
 
-## Change
-
-Single file `python/sglang/srt/arg_groups/overrides.py`, `_muse_spark_overrides`:
-the `kv_cache_dtype == "auto"` → fp8_e4m3 default now fires only when
-`SGLANG_SPARK_FP8_KV=1`; default logs the disabled state and leaves "auto"
-(→ bfloat16, same resolution as the pre-remap baseline edecc81 that gated 1.0021).
-fp8 lineage stays reachable verbatim at 2f3a916/999f93e or via the env var — no
-history rewritten, F4 artifact intact.
-
-## Worklog
-
-- Read git log + trial-1/2 plan.md and iteration-proposal.json (above).
-- Located the single fp8 activation point: overrides.py:318-320 (remap commit
-  e463d72; E2 boot evidence: resolved args showed fp8_e4m3 + warning when firing).
-- Edit + py_compile + grep-verify no other Muse-Spark fp8 path (only
-  overrides.py:319-320 matched Muse+fp8).
-- Checkpoint commit, then iteration-proposal.json + final commit.
-
-## Explicitly not requested
-
-Promotion claims; any precision-quality closure; NGRAM/MMVQ lanes (other
-workers' entries); triton attention / graph-coverage>64 / Q8_0 GGUF re-gates
-(binding negatives); a verbatim repeat of trial-2's blocked candidate×3 ask.
-
-## Final state
-
-- Candidate HEAD: b72f4493fa0e45b8ca05f66436281bad44095c8b (exact-BF16 decomposition
-  candidate; fp8 remap env-gated SGLANG_SPARK_FP8_KV, default off).
-- iteration-proposal.json: request_fast_gate=true on b72f4493, attribution guard
-  = boot log line + resolved kv_cache_dtype check; decision tree (a/b/c) inside.
-- fp8 lineage intact at 2f3a916/999f93e for the F4 candidate-x3 when numeric
-  prerequisites close.
+## Non-goals
+No precision changes, no evaluator/protocol edits, no NGRAM/MMVQ lanes
+(other workers), no promotion claims.
