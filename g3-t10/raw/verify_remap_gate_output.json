@@ -1,0 +1,77 @@
+{
+ "script": "g3-t10/verify_remap_gate.py",
+ "source_file": "python/sglang/srt/arg_groups/overrides.py",
+ "extracted_function": "_rsi_trial_kv_cache_dtype",
+ "extracted_sha256": "7956a93a9614d1dbc113afa9b8f350bcc829a3914b5a1bd7f43e2284ba9dc651",
+ "extracted_source": "def _rsi_trial_kv_cache_dtype(view: Any) -> dict:\n    if view.kv_cache_dtype == 'bfloat16':\n        if os.environ.get('SGLANG_SPARK_FP8_KV', '0') == '1':\n            logger.warning('RSI trial-2: remapping kv_cache_dtype bfloat16 -> fp8_e4m3 (SGLANG_SPARK_FP8_KV=1).')\n            return {'kv_cache_dtype': 'fp8_e4m3'}\n        logger.info('RSI trial-2 fp8-KV remap inactive (SGLANG_SPARK_FP8_KV unset/0); exact-BF16 candidate.')\n    return {}",
+ "verdict": "PASS",
+ "all_cases_passed": true,
+ "cases": [
+  {
+   "env": "<unset>",
+   "kv_cache_dtype": "bfloat16",
+   "returned": {},
+   "log_lines": [
+    "RSI trial-2 fp8-KV remap inactive (SGLANG_SPARK_FP8_KV unset/0); exact-BF16 candidate."
+   ],
+   "expected_return": {},
+   "passed": true
+  },
+  {
+   "env": "0",
+   "kv_cache_dtype": "bfloat16",
+   "returned": {},
+   "log_lines": [
+    "RSI trial-2 fp8-KV remap inactive (SGLANG_SPARK_FP8_KV unset/0); exact-BF16 candidate."
+   ],
+   "expected_return": {},
+   "passed": true
+  },
+  {
+   "env": "1",
+   "kv_cache_dtype": "bfloat16",
+   "returned": {
+    "kv_cache_dtype": "fp8_e4m3"
+   },
+   "log_lines": [
+    "RSI trial-2: remapping kv_cache_dtype bfloat16 -> fp8_e4m3 (SGLANG_SPARK_FP8_KV=1)."
+   ],
+   "expected_return": {
+    "kv_cache_dtype": "fp8_e4m3"
+   },
+   "passed": true
+  },
+  {
+   "env": "1",
+   "kv_cache_dtype": "fp8_e4m3",
+   "returned": {},
+   "log_lines": [],
+   "expected_return": {},
+   "passed": true
+  },
+  {
+   "env": "<unset>",
+   "kv_cache_dtype": "fp8_e4m3",
+   "returned": {},
+   "log_lines": [],
+   "expected_return": {},
+   "passed": true
+  },
+  {
+   "env": "<unset>",
+   "kv_cache_dtype": "auto",
+   "returned": {},
+   "log_lines": [],
+   "expected_return": {},
+   "passed": true
+  }
+ ],
+ "meaning": {
+  "REF_activation_check": "server.log must contain 'RSI trial-2 fp8-KV remap inactive' and resolved kv_cache_dtype bfloat16; Full/SWA KV pools torch.bfloat16 (i3/i4 method)",
+  "CAND_activation_check": "server.log must contain 'RSI trial-2: remapping kv_cache_dtype bfloat16 -> fp8_e4m3' and Full/SWA KV pools torch.float8_e4m3fn"
+ },
+ "limits": [
+  "executes the real function object on fixture views; does not import sglang or boot a server",
+  "ResolvedView/muse-spark auto-site interactions not exercised (frozen launch passes explicit --kv-cache-dtype bfloat16, so only this site governs)"
+ ]
+}

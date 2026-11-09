@@ -1,0 +1,125 @@
+{
+ "script": "g3-t10/ref_margin_extract.py",
+ "packet": "controller_evidence/continuous-20261109-01/20261110-runtime/ngram-full-observations.json",
+ "packet_sha256": "f3c759a67c10c59cc73cc546170570bb53ed5c4d61ebd10c0a854ef24f74bea6",
+ "off_commit_expected": "999d4b243",
+ "anchors_expected": {
+  "min_margin": 0.9375,
+  "positions": 480,
+  "responses": 10,
+  "count_margin_le_0.5": 0
+ },
+ "anchors_passed": {
+  "responses_complete": true,
+  "positions": true,
+  "min_margin_ge_anchor": true,
+  "P_le_0p5_zero": true
+ },
+ "anchor_tolerance_note": "t8 quoted min margin 0.9375 rounded to 4dp; measured 0.9374998808 (diff 1.2e-7); tolerance 5e-5 covers rounding only",
+ "verdict": "PASS",
+ "measured": {
+  "responses": 10,
+  "positions": 480,
+  "min_margin_nat": 0.9374998807907104,
+  "count_margin_le_0.5": 0,
+  "count_margin_le_0.306": 0,
+  "quantiles_nat": {
+   "p001": 0.9374998807907104,
+   "p01": 0.9570312201976776,
+   "p50": 5.972656290512532,
+   "p90": 7.984374985215254
+  },
+  "per_response": [
+   {
+    "label": "A/repeat-512/c1same",
+    "instance": 0,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9375001192092896,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "A/repeat-512/c4same",
+    "instance": 0,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9570312201976776,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "A/repeat-512/c4same",
+    "instance": 1,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9609374701976776,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "A/repeat-512/c4same",
+    "instance": 2,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9609374701976776,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "A/repeat-512/c4same",
+    "instance": 3,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9609374701976776,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "B/repeat-512/c1same",
+    "instance": 0,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9375001192092896,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "B/repeat-512/c4same",
+    "instance": 0,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9374998807907104,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "B/repeat-512/c4same",
+    "instance": 1,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9609374701976776,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "B/repeat-512/c4same",
+    "instance": 2,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9609374701976776,
+    "chosen_is_top1_all": true
+   },
+   {
+    "label": "B/repeat-512/c4same",
+    "instance": 3,
+    "positions": 48,
+    "complete_top8_positions": 48,
+    "min_margin": 0.9609374701976776,
+    "chosen_is_top1_all": true
+   }
+  ]
+ },
+ "preregistration": {
+  "claim": "On these exact REF instances an fp8-KV-class perturbation (2*eps <= 0.306 nat per E2) can flip NO observed position.",
+  "discriminator": "g3-t10 fp8 probe: token-exact OR first-flip at REF margin <= 2*eps_hat; a first-flip at margin > 2*eps_hat is a NON-precision defect.",
+  "eps_hat_def": "max |dlogprob(chosen)| over same-prefix positions of the paired run, computed pre-flip by g3-t10/fp8_margin_probe.py"
+ },
+ "limits": [
+  "480 positions bound P(margin<=0.306) only to <= ~0.62% (rule of three); not a universal claim",
+  "OFF side of the NGRAM A/B pair is plain BF16 with complete top-8 (C21); margins are instance properties of the prompt+server, reusable as REF thresholds",
+  "repeat-512 random-token class only; natural-text classes had heavier tails in E2"
+ ]
+}

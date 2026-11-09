@@ -1,0 +1,44 @@
+{
+ "tool": "g3-t10/fp8_margin_probe.py selftest",
+ "verdict": "PASS",
+ "cases": [
+  {
+   "name": "identical->TOKEN_EXACT",
+   "passed": true,
+   "got": "TOKEN_EXACT"
+  },
+  {
+   "name": "low-margin flip->PRECISION_CONSISTENT",
+   "passed": true,
+   "got": "PRECISION_CONSISTENT"
+  },
+  {
+   "name": "cascade ignored",
+   "passed": true,
+   "got": "PRECISION_CONSISTENT"
+  },
+  {
+   "name": "high-margin flip->NON_PRECISION_DEFECT",
+   "passed": true,
+   "got": "NON_PRECISION_DEFECT"
+  },
+  {
+   "name": "null top8->COVERAGE_INCONCLUSIVE",
+   "passed": true,
+   "got": "COVERAGE_INCONCLUSIVE"
+  },
+  {
+   "name": "eps_hat pre-flip only",
+   "passed": true,
+   "got": "PRECISION_CONSISTENT eps=0.08000000000000007"
+  },
+  {
+   "name": "overall band guard",
+   "passed": true,
+   "got": "True/True/True/True"
+  }
+ ],
+ "limits": [
+  "analyzer logic verified on synthetic fixtures; GPU numerics and HTTP transport untested here"
+ ]
+}

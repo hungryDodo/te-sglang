@@ -1,0 +1,173 @@
+{
+ "tool": "g3-t10/fp8_margin_probe.py analyze",
+ "ref": {
+  "role": "OFF",
+  "kv_expected": "bfloat16 (remap inactive)"
+ },
+ "cand": {
+  "role": "ON",
+  "kv_expected": "fp8_e4m3 (SGLANG_SPARK_FP8_KV=1)"
+ },
+ "contract": "t8 margin-stratified: flips allowed only where REF margin <= 2*eps_hat",
+ "pairs": [
+  {
+   "label": "A/repeat-512/c1same/i0",
+   "positions_compared": 48,
+   "same_prefix_len": 15,
+   "first_flip_position": 15,
+   "eps_hat_nat": 1.3244487419724464,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 33,
+   "verdict": "NON_PRECISION_DEFECT",
+   "detail": {
+    "ref_margin_at_first_flip": 6.949218545574695,
+    "threshold_2eps": 2.648897483944893
+   }
+  },
+  {
+   "label": "A/repeat-512/c4same/i0",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.3888910710811615,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 44,
+   "verdict": "NON_PRECISION_DEFECT",
+   "detail": {
+    "ref_margin_at_first_flip": 1.0625,
+    "threshold_2eps": 0.777782142162323
+   }
+  },
+  {
+   "label": "A/repeat-512/c4same/i1",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.21984609961509705,
+   "eps_hat_band": "above_E2_max_within_2x",
+   "n_flipped_positions": 41,
+   "verdict": "NON_PRECISION_DEFECT",
+   "detail": {
+    "ref_margin_at_first_flip": 0.9687498807907104,
+    "threshold_2eps": 0.4396921992301941
+   }
+  },
+  {
+   "label": "A/repeat-512/c4same/i2",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.3762325346469879,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 40,
+   "verdict": "NON_PRECISION_DEFECT",
+   "detail": {
+    "ref_margin_at_first_flip": 0.9687498807907104,
+    "threshold_2eps": 0.7524650692939758
+   }
+  },
+  {
+   "label": "A/repeat-512/c4same/i3",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.3920045793056488,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 43,
+   "verdict": "NON_PRECISION_DEFECT",
+   "detail": {
+    "ref_margin_at_first_flip": 0.9687498807907104,
+    "threshold_2eps": 0.7840091586112976
+   }
+  },
+  {
+   "label": "B/repeat-512/c1same/i0",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.3957626521587372,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 44,
+   "verdict": "NON_PRECISION_DEFECT",
+   "detail": {
+    "ref_margin_at_first_flip": 0.9375001192092896,
+    "threshold_2eps": 0.7915253043174744
+   }
+  },
+  {
+   "label": "B/repeat-512/c4same/i0",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.4518844485282898,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 44,
+   "verdict": "NON_PRECISION_DEFECT",
+   "detail": {
+    "ref_margin_at_first_flip": 0.9374998807907104,
+    "threshold_2eps": 0.9037688970565796
+   }
+  },
+  {
+   "label": "B/repeat-512/c4same/i1",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.5516286194324493,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 44,
+   "verdict": "PRECISION_CONSISTENT",
+   "detail": {
+    "ref_margin_at_first_flip": 0.9687498807907104,
+    "threshold_2eps": 1.1032572388648987
+   }
+  },
+  {
+   "label": "B/repeat-512/c4same/i2",
+   "positions_compared": 48,
+   "same_prefix_len": 6,
+   "first_flip_position": 6,
+   "eps_hat_nat": 0.8525396585464478,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 42,
+   "verdict": "PRECISION_CONSISTENT",
+   "detail": {
+    "ref_margin_at_first_flip": 1.1562499403953552,
+    "threshold_2eps": 1.7050793170928955
+   }
+  },
+  {
+   "label": "B/repeat-512/c4same/i3",
+   "positions_compared": 48,
+   "same_prefix_len": 4,
+   "first_flip_position": 4,
+   "eps_hat_nat": 0.5870852172374725,
+   "eps_hat_band": "ANOMALOUS_pre_flip_deviation",
+   "n_flipped_positions": 44,
+   "verdict": "PRECISION_CONSISTENT",
+   "detail": {
+    "ref_margin_at_first_flip": 0.9687498807907104,
+    "threshold_2eps": 1.174170434474945
+   }
+  }
+ ],
+ "overall": "NON_PRECISION_DEFECT",
+ "eps_band_warnings": [
+  "A/repeat-512/c1same/i0",
+  "A/repeat-512/c4same/i0",
+  "A/repeat-512/c4same/i2",
+  "A/repeat-512/c4same/i3",
+  "B/repeat-512/c1same/i0",
+  "B/repeat-512/c4same/i0",
+  "B/repeat-512/c4same/i1",
+  "B/repeat-512/c4same/i2",
+  "B/repeat-512/c4same/i3"
+ ],
+ "interpretation": {
+  "TOKEN_EXACT": "fp8-KV token-exact on these instances (P1 holds); consistent with margin floor 0.9375 nat",
+  "PRECISION_CONSISTENT": "flips confined to noise-reachable margins (P2); precision-class, feed t8 contract",
+  "NON_PRECISION_DEFECT": "flip at margin beyond fp8 reach => non-precision defect in the fp8 lineage (bug class); F2 reframes",
+  "AMBIGUOUS_BAND": "self-scaling pass with pre-flip deviation above E2's fp8 scale (>0.153 nat): defect can hide in own deviation; not precision-class without further evidence",
+  "COVERAGE_INCONCLUSIVE": "top-8 missing where needed; no claim"
+ }
+}
