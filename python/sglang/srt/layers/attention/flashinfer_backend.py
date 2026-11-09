@@ -2042,7 +2042,18 @@ class FlashInferIndicesUpdaterPrefill:
                         prefix_lens - sliding_window_size, min=0
                     )
                     paged_kernel_lens = prefix_lens - effective_start
-                    paged_kernel_lens_sum = paged_kernel_lens.sum().item()
+                    if extend_prefix_lens_cpu is not None:
+                        # paged_kernel_lens is elementwise min(prefix_len,
+                        # window) over the same lanes the non-SWA ragged
+                        # branch sums host-side, so the host mirror gives the
+                        # same total without draining the stream for a device
+                        # .sum().item() on every SWA extend.
+                        paged_kernel_lens_sum = sum(
+                            min(p, sliding_window_size)
+                            for p in extend_prefix_lens_cpu
+                        )
+                    else:
+                        paged_kernel_lens_sum = paged_kernel_lens.sum().item()
                     kv_start_idx = effective_start
                     swa_paged_custom_mask = self._build_swa_prefix_custom_mask(
                         prefix_lens, seq_lens, effective_start
