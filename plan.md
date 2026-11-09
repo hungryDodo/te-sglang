@@ -65,3 +65,30 @@ outcome flips to a candidate proposal in next_proposal (not self-graded here).
 ## Budget
 60 turns / 20 min / USD 5 nominal. Checkpoint after plan.md; final quarter
 reserved for tests, proposal json and final commit.
+
+## OUTCOME (executed)
+
+H9 REFUTED with measured evidence; trial complete as a bounded CPU iteration on
+real controller data (no engine change, no gate). Script
+g3-t9/trace_bubble_census.py ran under python3 -I (exit 0); raw preserved at
+g3-t9/raw/trace_bubble_census_output.json; full record in g3-t9/VERIFICATION.md.
+
+- Gate: all 7 packet anchors reproduced exactly (span 571927.153us, 8560
+  kernels, kernel union 565549.025us, CPU step union 28303.983us, EventSynchronize
+  472169.159/469530.690us, largest gap 34676.268/34417.705us); 16/16 External-id
+  pairing; interval-machinery fixtures (one genuine fixture-semantics bug caught
+  by the assert before any data claim); planted 300us gap recovered exactly and
+  all-overlapped control returned exactly 0.
+- H9 verdict: device busy 98.9164%; host-union-not-hidden 5919.8us = 1.0351% of
+  wall (< 2% threshold); hard sync bubbles 0.4872%. Exact-runtime/SWA-host-sync
+  lane on a1 closed with measured kernel intervals (upgrades t7's static
+  closure; consistent with F5 a2 no-op 1.019 and G2-t2 +0.19% marginal).
+- New anatomy: decode step = attention 47.04% (16.68ms/step, 28x595us
+  BatchPrefillWithPagedKVCache tensor-core decode; zero BatchDecode kernels) +
+  GEMM 47.83% + other 5.14%; kernels serialized (sum~union) so shares are wall
+  shares; host perfectly pipelined (~10us/step not hidden after step 0).
+- E2 cross-check: attention halving predicts 8.34ms/step fp8-KV saving vs E2's
+  measured 8-9ms/step — kernel-level confirmation of the fp8-KV mechanism.
+- Decision rule honored: ceiling < 2% => no candidate proposal, no Fast slot;
+  next-direction seeding recorded (only precision-class levers have ~47% walls
+  to attack; both gated on quality budget/numeric prerequisites).
