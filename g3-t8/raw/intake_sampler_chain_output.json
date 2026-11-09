@@ -1,0 +1,363 @@
+{
+ "probe": "g3-t8 intake/compute/output chain for top_logprobs_num (frozen probe shape)",
+ "frozen_probe_shape": {
+  "endpoint": "/generate (native)",
+  "return_logprob": true,
+  "top_logprobs_num": 8,
+  "logprob_start_len": -1
+ },
+ "verdict": "CHAIN_CLOSED_CPU_SIDE",
+ "harness_errors": [],
+ "failed_hops": [],
+ "hops": [
+  {
+   "id": "A1_single_None_to_0",
+   "anchor": "io_struct.py:569-570",
+   "kind": "EXECUTED",
+   "extracted_sha256": "61689dc04f839795",
+   "detail": {
+    "in": null,
+    "out": 0,
+    "passed": true
+   }
+  },
+  {
+   "id": "A2_normalize_param",
+   "anchor": "io_struct.py:780-790",
+   "kind": "EXECUTED",
+   "extracted_sha256": "104d41f40c38ba72",
+   "detail": {
+    "int8": [
+     8,
+     8
+    ],
+    "None": [
+     0,
+     0
+    ],
+    "list": [
+     8,
+     0
+    ],
+    "passed": true
+   }
+  },
+  {
+   "id": "A3_fanout_kw",
+   "anchor": "io_struct.py:986 (kw of ctor 965-1060)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "1c240de08bb0a6ed",
+   "detail": {
+    "out": 8,
+    "passed": true
+   }
+  },
+  {
+   "id": "A4_tm_tokenized_kw",
+   "anchor": "tokenizer_manager.py:1591 (kw of ctor 1584-1627)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "ef029c98a91e5bb6",
+   "detail": {
+    "out": 8,
+    "passed": true
+   }
+  },
+  {
+   "id": "A5_sched_kwargs",
+   "anchor": "scheduler.py:2991-2993 (args of _create_generation_req call 2985-3032)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "2833cc0c17b17f38",
+   "detail": {
+    "arg_names": [
+     "recv_req.return_logprob",
+     "recv_req.top_logprobs_num",
+     "recv_req.token_ids_logprob"
+    ],
+    "out": {
+     "recv_req.return_logprob": true,
+     "recv_req.top_logprobs_num": 8,
+     "recv_req.token_ids_logprob": null
+    },
+    "passed": true
+   }
+  },
+  {
+   "id": "A6_reqlogprob_class",
+   "anchor": "schedule_batch.py:924-947",
+   "kind": "EXECUTED",
+   "extracted_sha256": "af458202a80ba969",
+   "detail": {
+    "has_field": true,
+    "passed": true,
+    "constructed_k": 8
+   }
+  },
+  {
+   "id": "A7_batch_assembly",
+   "anchor": "schedule_batch.py:3098-3100",
+   "kind": "EXECUTED",
+   "extracted_sha256": "1b3eba2d89710d4b",
+   "detail": {
+    "out": [
+     8,
+     0
+    ],
+    "passed": true
+   }
+  },
+  {
+   "id": "A7ctl_batch_assembly_rl_False",
+   "anchor": "schedule_batch.py:3098-3100 (control)",
+   "kind": "CONTROL",
+   "extracted_sha256": "1b3eba2d89710d4b",
+   "detail": {
+    "out": null,
+    "passed": true
+   }
+  },
+  {
+   "id": "A8_batch_rl_any",
+   "anchor": "schedule_batch.py:2685",
+   "kind": "EXECUTED",
+   "extracted_sha256": "f8b6c0d1f91ce4d2",
+   "detail": {
+    "out": true,
+    "passed": true
+   }
+  },
+  {
+   "id": "A9_forward_batch_kw",
+   "anchor": "forward_batch_info.py:1096 (kw of ctor 1039-1118)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "d5821115800c12b3",
+   "detail": {
+    "out": [
+     8,
+     0
+    ],
+    "passed": true
+   }
+  },
+  {
+   "id": "A10_model_runner_sampler_args",
+   "anchor": "model_runner.py:2164-2165 (args of sampler call 2161-2176)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "ce8cd076f2743510",
+   "detail": {
+    "arg_names": [
+     "forward_batch.return_logprob",
+     "forward_batch.top_logprobs_nums"
+    ],
+    "out": {
+     "forward_batch.return_logprob": true,
+     "forward_batch.top_logprobs_nums": [
+      8
+     ]
+    },
+    "passed": true
+   }
+  },
+  {
+   "id": "B1_sampler_block_k8_FULL",
+   "anchor": "sampler.py:319-330",
+   "kind": "EXECUTED",
+   "extracted_sha256": "b6a1215e572cda3f",
+   "detail": {
+    "chosen": [
+     -8.0
+    ],
+    "top_val": [
+     [
+      -1.0,
+      -2.0,
+      -3.0,
+      -4.0,
+      -5.0,
+      -6.0,
+      -7.0,
+      -8.0
+     ]
+    ],
+    "top_idx": [
+     [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ]
+    ],
+    "passed": true
+   }
+  },
+  {
+   "id": "B2ctl_sampler_block_k0_chosen_present_top_absent",
+   "anchor": "sampler.py:319-330 (control k=0)",
+   "kind": "CONTROL",
+   "extracted_sha256": "b6a1215e572cda3f",
+   "detail": {
+    "chosen": [
+     -8.0
+    ],
+    "top_val": null,
+    "top_idx": null,
+    "passed": true
+   }
+  },
+  {
+   "id": "B3_get_top_logprobs_raw",
+   "anchor": "logprob_processor.py:98-130 (real function)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "8183371794b7730d",
+   "detail": {
+    "decode_k8_row0_len": 8,
+    "decode_k0_row1_len": 0,
+    "prefill_pruned0_row": [],
+    "passed": true
+   }
+  },
+  {
+   "id": "B4_extend_guard_k8",
+   "anchor": "logits_processor.py:372-374",
+   "kind": "EXECUTED",
+   "extracted_sha256": "85b9d6623c1b2043",
+   "detail": {
+    "out": true,
+    "passed": true
+   }
+  },
+  {
+   "id": "B4ctl_extend_guard_k0",
+   "anchor": "logits_processor.py:372-374 (control)",
+   "kind": "CONTROL",
+   "extracted_sha256": "85b9d6623c1b2043",
+   "detail": {
+    "out": false,
+    "passed": true
+   }
+  },
+  {
+   "id": "B5_extend_pruned_len_loop_probe_shape",
+   "anchor": "logits_processor.py:380-386 (logprob_start_len=-1 -> start=12=extend_len)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "d4555af60051a80e",
+   "detail": {
+    "pruned": [
+     0
+    ],
+    "extend_return_logprob": false,
+    "passed": true
+   }
+  },
+  {
+   "id": "C1_detokenizer_passthrough",
+   "anchor": "detokenizer_manager.py:497-498 (kwargs of ctor 468-517)",
+   "kind": "EXECUTED",
+   "extracted_sha256": "fbbd87acfc287e02",
+   "detail": {
+    "kw_names": [
+     "recv_obj.output_top_logprobs_val",
+     "recv_obj.output_top_logprobs_idx"
+    ],
+    "out": {
+     "recv_obj.output_top_logprobs_val": [
+      [
+       1.0
+      ]
+     ],
+     "recv_obj.output_top_logprobs_idx": [
+      [
+       7
+      ]
+     ]
+    },
+    "passed": true
+   }
+  },
+  {
+   "id": "C2_tm_meta_key",
+   "anchor": "tokenizer_manager.py:2961-2973",
+   "kind": "EXECUTED",
+   "extracted_sha256": "e4c6e7f472d4e4f5",
+   "detail": {
+    "meta": {
+     "output_top_logprobs": [
+      {
+       "lp": [
+        0.1,
+        0.2
+       ]
+      },
+      {
+       "lp": [
+        0.3
+       ]
+      }
+     ]
+    },
+    "passed": true
+   }
+  },
+  {
+   "id": "C2ctl_tm_meta_empty_val",
+   "anchor": "tokenizer_manager.py:2961-2973 (control)",
+   "kind": "CONTROL",
+   "extracted_sha256": "e4c6e7f472d4e4f5",
+   "detail": {
+    "meta": {
+     "output_top_logprobs": []
+    },
+    "passed": true
+   }
+  },
+  {
+   "id": "C3_http_entry_CONTEXT",
+   "anchor": "http_server.py (GenerateReqInput( lines / await request.json() lines)",
+   "kind": "CONTEXT",
+   "extracted_sha256": "0b40b2c4fdd0a759",
+   "detail": {
+    "generate_req_input_lines": [
+     757,
+     2233
+    ],
+    "await_request_json_lines": [
+     913,
+     937,
+     1050,
+     1072
+    ],
+    "passed": true
+   }
+  }
+ ],
+ "k_trace": {
+  "probe_request_k": 8,
+  "A3_fanout_i0": 8,
+  "A4_tm": 8,
+  "A5_sched": 8,
+  "A7_batch": [
+   8,
+   0
+  ],
+  "A9_forward_batch": [
+   8,
+   0
+  ],
+  "A10_sampler_args": {
+   "forward_batch.return_logprob": true,
+   "forward_batch.top_logprobs_nums": [
+    8
+   ]
+  }
+ },
+ "notes": [
+  "GPU-side topk numerics and live IPC/zmq are outside this CPU probe (mock tensor, mock transport).",
+  "B2 control reproduces the observed probe signature (chosen LP present, top absent) at the compute layer exactly when k=0 reaches compute; the A-leg shows k=8 survives every intake site for the frozen shape, so that signature is not reachable for this probe.",
+  "B5: with logprob_start_len=-1 + return_logprob=true and token_ids_logprob=None, scheduler.py:3261-3263 resolves start=len(prompt)=extend_len -> pruned_len=0 -> INPUT top-logprobs EMPTY BY DESIGN ([], not null); OUTPUT top-k per generated token is unaffected (decode-style sampler path).",
+  "C2 control: even with empty val, the meta key is output_top_logprobs=[] (EMPTY, never null); a null read can only come from a wrong field name (i5) or the k=0 / return_logprob=False paths.",
+  "Engine unchanged this trial; git diff vs 2c854e0 python/ stays empty."
+ ]
+}
