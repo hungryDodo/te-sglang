@@ -1,0 +1,402 @@
+{
+ "anchors": {
+  "decode_host_expr_lines": [
+   1826
+  ],
+  "prefill_guard_custom_kv_lines": [
+   2360
+  ]
+ },
+ "call_sites": [
+  {
+   "class": "FlashInferIndicesUpdaterDecode",
+   "function": "update_sliding_window",
+   "line": 1701,
+   "paged_kernel_lens_source": "seq_lens",
+   "provenance": "CALLER_SUM",
+   "rhs": "seq_lens_sum"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterDecode",
+   "function": "update_sliding_window",
+   "line": 1694,
+   "paged_kernel_lens_source": "torch.clamp(seq_lens, max=self.sliding_window_size + 1)",
+   "provenance": "HOST_SEQ_LENS_CPU",
+   "rhs": "seq_lens_cpu_tmp.sum().item()"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterDecode",
+   "function": "update_sliding_window",
+   "line": 1696,
+   "paged_kernel_lens_source": "torch.clamp(seq_lens, max=self.sliding_window_size + 1)",
+   "provenance": "DEVICE_SAME_TENSOR",
+   "rhs": "paged_kernel_lens_tmp.sum().item()"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_single_wrapper",
+   "line": 2008,
+   "paged_kernel_lens_source": "seq_lens",
+   "provenance": "CALLER_SUM",
+   "rhs": "seq_lens_sum"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_single_wrapper",
+   "line": 2003,
+   "paged_kernel_lens_source": "prefix_lens",
+   "provenance": "HOST_PREFIX_LIST",
+   "rhs": "sum(extend_prefix_lens_cpu)"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_single_wrapper",
+   "line": 2005,
+   "paged_kernel_lens_source": "prefix_lens",
+   "provenance": "DEVICE_SAME_TENSOR",
+   "rhs": "paged_kernel_lens.sum().item()"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "line": 2081,
+   "paged_kernel_lens_source": "prefix_lens - effective_start",
+   "provenance": "DEVICE_SAME_TENSOR",
+   "rhs": "paged_kernel_lens.sum().item()"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "line": 2113,
+   "paged_kernel_lens_source": "seq_lens",
+   "provenance": "CALLER_SUM",
+   "rhs": "seq_lens_sum"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "line": 2096,
+   "paged_kernel_lens_source": "torch.minimum(seq_lens, sliding_window_size + seq_lens - prefix_lens)",
+   "provenance": "HOST_SEQ_LENS_CPU",
+   "rhs": "int(torch.clamp(seq_lens_cpu, max=sliding_window_size).sum())"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "line": 2100,
+   "paged_kernel_lens_source": "torch.minimum(seq_lens, sliding_window_size + seq_lens - prefix_lens)",
+   "provenance": "DEVICE_SAME_TENSOR",
+   "rhs": "paged_kernel_lens.sum().item()"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "line": 2106,
+   "paged_kernel_lens_source": "prefix_lens",
+   "provenance": "HOST_PREFIX_LIST",
+   "rhs": "sum(extend_prefix_lens_cpu)"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_sliding_window",
+   "line": 2108,
+   "paged_kernel_lens_source": "prefix_lens",
+   "provenance": "DEVICE_OTHER_TENSOR",
+   "rhs": "prefix_lens.sum().item()"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_cross_attention",
+   "line": 2215,
+   "paged_kernel_lens_source": "seq_lens",
+   "provenance": "CALLER_SUM",
+   "rhs": "seq_lens_sum"
+  },
+  {
+   "class": "FlashInferIndicesUpdaterPrefill",
+   "function": "update_cross_attention",
+   "line": 2220,
+   "paged_kernel_lens_source": "encoder_lens",
+   "provenance": "DEVICE_SAME_TENSOR",
+   "rhs": "paged_kernel_lens.sum().item()"
+  }
+ ],
+ "decode_guard_truth": [
+  {
+   "host_mirror_taken": true,
+   "inner_host_ok": true,
+   "outer_rebuilds_indptr": true,
+   "spec_info": "none",
+   "sum_type": "int"
+  },
+  {
+   "host_mirror_taken": false,
+   "inner_host_ok": false,
+   "outer_rebuilds_indptr": true,
+   "spec_info": "none",
+   "sum_type": "float"
+  },
+  {
+   "host_mirror_taken": false,
+   "inner_host_ok": false,
+   "outer_rebuilds_indptr": true,
+   "spec_info": "none",
+   "sum_type": "Sentinel"
+  },
+  {
+   "host_mirror_taken": false,
+   "inner_host_ok": true,
+   "outer_rebuilds_indptr": false,
+   "spec_info": "with_indptr",
+   "sum_type": "int"
+  },
+  {
+   "host_mirror_taken": false,
+   "inner_host_ok": false,
+   "outer_rebuilds_indptr": false,
+   "spec_info": "with_indptr",
+   "sum_type": "float"
+  },
+  {
+   "host_mirror_taken": false,
+   "inner_host_ok": false,
+   "outer_rebuilds_indptr": false,
+   "spec_info": "with_indptr",
+   "sum_type": "Sentinel"
+  },
+  {
+   "host_mirror_taken": true,
+   "inner_host_ok": true,
+   "outer_rebuilds_indptr": true,
+   "spec_info": "without_indptr",
+   "sum_type": "int"
+  },
+  {
+   "host_mirror_taken": false,
+   "inner_host_ok": false,
+   "outer_rebuilds_indptr": true,
+   "spec_info": "without_indptr",
+   "sum_type": "float"
+  },
+  {
+   "host_mirror_taken": false,
+   "inner_host_ok": false,
+   "outer_rebuilds_indptr": true,
+   "spec_info": "without_indptr",
+   "sum_type": "Sentinel"
+  }
+ ],
+ "integer_replay": [
+  {
+   "class": "HOST_SEQ_LENS_CPU",
+   "control": false,
+   "device_last": 1538,
+   "equal": true,
+   "host_last": 1538,
+   "name": "decode_mirror_equal"
+  },
+  {
+   "class": "HOST_SEQ_LENS_CPU",
+   "control": false,
+   "device_last": 515,
+   "equal": true,
+   "host_last": 515,
+   "name": "decode_graph_padding_zero"
+  },
+  {
+   "class": "HOST_SEQ_LENS_CPU",
+   "control": true,
+   "device_last": 1538,
+   "equal": false,
+   "host_last": 1539,
+   "name": "decode_ctrl_stale_cpu_plus1"
+  },
+  {
+   "class": "HOST_SEQ_LENS_CPU",
+   "control": false,
+   "device_last": 1211,
+   "equal": true,
+   "host_last": 1211,
+   "name": "prefill_fullseq_mirror_equal"
+  },
+  {
+   "class": "HOST_SEQ_LENS_CPU",
+   "control": true,
+   "device_last": 1211,
+   "equal": false,
+   "host_last": 1212,
+   "name": "prefill_fullseq_ctrl_stale_cpu"
+  },
+  {
+   "class": "HOST_PREFIX_LIST",
+   "control": false,
+   "device_last": 8892,
+   "equal": true,
+   "host_last": 8892,
+   "name": "prefix_list_equal"
+  },
+  {
+   "class": "HOST_PREFIX_LIST",
+   "control": true,
+   "device_last": 8892,
+   "equal": false,
+   "host_last": 8891,
+   "name": "prefix_list_ctrl_mismatch"
+  },
+  {
+   "class": "DEVICE_SAME_TENSOR",
+   "control": false,
+   "device_last": 8892,
+   "equal": true,
+   "host_last": 8892,
+   "name": "device_same_tensor"
+  },
+  {
+   "class": "DEVICE_SAME_TENSOR",
+   "control": false,
+   "device_last": 8892,
+   "equal": true,
+   "host_last": 8892,
+   "name": "caller_seq_lens_sum"
+  }
+ ],
+ "prefill_guard_truth": [
+  {
+   "custom_kv_indices": "none",
+   "host_mirror_taken": true,
+   "spec_info": "none",
+   "sum_type": "int"
+  },
+  {
+   "custom_kv_indices": "none",
+   "host_mirror_taken": false,
+   "spec_info": "none",
+   "sum_type": "float"
+  },
+  {
+   "custom_kv_indices": "custom",
+   "host_mirror_taken": false,
+   "spec_info": "none",
+   "sum_type": "int"
+  },
+  {
+   "custom_kv_indices": "custom",
+   "host_mirror_taken": false,
+   "spec_info": "none",
+   "sum_type": "float"
+  },
+  {
+   "custom_kv_indices": "none",
+   "host_mirror_taken": false,
+   "spec_info": "with_indptr",
+   "sum_type": "int"
+  },
+  {
+   "custom_kv_indices": "none",
+   "host_mirror_taken": false,
+   "spec_info": "with_indptr",
+   "sum_type": "float"
+  },
+  {
+   "custom_kv_indices": "custom",
+   "host_mirror_taken": false,
+   "spec_info": "with_indptr",
+   "sum_type": "int"
+  },
+  {
+   "custom_kv_indices": "custom",
+   "host_mirror_taken": false,
+   "spec_info": "with_indptr",
+   "sum_type": "float"
+  },
+  {
+   "custom_kv_indices": "none",
+   "host_mirror_taken": false,
+   "spec_info": "without_indptr",
+   "sum_type": "int"
+  },
+  {
+   "custom_kv_indices": "none",
+   "host_mirror_taken": false,
+   "spec_info": "without_indptr",
+   "sum_type": "float"
+  },
+  {
+   "custom_kv_indices": "custom",
+   "host_mirror_taken": false,
+   "spec_info": "without_indptr",
+   "sum_type": "int"
+  },
+  {
+   "custom_kv_indices": "custom",
+   "host_mirror_taken": false,
+   "spec_info": "without_indptr",
+   "sum_type": "float"
+  }
+ ],
+ "source": "python/sglang/srt/layers/attention/flashinfer_backend.py",
+ "summary": {
+  "decode_guard_rows": 9,
+  "divergences_outside_controls": 0,
+  "guard_admits_non_int_sum": 0,
+  "host_mirror_sites": [
+   {
+    "class": "FlashInferIndicesUpdaterDecode",
+    "function": "update_sliding_window",
+    "line": 1694,
+    "paged_kernel_lens_source": "torch.clamp(seq_lens, max=self.sliding_window_size + 1)",
+    "provenance": "HOST_SEQ_LENS_CPU",
+    "rhs": "seq_lens_cpu_tmp.sum().item()"
+   },
+   {
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_single_wrapper",
+    "line": 2003,
+    "paged_kernel_lens_source": "prefix_lens",
+    "provenance": "HOST_PREFIX_LIST",
+    "rhs": "sum(extend_prefix_lens_cpu)"
+   },
+   {
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_sliding_window",
+    "line": 2096,
+    "paged_kernel_lens_source": "torch.minimum(seq_lens, sliding_window_size + seq_lens - prefix_lens)",
+    "provenance": "HOST_SEQ_LENS_CPU",
+    "rhs": "int(torch.clamp(seq_lens_cpu, max=sliding_window_size).sum())"
+   },
+   {
+    "class": "FlashInferIndicesUpdaterPrefill",
+    "function": "update_sliding_window",
+    "line": 2106,
+    "paged_kernel_lens_source": "prefix_lens",
+    "provenance": "HOST_PREFIX_LIST",
+    "rhs": "sum(extend_prefix_lens_cpu)"
+   }
+  ],
+  "prefill_guard_rows": 12,
+  "provenance_counts": {
+   "CALLER_SUM": 4,
+   "DEVICE_OTHER_TENSOR": 1,
+   "DEVICE_SAME_TENSOR": 5,
+   "HOST_PREFIX_LIST": 2,
+   "HOST_SEQ_LENS_CPU": 2
+  },
+  "sensitivity_controls_flagged": "3/3",
+  "sites_total": 14,
+  "surrounding_precondition_already_required": {
+   "decode_global_override_from_seq_lens_cpu": true,
+   "prefill_buffer_sized_by_host_sum": true
+  }
+ },
+ "verdict": {
+  "expected_aggregate_gain": "~0 (sibling sync-removal family measured 1.0018 KEPT_NEUTRAL on a4; decode points inside +/-2% run variance)",
+  "f3_status": "UNGATED and score-unreachable under the frozen BF16 gate (no GGUF artifact)",
+  "guard_covers_non_rebuilt_indptr_paths": true,
+  "inert_when": "translator.reads_are_translated (unified SWA pool) or seq_lens_cpu is None",
+  "max_d2h_saved_per_eager_step": 1,
+  "measurement": "NOT_A_MEASUREMENT",
+  "new_precondition_introduced": false,
+  "patch_precondition": "host int == device cumsum last element for the same logical tensor",
+  "why_not_new": "decode already builds global_override_indptr_cpu from torch.cumsum(seq_lens_cpu) in the same function, and prefill already sizes the kv_indices buffer as paged_kernel_lens_sum + 256 before pack_read_stream; both use the host value as the authority over the same device tensor."
+ }
+}

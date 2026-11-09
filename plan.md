@@ -1,50 +1,84 @@
-# G3 trial 7 — deepseek-b — plan (provisional, updated as evidence lands)
+# G3 trial 8 — deepseek-b (node a4) plan and record
 
-Budget: 45 turns / 20 minutes / USD3 nominal. No GPU, no SSH, controller-only evaluation.
-Objective: aggregate output tokens/s under the frozen workload contract. No measurement,
-corpus, seed, reference or evaluator change. A source change is never its own acceptance.
+## Objective
+Raise aggregate output tokens/s under the frozen workload contract. The trusted
+controller owns the evaluator, measurements and decisions; this session produced
+source analysis, a CPU-executable evidence artifact and a proposed test request.
 
-## Required direction check: F3 (`f263262` MMVQ threshold) is UNGATED
-- Frozen formal gate loads BF16 safetensors revision e6406af..., no GGUF file and no
-  `--quantization gguf`. The patched `fused_mul_mat_gguf` selection cells are therefore not
-  exercised by the formal screen; a BF16 Fast score cannot close F3.
-- Step 1 (executed CPU oracle, not a re-read): extract the real dispatch predicate and the
-  `_mmvq_safe_batch` table from the candidate tree with `ast`, then evaluate the *complete*
-  dispatch cell space for (a) the frozen BF16 launch (does the GGUF module load at all?),
-  (b) a hypothetical GGUF launch at every frozen point's GEMM batch size and the model's
-  real linear-layer row bands. Falsifiable claim to test: **some frozen point has batch
-  <= old threshold, so the patch could move a gate point.** If none does, F3 is score-inert
-  by construction and GPU budget should not be spent on it (hygiene-only).
-- Preserve raw output; report the exact affected batch region and its limits.
+## What the canonical record already fixed before this trial
+- **F3:** GGUF MMVQ threshold fix `f263262` is delivered but **UNGATED**; it
+  must be evaluated before any gain is attributed to it.
+- **Controller applicability-001:** the frozen formal Gate loads Spark-X2.6-1.7B
+  **BF16 safetensors**, not GGUF. The BF16 Fast screen cannot exercise
+  `_mmvq_safe_batch`, so a BF16 score cannot close F3.
+- **C6:** GGUF/NGRAM custom GPU experiments are pending without matching raw
+  evidence; prefer a new CPU falsifier or an applicable BF16 candidate.
+- **C11 / i6:** the host-mirror reachability model missed outer
+  `spec_info`/`kv_indptr` conditions and shared the sum with the mirror.
 
-## Step 2: full-engine bottleneck selection (CPU-side, from frozen contract + traces)
-- Read the frozen gate config and launch builder actually present in this tree; reconstruct
-  each of the 10 points' prompt/concurrency shape.
-- Reuse branch trace/measurement facts (a4 node numbers, trial-1/2 findings) rather than
-  re-derive. Rank remaining levers by (weight x measured gap x semantics risk).
-- Only propose an engine patch if it is semantics-preserving wrt the pinned reference and
-  token-exactness is argued; precision changes stay NOT_CLOSED_QUALITY_BUDGET.
+## Profile (reused committed evidence, no GPU this session)
+Prior deepseek-b executions already answered the throughput levers:
+- g3-t1/t5: `f263262` changes 8 dispatch cells (Q8_0/Q4_K rows<=5120,
+  batches 3-6), **0 cells at any batch >= 16**; all gate points are batch >= 16.
+- g3-t7: the missing `window_left` in `extend_no_prefix` is a real 1.385x
+  prefill-compute ceiling at S=8192 but is **acceptance-incompatible** (the
+  reference wheel runs the same full-attention path); load-time dequant's
+  8.95-11.85x is an L2-resident microbench ceiling that does not transfer.
+- Branch: a4 decode is roofline-closed; trial-1 sync removal was 1.0018
+  KEPT_NEUTRAL with decode points inside +/-2% run variance.
 
-## Step 3 deliverables (reserve final quarter)
-- `seis/trials/deepseek-b/g3-t7/` evidence dir with raw JSON/tables and a README of limits.
-- `iteration-proposal.json` with bottleneck, hypothesis, patch, tests, learning,
-  next_proposal, request_fast_gate (true ONLY for an applicable BF16 candidate).
-- Local git commit with the evidence and any patch. No promotion / EXACT claims.
+## Bottleneck chosen this trial
+The only inherited engine change on top of `f263262` that had never been
+provenance-audited: the t3/t4 **host-mirror** candidate. It replaces the device
+slice bound `kv_indptr[-1]` with the caller's host int `paged_kernel_lens_sum`.
+g3-t6 replayed integer equality over sampled cases but did not ask *where each
+host sum comes from at each caller* — the question that decides whether the
+patch adds a **new** correctness precondition (a potential silent
+under-translation bug).
 
-Kill criteria: if the executed oracle cannot be made to falsify anything and no applicable
-BF16 candidate exists, record the precise negative and do NOT request a gate.
+## Implementation / verification (executed)
+`seis/trials/deepseek-b/g3-t8/verify_callsite_mirror.py` (stdlib,
+`python3 -I`, no torch/GPU/model):
 
-## Close-out (executed)
+1. AST-extracts and line-anchors the two patched expressions and both guards.
+2. Extracts all 14 `paged_kernel_lens_sum*` assignment sites and classifies
+   provenance against the nearest `paged_kernel_lens*` tensor assignment.
+3. Executes the real guard predicates over `spec_info` x `custom_kv_indices` x
+   sum-type configurations.
+4. Replays host-vs-device last-cumsum equality per provenance class with three
+   negative controls.
+5. Checks the surrounding unpatched code for the same host-value dependency.
 
-- Oracle executed: `seis/trials/deepseek-b/g3-t7/verify_lane_closure.py` ->
-  `closure.json`. Model is 1.711B tied params, 21/28 sliding layers,
-  51.40M params/layer. Real matrices (gate_up BF16 54.5 MB, down 27.3 MB,
-  embed 545.3 MB) exceed the <25 MB L2 used by g2-t1's 8.95-11.85x ceiling ->
-  that ceiling does not transfer; and the formal gate is BF16-only, so the
-  GGUF lane is score-unreachable regardless.
-- Sliding-window prefill ceiling: attention is 35.4% of prefill FLOPs at
-  S=8192 (max 1.332x), and HEAD anchors (:1464-1472 vs :1474-1496) confirm the
-  no-prefix branch omits `window_left`; changing it cannot satisfy
-  `valid_exact_token_baseline` against the same full-attention reference.
-- Verdict: no promotable deepseek-b lever established; no gate requested
-  (`request_fast_gate=false`); engine tree left byte-identical.
+Raw output: `seis/trials/deepseek-b/g3-t8/callsite-mirror.json`.
+
+## Result
+- 14 sites; 4 feed the host mirror. Guards admit a non-int sum in **0/21** rows.
+- **0** integer divergences outside controls; **3/3** sensitivity controls
+  flagged (so the equality test is not vacuous).
+- The patch's precondition (`host int == device cumsum last element`) is
+  **already required by unpatched code**: decode builds
+  `global_override_indptr_cpu` from `torch.cumsum(seq_lens_cpu)`; prefill sizes
+  the `kv_indices` buffer as `paged_kernel_lens_sum + 256` before
+  `pack_read_stream`. `new_precondition_introduced = false`.
+- Effect bound: **one D2H per eager step**; dead code under a unified SWA pool
+  (`reads_are_translated`) and zero saving when `seq_lens_cpu is None`. Expected
+  aggregate gain **~0**.
+- **F3 unchanged:** `f263262` remains UNGATED and score-unreachable under the
+  frozen BF16 Gate; only the pre-registered separate GGUF dispatch experiment
+  (whose prerequisites are unmet) can change that.
+
+## Decision
+- **No engine change.** `git diff HEAD -- python/` is empty; the inherited
+  candidate tree is left byte-identical.
+- **`request_fast_gate=false`**: no new engine delta and expected ~0 gain; the
+  controller should not spend a slot on a single-D2H hygiene patch.
+- Next: reallocate deepseek-b slots to the campaign-level numeric-evidence
+  blocker (non-null top-k) or independent verification of another worker's
+  executable claim; run the separate GGUF protocol only if F3 hygiene is wanted.
+
+## Deliverables
+- `plan.md` (this file)
+- `seis/trials/deepseek-b/g3-t8/{verify_callsite_mirror.py, callsite-mirror.json, README.md}`
+- `iteration-proposal.json` with the required string fields and
+  `request_fast_gate=false`
+- local git commit; nothing here is an acceptance by itself.
