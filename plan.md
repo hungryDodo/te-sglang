@@ -121,3 +121,9 @@ Stated limits: audit covers explicit blocking calls
 host-context comparisons) not covered; runtime behavior not observed (no GPU
 here); classification of "overlap-hidden" is by design intent of the overlap
 scheduler, not by measurement.
+
+Final anchor (post-commit verification): FutureMap.resolve_seq_lens_cpu is
+called from scheduler.py:4667/4676 (event loop), never from the forward chain;
+flashinfer_backend.py:2671's comment confirms the design ("resolve_seq_lens_cpu
+already supplies the committed lengths") — the FutureMap syncs are the overlap
+mechanism's own commit point on the scheduler thread, as classified.
