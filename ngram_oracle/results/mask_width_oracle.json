@@ -1,0 +1,873 @@
+{
+  "description": "NGRAM verify mask-assembly vs KV read-width oracle; ports ngram_info.generate_attn_arg_prefill width arithmetic and ngram_worker ones_masks prefix construction.",
+  "draft_token_num": 4,
+  "scenarios": [
+    {
+      "rows_checked": 12,
+      "rows_exact": 12,
+      "first_mismatch": null,
+      "per_req": [
+        {
+          "req": 0,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        },
+        {
+          "req": 1,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        },
+        {
+          "req": 2,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        }
+      ],
+      "flat_consumed": 120,
+      "flat_len": 120,
+      "tail_appended": 0,
+      "scenario": "consistent_host_device",
+      "host_delta": 0,
+      "graph_pad": 0,
+      "tree": "bfs",
+      "mask_numel": 120,
+      "built_numel": 120,
+      "real_rows_checked": 12,
+      "real_rows_exact": 12,
+      "invariant_holds_on_real_rows": true,
+      "verdict": "PASS"
+    },
+    {
+      "rows_checked": 12,
+      "rows_exact": 12,
+      "first_mismatch": null,
+      "per_req": [
+        {
+          "req": 0,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        },
+        {
+          "req": 1,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        },
+        {
+          "req": 2,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        }
+      ],
+      "flat_consumed": 120,
+      "flat_len": 120,
+      "tail_appended": 0,
+      "scenario": "consistent_host_device_chain",
+      "host_delta": 0,
+      "graph_pad": 0,
+      "tree": "chain",
+      "mask_numel": 120,
+      "built_numel": 120,
+      "real_rows_checked": 12,
+      "real_rows_exact": 12,
+      "invariant_holds_on_real_rows": true,
+      "verdict": "PASS"
+    },
+    {
+      "rows_checked": 12,
+      "rows_exact": 0,
+      "first_mismatch": {
+        "req": 0,
+        "row": 0,
+        "extra_cols": [
+          8
+        ],
+        "missing_cols": [
+          4
+        ],
+        "expected_n": 5,
+        "attended_n": 5
+      },
+      "per_req": [
+        {
+          "req": 0,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                8
+              ],
+              "extra_n": 1,
+              "missing_cols": [
+                4
+              ],
+              "missing_n": 1,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                7,
+                8
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                4,
+                5
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                6,
+                7,
+                8
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                3,
+                4,
+                5
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [
+                7,
+                8
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                3,
+                4
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            }
+          ]
+        },
+        {
+          "req": 1,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                7,
+                8,
+                9,
+                10
+              ],
+              "extra_n": 4,
+              "missing_cols": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "missing_n": 4,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                8,
+                9,
+                10
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                2,
+                3,
+                4
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                8,
+                9,
+                10
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                1,
+                2,
+                3
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [],
+              "extra_n": 0,
+              "missing_cols": [
+                1,
+                2,
+                8
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            }
+          ]
+        },
+        {
+          "req": 2,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                6
+              ],
+              "extra_n": 1,
+              "missing_cols": [
+                0
+              ],
+              "missing_n": 1,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                9
+              ],
+              "extra_n": 1,
+              "missing_cols": [
+                6
+              ],
+              "missing_n": 1,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                8,
+                9
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                6
+              ],
+              "missing_n": 1,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [
+                8,
+                9
+              ],
+              "extra_n": 2,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            }
+          ]
+        }
+      ],
+      "flat_consumed": 120,
+      "flat_len": 120,
+      "tail_appended": 12,
+      "scenario": "host_lags_device_k1",
+      "host_delta": -1,
+      "graph_pad": 0,
+      "tree": "bfs",
+      "mask_numel": 120,
+      "built_numel": 108,
+      "real_rows_checked": 12,
+      "real_rows_exact": 0,
+      "invariant_holds_on_real_rows": false,
+      "verdict": "FAIL"
+    },
+    {
+      "rows_checked": 12,
+      "rows_exact": 0,
+      "first_mismatch": {
+        "req": 0,
+        "row": 0,
+        "extra_cols": [
+          7,
+          8
+        ],
+        "missing_cols": [
+          3,
+          4
+        ],
+        "expected_n": 5,
+        "attended_n": 5
+      },
+      "per_req": [
+        {
+          "req": 0,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                7,
+                8
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                3,
+                4
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                6,
+                7,
+                8
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                2,
+                3,
+                4
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                6,
+                7
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                0,
+                1,
+                2
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [],
+              "extra_n": 0,
+              "missing_cols": [
+                0,
+                6
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            }
+          ]
+        },
+        {
+          "req": 1,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                10
+              ],
+              "extra_n": 1,
+              "missing_cols": [
+                0
+              ],
+              "missing_n": 1,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                8,
+                9,
+                10
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                5,
+                6,
+                7
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                8,
+                9
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                4,
+                5
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [],
+              "extra_n": 0,
+              "missing_cols": [
+                0,
+                1,
+                2,
+                8
+              ],
+              "missing_n": 4,
+              "attended_padding_tail": false
+            }
+          ]
+        },
+        {
+          "req": 2,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                8,
+                9
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                5
+              ],
+              "missing_n": 1,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                7,
+                8,
+                9
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                4,
+                5
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                7,
+                8,
+                9
+              ],
+              "extra_n": 3,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [
+                8,
+                9
+              ],
+              "extra_n": 2,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            }
+          ]
+        }
+      ],
+      "flat_consumed": 120,
+      "flat_len": 120,
+      "tail_appended": 24,
+      "scenario": "host_lags_device_k2",
+      "host_delta": -2,
+      "graph_pad": 0,
+      "tree": "bfs",
+      "mask_numel": 120,
+      "built_numel": 96,
+      "real_rows_checked": 12,
+      "real_rows_exact": 0,
+      "invariant_holds_on_real_rows": false,
+      "verdict": "FAIL"
+    },
+    {
+      "rows_checked": 12,
+      "rows_exact": 2,
+      "first_mismatch": {
+        "req": 0,
+        "row": 0,
+        "extra_cols": [
+          5
+        ],
+        "missing_cols": [],
+        "expected_n": 5,
+        "attended_n": 6
+      },
+      "per_req": [
+        {
+          "req": 0,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                5
+              ],
+              "extra_n": 1,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                6,
+                7
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                0
+              ],
+              "missing_n": 1,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                6,
+                7,
+                8
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                0,
+                1
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [
+                7,
+                8
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                0,
+                1,
+                2
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            }
+          ]
+        },
+        {
+          "req": 1,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                7,
+                8,
+                9,
+                10
+              ],
+              "extra_n": 4,
+              "missing_cols": [
+                2,
+                3
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                8,
+                9,
+                10
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "missing_n": 4,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                8,
+                9,
+                10
+              ],
+              "extra_n": 3,
+              "missing_cols": [
+                3,
+                4,
+                5
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [
+                9,
+                10
+              ],
+              "extra_n": 2,
+              "missing_cols": [
+                4,
+                5,
+                6
+              ],
+              "missing_n": 3,
+              "attended_padding_tail": false
+            }
+          ]
+        },
+        {
+          "req": 2,
+          "rows_exact": 2,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                8,
+                9
+              ],
+              "extra_n": 2,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                9
+              ],
+              "extra_n": 1,
+              "missing_cols": [
+                5,
+                6
+              ],
+              "missing_n": 2,
+              "attended_padding_tail": false
+            }
+          ]
+        }
+      ],
+      "flat_consumed": 120,
+      "flat_len": 120,
+      "tail_appended": 0,
+      "scenario": "host_ahead_device_k1",
+      "host_delta": 1,
+      "graph_pad": 0,
+      "tree": "bfs",
+      "mask_numel": 120,
+      "built_numel": 132,
+      "real_rows_checked": 12,
+      "real_rows_exact": 2,
+      "invariant_holds_on_real_rows": false,
+      "verdict": "FAIL"
+    },
+    {
+      "rows_checked": 20,
+      "rows_exact": 12,
+      "first_mismatch": {
+        "req": 3,
+        "row": 0,
+        "extra_cols": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "missing_cols": [],
+        "expected_n": 1,
+        "attended_n": 5
+      },
+      "per_req": [
+        {
+          "req": 0,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        },
+        {
+          "req": 1,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        },
+        {
+          "req": 2,
+          "rows_exact": 4,
+          "rows_checked": 4,
+          "bad_rows": []
+        },
+        {
+          "req": 3,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "extra_n": 4,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                2,
+                3,
+                4
+              ],
+              "extra_n": 3,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                2,
+                3,
+                4
+              ],
+              "extra_n": 3,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [
+                2,
+                3,
+                4
+              ],
+              "extra_n": 3,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            }
+          ]
+        },
+        {
+          "req": 4,
+          "rows_exact": 0,
+          "rows_checked": 4,
+          "bad_rows": [
+            {
+              "row": 0,
+              "extra_cols": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "extra_n": 4,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 1,
+              "extra_cols": [
+                2,
+                3,
+                4
+              ],
+              "extra_n": 3,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 2,
+              "extra_cols": [
+                2,
+                3,
+                4
+              ],
+              "extra_n": 3,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            },
+            {
+              "row": 3,
+              "extra_cols": [
+                2,
+                3,
+                4
+              ],
+              "extra_n": 3,
+              "missing_cols": [],
+              "missing_n": 0,
+              "attended_padding_tail": false
+            }
+          ]
+        }
+      ],
+      "flat_consumed": 160,
+      "flat_len": 160,
+      "tail_appended": 40,
+      "scenario": "graph_batch_padding",
+      "host_delta": 0,
+      "graph_pad": 2,
+      "tree": "bfs",
+      "mask_numel": 160,
+      "built_numel": 120,
+      "real_rows_checked": 12,
+      "real_rows_exact": 12,
+      "invariant_holds_on_real_rows": true,
+      "verdict": "PASS"
+    }
+  ],
+  "summary": {
+    "consistent_pass": true,
+    "mismatch_fails": true
+  }
+}
