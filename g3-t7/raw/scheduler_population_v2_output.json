@@ -1,0 +1,482 @@
+{
+  "trial": "g3-t7",
+  "worker": "glm-b",
+  "supersedes": "g3-t6 (REJECTED as evidence \u2014 script/raw mismatch + hop2b/hop7 IndentationErrors; see g3-t6/VERIFICATION.md)",
+  "question": "Can BatchStrOutput.output_top_logprobs_val be empty at source for the frozen probe shape?",
+  "engine_tree": "python/ identical to 2c854e0 (git diff empty at commit time)",
+  "provenance": {
+    "hop1a_def": "python/sglang/srt/managers/io_struct.py:780-790",
+    "hop1a_k": "python/sglang/srt/managers/io_struct.py:799-801",
+    "hop1a_sl": "python/sglang/srt/managers/io_struct.py:796-798",
+    "hop1b_k": "python/sglang/srt/managers/io_struct.py:569-570",
+    "hop1b_sl": "python/sglang/srt/managers/io_struct.py:567-568",
+    "hop2a": "python/sglang/srt/managers/scheduler.py:3256-3258",
+    "hop2b": "python/sglang/srt/managers/scheduler.py:3260-3273",
+    "hop2c": "python/sglang/srt/managers/scheduler.py:3275-3280",
+    "hop3_extend": "python/sglang/srt/managers/schedule_batch.py:3098-3100",
+    "hop3_decode": "python/sglang/srt/managers/scheduler.py:3868-3870",
+    "hop3_flag": "python/sglang/srt/managers/schedule_batch.py:return_logprob = any(req.return_logprob for req in reqs)",
+    "hop4_guard": "python/sglang/srt/layers/logprob_processor.py:929-933",
+    "hop4_write": "python/sglang/srt/layers/logprob_processor.py:63-75",
+    "hop5": "python/sglang/srt/managers/scheduler_components/logprob_result_processor.py:348-360",
+    "hop6": "python/sglang/srt/managers/scheduler_components/batch_result_processor.py:1173-1180",
+    "hop7": "python/sglang/srt/managers/scheduler_components/output_streamer.py:612-653"
+  },
+  "extraction_failures": [],
+  "shapes": [
+    {
+      "shape": "S_probe",
+      "request": {
+        "return_logprob": true,
+        "top_logprobs_num": 8,
+        "logprob_start_len": null
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "k": [
+            8
+          ],
+          "start_len": [
+            -1
+          ]
+        },
+        "hop1b_tok_normalize": {
+          "k": 8,
+          "start_len": -1
+        },
+        "hop2_start_len_resolution": {
+          "resolved_start_len": 12,
+          "aborted": null
+        },
+        "hop3_batch_flags": {
+          "batch_return_logprob": true,
+          "top_logprobs_nums": [
+            8
+          ]
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback real source) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": true,
+          "next_top_val": "POPULATED",
+          "chosen_next_logprob": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(real guard test)",
+          "guard_passed": true,
+          "appended": 1
+        },
+        "hop6_decode_append": {
+          "evidence": "EXECUTED(real if+body)",
+          "outcome": "appended",
+          "err": null
+        },
+        "hop6_counterfactual_k8_val_none": {
+          "err": "TypeError: 'NoneType' object is not subscriptable",
+          "is_crash": true
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED(real if+body+else)",
+          "forwarded_rows": 1,
+          "forwarded_matches_accumulator_slice": true,
+          "chosen_forwarded": 2,
+          "err": null
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "CENSUS+CONTEXT_READ (not executed)",
+          "occurrences": [
+            "python/sglang/srt/managers/io_struct.py:1654: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/io_struct.py:1749: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/schedule_batch.py:941: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/schedule_batch.py:1314: self.logprob.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/batch_result_processor.py:1175: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/logprob_result_processor.py:355: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:398: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:431: self.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:626: self.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:627: req.logprob.output_top_logprobs_val[",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:650: self.output_top_logprobs_val.append([])",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:773: output_top_logprobs_val=self.output_top_logprobs_val,",
+            "python/sglang/srt/managers/detokenizer_manager.py:497: output_top_logprobs_val=recv_obj.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:322: output_top_logprobs_val: List[List[float]] = dataclasses.field(default_factory=list)",
+            "python/sglang/srt/managers/tokenizer_manager.py:2947: state.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:2961: if len(state.output_top_logprobs_val) > len(state.output_top_logprobs):",
+            "python/sglang/srt/managers/tokenizer_manager.py:2964: state.output_top_logprobs_val[",
+            "python/sglang/srt/managers/tokenizer_manager.py:3062: if recv_obj.output_top_logprobs_val is not None:",
+            "python/sglang/srt/managers/tokenizer_manager.py:3063: state.output_top_logprobs_val.extend(",
+            "python/sglang/srt/managers/tokenizer_manager.py:3064: recv_obj.output_top_logprobs_val[recv_obj_index]",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:242: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:243: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:366: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:367: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:474: \"output_top_logprobs_val\",",
+            "python/sglang/srt/rust_server/server.py:478: or payload.output_top_logprobs_val",
+            "python/sglang/srt/rust_server/server.py:538: payload.output_top_logprobs_val or [],",
+            "python/sglang/srt/disaggregation/decode.py:2614: output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/decode.py:2745: decode_req.req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/disaggregation/decode.py:2746: output_top_logprobs_val[",
+            "python/sglang/srt/disaggregation/utils.py:446: self.output_top_logprobs_val = torch.zeros(",
+            "python/sglang/srt/disaggregation/utils.py:530: self.output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/utils.py:556: self.output_top_logprobs_val[idx].clone(),",
+            "python/sglang/srt/disaggregation/utils.py:612: if req.logprob.output_top_logprobs_val:  # not none or empty list",
+            "python/sglang/srt/disaggregation/utils.py:613: top_logprobs_len = len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:614: max_top_logprobs_len = self.output_top_logprobs_val.shape[1]",
+            "python/sglang/srt/disaggregation/utils.py:621: self.output_top_logprobs_val[req.metadata_buffer_index][",
+            "python/sglang/srt/disaggregation/utils.py:622: : len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:624: req.logprob.output_top_logprobs_val[0],"
+          ],
+          "forwarding_copies_unconditional": "detokenizer_manager.py:497-498 straight field copy inside the BatchStrOutput construction (no conditional wraps output_top_logprobs_val/idx); output_streamer.py:773 passes self.output_top_logprobs_val=... unconditionally (only the flat-format input fields are conditionally nulled there)",
+          "streamer_else_branch_signature": "the if/else at output_streamer.py:611-655 is guarded by req.return_logprob ONLY; the else appends EMPTY lists for chosen output_token_logprobs_val AND top_logprobs_val together, so its observable signature is 'chosen LP absent too' \u2014 it cannot produce the probe's observed 'chosen LP present, top null'",
+          "off_probe_path_sites": "rust_server/server.py (rust frontend), disaggregation/* (PD), multi_tokenizer_mixin.py (--multi-tokenizer-mode) are not on the frozen single-node single-tokenizer probe path; tokenizer_manager.py sites are the response-assembly side closed by g3-t5"
+        }
+      },
+      "harness_errors": {},
+      "verdict": "POPULATED_AT_SOURCE (k>0 executed clean through hop1-hop7; only GPU compute or the response read path can remove it)"
+    },
+    {
+      "shape": "S_start0",
+      "request": {
+        "return_logprob": true,
+        "top_logprobs_num": 8,
+        "logprob_start_len": 0
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "k": [
+            8
+          ],
+          "start_len": [
+            0
+          ]
+        },
+        "hop1b_tok_normalize": {
+          "k": 8,
+          "start_len": 0
+        },
+        "hop2_start_len_resolution": {
+          "resolved_start_len": 0,
+          "aborted": null
+        },
+        "hop3_batch_flags": {
+          "batch_return_logprob": true,
+          "top_logprobs_nums": [
+            8
+          ]
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback real source) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": true,
+          "next_top_val": "POPULATED",
+          "chosen_next_logprob": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(real guard test)",
+          "guard_passed": true,
+          "appended": 1
+        },
+        "hop6_decode_append": {
+          "evidence": "EXECUTED(real if+body)",
+          "outcome": "appended",
+          "err": null
+        },
+        "hop6_counterfactual_k8_val_none": {
+          "err": "TypeError: 'NoneType' object is not subscriptable",
+          "is_crash": true
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED(real if+body+else)",
+          "forwarded_rows": 1,
+          "forwarded_matches_accumulator_slice": true,
+          "chosen_forwarded": 2,
+          "err": null
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "CENSUS+CONTEXT_READ (not executed)",
+          "occurrences": [
+            "python/sglang/srt/managers/io_struct.py:1654: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/io_struct.py:1749: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/schedule_batch.py:941: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/schedule_batch.py:1314: self.logprob.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/batch_result_processor.py:1175: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/logprob_result_processor.py:355: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:398: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:431: self.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:626: self.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:627: req.logprob.output_top_logprobs_val[",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:650: self.output_top_logprobs_val.append([])",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:773: output_top_logprobs_val=self.output_top_logprobs_val,",
+            "python/sglang/srt/managers/detokenizer_manager.py:497: output_top_logprobs_val=recv_obj.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:322: output_top_logprobs_val: List[List[float]] = dataclasses.field(default_factory=list)",
+            "python/sglang/srt/managers/tokenizer_manager.py:2947: state.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:2961: if len(state.output_top_logprobs_val) > len(state.output_top_logprobs):",
+            "python/sglang/srt/managers/tokenizer_manager.py:2964: state.output_top_logprobs_val[",
+            "python/sglang/srt/managers/tokenizer_manager.py:3062: if recv_obj.output_top_logprobs_val is not None:",
+            "python/sglang/srt/managers/tokenizer_manager.py:3063: state.output_top_logprobs_val.extend(",
+            "python/sglang/srt/managers/tokenizer_manager.py:3064: recv_obj.output_top_logprobs_val[recv_obj_index]",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:242: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:243: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:366: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:367: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:474: \"output_top_logprobs_val\",",
+            "python/sglang/srt/rust_server/server.py:478: or payload.output_top_logprobs_val",
+            "python/sglang/srt/rust_server/server.py:538: payload.output_top_logprobs_val or [],",
+            "python/sglang/srt/disaggregation/decode.py:2614: output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/decode.py:2745: decode_req.req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/disaggregation/decode.py:2746: output_top_logprobs_val[",
+            "python/sglang/srt/disaggregation/utils.py:446: self.output_top_logprobs_val = torch.zeros(",
+            "python/sglang/srt/disaggregation/utils.py:530: self.output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/utils.py:556: self.output_top_logprobs_val[idx].clone(),",
+            "python/sglang/srt/disaggregation/utils.py:612: if req.logprob.output_top_logprobs_val:  # not none or empty list",
+            "python/sglang/srt/disaggregation/utils.py:613: top_logprobs_len = len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:614: max_top_logprobs_len = self.output_top_logprobs_val.shape[1]",
+            "python/sglang/srt/disaggregation/utils.py:621: self.output_top_logprobs_val[req.metadata_buffer_index][",
+            "python/sglang/srt/disaggregation/utils.py:622: : len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:624: req.logprob.output_top_logprobs_val[0],"
+          ],
+          "forwarding_copies_unconditional": "detokenizer_manager.py:497-498 straight field copy inside the BatchStrOutput construction (no conditional wraps output_top_logprobs_val/idx); output_streamer.py:773 passes self.output_top_logprobs_val=... unconditionally (only the flat-format input fields are conditionally nulled there)",
+          "streamer_else_branch_signature": "the if/else at output_streamer.py:611-655 is guarded by req.return_logprob ONLY; the else appends EMPTY lists for chosen output_token_logprobs_val AND top_logprobs_val together, so its observable signature is 'chosen LP absent too' \u2014 it cannot produce the probe's observed 'chosen LP present, top null'",
+          "off_probe_path_sites": "rust_server/server.py (rust frontend), disaggregation/* (PD), multi_tokenizer_mixin.py (--multi-tokenizer-mode) are not on the frozen single-node single-tokenizer probe path; tokenizer_manager.py sites are the response-assembly side closed by g3-t5"
+        }
+      },
+      "harness_errors": {},
+      "verdict": "POPULATED_AT_SOURCE (k>0 executed clean through hop1-hop7; only GPU compute or the response read path can remove it)"
+    },
+    {
+      "shape": "S_k0",
+      "request": {
+        "return_logprob": true,
+        "top_logprobs_num": null,
+        "logprob_start_len": null
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "k": [
+            0
+          ],
+          "start_len": [
+            -1
+          ]
+        },
+        "hop1b_tok_normalize": {
+          "k": 0,
+          "start_len": -1
+        },
+        "hop2_start_len_resolution": {
+          "resolved_start_len": 12,
+          "aborted": null
+        },
+        "hop3_batch_flags": {
+          "batch_return_logprob": true,
+          "top_logprobs_nums": [
+            0
+          ]
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback real source) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": false,
+          "next_top_val": null,
+          "chosen_next_logprob": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(real guard test)",
+          "guard_passed": false,
+          "appended": 0
+        },
+        "hop6_decode_append": {
+          "evidence": "EXECUTED(real if+body)",
+          "outcome": "no-append(guard false)",
+          "err": null
+        },
+        "hop6_counterfactual_k8_val_none": {
+          "err": "TypeError: 'NoneType' object is not subscriptable",
+          "is_crash": true
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED(real if+body+else)",
+          "forwarded_rows": 0,
+          "forwarded_matches_accumulator_slice": true,
+          "chosen_forwarded": 2,
+          "err": null
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "CENSUS+CONTEXT_READ (not executed)",
+          "occurrences": [
+            "python/sglang/srt/managers/io_struct.py:1654: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/io_struct.py:1749: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/schedule_batch.py:941: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/schedule_batch.py:1314: self.logprob.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/batch_result_processor.py:1175: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/logprob_result_processor.py:355: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:398: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:431: self.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:626: self.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:627: req.logprob.output_top_logprobs_val[",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:650: self.output_top_logprobs_val.append([])",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:773: output_top_logprobs_val=self.output_top_logprobs_val,",
+            "python/sglang/srt/managers/detokenizer_manager.py:497: output_top_logprobs_val=recv_obj.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:322: output_top_logprobs_val: List[List[float]] = dataclasses.field(default_factory=list)",
+            "python/sglang/srt/managers/tokenizer_manager.py:2947: state.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:2961: if len(state.output_top_logprobs_val) > len(state.output_top_logprobs):",
+            "python/sglang/srt/managers/tokenizer_manager.py:2964: state.output_top_logprobs_val[",
+            "python/sglang/srt/managers/tokenizer_manager.py:3062: if recv_obj.output_top_logprobs_val is not None:",
+            "python/sglang/srt/managers/tokenizer_manager.py:3063: state.output_top_logprobs_val.extend(",
+            "python/sglang/srt/managers/tokenizer_manager.py:3064: recv_obj.output_top_logprobs_val[recv_obj_index]",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:242: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:243: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:366: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:367: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:474: \"output_top_logprobs_val\",",
+            "python/sglang/srt/rust_server/server.py:478: or payload.output_top_logprobs_val",
+            "python/sglang/srt/rust_server/server.py:538: payload.output_top_logprobs_val or [],",
+            "python/sglang/srt/disaggregation/decode.py:2614: output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/decode.py:2745: decode_req.req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/disaggregation/decode.py:2746: output_top_logprobs_val[",
+            "python/sglang/srt/disaggregation/utils.py:446: self.output_top_logprobs_val = torch.zeros(",
+            "python/sglang/srt/disaggregation/utils.py:530: self.output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/utils.py:556: self.output_top_logprobs_val[idx].clone(),",
+            "python/sglang/srt/disaggregation/utils.py:612: if req.logprob.output_top_logprobs_val:  # not none or empty list",
+            "python/sglang/srt/disaggregation/utils.py:613: top_logprobs_len = len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:614: max_top_logprobs_len = self.output_top_logprobs_val.shape[1]",
+            "python/sglang/srt/disaggregation/utils.py:621: self.output_top_logprobs_val[req.metadata_buffer_index][",
+            "python/sglang/srt/disaggregation/utils.py:622: : len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:624: req.logprob.output_top_logprobs_val[0],"
+          ],
+          "forwarding_copies_unconditional": "detokenizer_manager.py:497-498 straight field copy inside the BatchStrOutput construction (no conditional wraps output_top_logprobs_val/idx); output_streamer.py:773 passes self.output_top_logprobs_val=... unconditionally (only the flat-format input fields are conditionally nulled there)",
+          "streamer_else_branch_signature": "the if/else at output_streamer.py:611-655 is guarded by req.return_logprob ONLY; the else appends EMPTY lists for chosen output_token_logprobs_val AND top_logprobs_val together, so its observable signature is 'chosen LP absent too' \u2014 it cannot produce the probe's observed 'chosen LP present, top null'",
+          "off_probe_path_sites": "rust_server/server.py (rust frontend), disaggregation/* (PD), multi_tokenizer_mixin.py (--multi-tokenizer-mode) are not on the frozen single-node single-tokenizer probe path; tokenizer_manager.py sites are the response-assembly side closed by g3-t5"
+        }
+      },
+      "harness_errors": {},
+      "verdict": "EMPTY_AT_SOURCE_BY_REQUEST (k=0; refuted-by-C7 control, matches null signature)"
+    },
+    {
+      "shape": "S_nologprob",
+      "request": {
+        "return_logprob": false,
+        "top_logprobs_num": 8,
+        "logprob_start_len": null
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "k": [
+            8
+          ],
+          "start_len": [
+            -1
+          ]
+        },
+        "hop1b_tok_normalize": {
+          "k": 8,
+          "start_len": -1
+        },
+        "hop2_start_len_resolution": {
+          "resolved_start_len": -1,
+          "aborted": null
+        },
+        "hop3_batch_flags": {
+          "batch_return_logprob": false,
+          "top_logprobs_nums": null
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback real source) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": false,
+          "next_top_val": null,
+          "chosen_next_logprob": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(real guard test)",
+          "guard_passed": false,
+          "appended": 0
+        },
+        "hop6_decode_append": {
+          "evidence": "NOT_REACHED",
+          "why": "_apply_decode_logprobs only runs under the caller's batch.return_logprob guard (batch_result_processor.py:1132); shape has return_logprob=False"
+        },
+        "hop6_counterfactual_k8_val_none": {
+          "err": "TypeError: 'NoneType' object is not subscriptable",
+          "is_crash": true
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED(real if+body+else)",
+          "forwarded_rows": 0,
+          "forwarded_matches_accumulator_slice": true,
+          "chosen_forwarded": 0,
+          "err": null
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "CENSUS+CONTEXT_READ (not executed)",
+          "occurrences": [
+            "python/sglang/srt/managers/io_struct.py:1654: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/io_struct.py:1749: output_top_logprobs_val: TopLogprobValues",
+            "python/sglang/srt/managers/schedule_batch.py:941: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/schedule_batch.py:1314: self.logprob.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/batch_result_processor.py:1175: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/logprob_result_processor.py:355: req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:398: output_top_logprobs_val: Optional[list] = None",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:431: self.output_top_logprobs_val = []",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:626: self.output_top_logprobs_val.append(",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:627: req.logprob.output_top_logprobs_val[",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:650: self.output_top_logprobs_val.append([])",
+            "python/sglang/srt/managers/scheduler_components/output_streamer.py:773: output_top_logprobs_val=self.output_top_logprobs_val,",
+            "python/sglang/srt/managers/detokenizer_manager.py:497: output_top_logprobs_val=recv_obj.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:322: output_top_logprobs_val: List[List[float]] = dataclasses.field(default_factory=list)",
+            "python/sglang/srt/managers/tokenizer_manager.py:2947: state.output_top_logprobs_val,",
+            "python/sglang/srt/managers/tokenizer_manager.py:2961: if len(state.output_top_logprobs_val) > len(state.output_top_logprobs):",
+            "python/sglang/srt/managers/tokenizer_manager.py:2964: state.output_top_logprobs_val[",
+            "python/sglang/srt/managers/tokenizer_manager.py:3062: if recv_obj.output_top_logprobs_val is not None:",
+            "python/sglang/srt/managers/tokenizer_manager.py:3063: state.output_top_logprobs_val.extend(",
+            "python/sglang/srt/managers/tokenizer_manager.py:3064: recv_obj.output_top_logprobs_val[recv_obj_index]",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:242: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:243: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:366: output_top_logprobs_val=_extract_field_by_index(",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:367: output, \"output_top_logprobs_val\", i, check_length=False",
+            "python/sglang/srt/managers/multi_tokenizer_mixin.py:474: \"output_top_logprobs_val\",",
+            "python/sglang/srt/rust_server/server.py:478: or payload.output_top_logprobs_val",
+            "python/sglang/srt/rust_server/server.py:538: payload.output_top_logprobs_val or [],",
+            "python/sglang/srt/disaggregation/decode.py:2614: output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/decode.py:2745: decode_req.req.logprob.output_top_logprobs_val.append(",
+            "python/sglang/srt/disaggregation/decode.py:2746: output_top_logprobs_val[",
+            "python/sglang/srt/disaggregation/utils.py:446: self.output_top_logprobs_val = torch.zeros(",
+            "python/sglang/srt/disaggregation/utils.py:530: self.output_top_logprobs_val,",
+            "python/sglang/srt/disaggregation/utils.py:556: self.output_top_logprobs_val[idx].clone(),",
+            "python/sglang/srt/disaggregation/utils.py:612: if req.logprob.output_top_logprobs_val:  # not none or empty list",
+            "python/sglang/srt/disaggregation/utils.py:613: top_logprobs_len = len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:614: max_top_logprobs_len = self.output_top_logprobs_val.shape[1]",
+            "python/sglang/srt/disaggregation/utils.py:621: self.output_top_logprobs_val[req.metadata_buffer_index][",
+            "python/sglang/srt/disaggregation/utils.py:622: : len(req.logprob.output_top_logprobs_val[0])",
+            "python/sglang/srt/disaggregation/utils.py:624: req.logprob.output_top_logprobs_val[0],"
+          ],
+          "forwarding_copies_unconditional": "detokenizer_manager.py:497-498 straight field copy inside the BatchStrOutput construction (no conditional wraps output_top_logprobs_val/idx); output_streamer.py:773 passes self.output_top_logprobs_val=... unconditionally (only the flat-format input fields are conditionally nulled there)",
+          "streamer_else_branch_signature": "the if/else at output_streamer.py:611-655 is guarded by req.return_logprob ONLY; the else appends EMPTY lists for chosen output_token_logprobs_val AND top_logprobs_val together, so its observable signature is 'chosen LP absent too' \u2014 it cannot produce the probe's observed 'chosen LP present, top null'",
+          "off_probe_path_sites": "rust_server/server.py (rust frontend), disaggregation/* (PD), multi_tokenizer_mixin.py (--multi-tokenizer-mode) are not on the frozen single-node single-tokenizer probe path; tokenizer_manager.py sites are the response-assembly side closed by g3-t5"
+        }
+      },
+      "harness_errors": {},
+      "verdict": "EMPTY_AT_SOURCE (return_logprob=False; empties chosen LP too \u2014 contradicts probe observation)"
+    }
+  ],
+  "discrimination": [
+    {
+      "hypothesis": "k=0 at request normalize",
+      "status": "EXCLUDED by C7 (frozen probe sends top_logprobs_num=8); control shape EMPTY_AT_SOURCE_BY_REQUEST (k=0; refuted-by-C7 control, matches null signature)"
+    },
+    {
+      "hypothesis": "scheduler-side silent empty population for probe shape",
+      "status": "EXCLUDED if S_probe/S_start0 executed clean with POPULATED_AT_SOURCE: the only silent-skip site (hop5) requires next_token_top_logprobs_val=None, which hop4's batch-level any(k>0) guard prevents for k=8; hop6 crashes (TypeError) instead of silently skipping; hop7's else empties chosen LP too"
+    },
+    {
+      "hypothesis": "response read-path field mismatch (g3-t5)",
+      "status": "STANDING \u2014 consistent with all executed evidence; probe read names structurally absent on the native surface"
+    },
+    {
+      "hypothesis": "logprob_start_len gates output top-k",
+      "status": "EXCLUDED by hop2 execution: -1 resolves to len(origin_input_ids) (12) with no abort; start_len scopes INPUT logprobs only \u2014 output containers/appends (hops 5-7) do not read it"
+    }
+  ],
+  "scope_limits": [
+    "torch.topk rows are fixtures (ASSUMED_GPU); guards and write-backs are executed real source (ast.unparse = AST-identical)",
+    "hop8 is census + context read, not executed",
+    "single-request batch; mixed batches exercise the same batch-level any() guard",
+    "speculative-decode / PD-disaggregation / rust-server / multi-tokenizer paths not exercised (off frozen probe path)",
+    "CPU-side evidence only; no GPU, no live server, no HTTP"
+  ]
+}
