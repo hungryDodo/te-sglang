@@ -40,7 +40,7 @@ The chain topology and the four-way discrimination were correct; v2 confirms the
 with zero harness errors on all shapes, including the previously-dead hop2b and hop7,
 plus new coverage: hop6 counterfactual (k>0 + None → TypeError crash, not silent
 null), hop6 reachability guard (`batch.return_logprob` at batch_result_processor.py:1132),
-and a full census of all 38 `output_top_logprobs_val` occurrences with the streamer
+and a full census of all 39 `output_top_logprobs_val` occurrences with the streamer
 else-branch signature analysis (empties chosen LP too → cannot match the observed
 "chosen LP present, top null").
 
