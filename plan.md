@@ -63,3 +63,12 @@ history rewritten, F4 artifact intact.
 Promotion claims; any precision-quality closure; NGRAM/MMVQ lanes (other
 workers' entries); triton attention / graph-coverage>64 / Q8_0 GGUF re-gates
 (binding negatives); a verbatim repeat of trial-2's blocked candidate×3 ask.
+
+## Final state
+
+- Candidate HEAD: b72f4493fa0e45b8ca05f66436281bad44095c8b (exact-BF16 decomposition
+  candidate; fp8 remap env-gated SGLANG_SPARK_FP8_KV, default off).
+- iteration-proposal.json: request_fast_gate=true on b72f4493, attribution guard
+  = boot log line + resolved kv_cache_dtype check; decision tree (a/b/c) inside.
+- fp8 lineage intact at 2f3a916/999f93e for the F4 candidate-x3 when numeric
+  prerequisites close.
