@@ -1,0 +1,5 @@
+case0 p=15 best_off_q=[4, 13, 7, 5, 6] argmax=False meandiff=0.5508 onTokARGMAXat=[] inTop8at=[1, 6, 9, 14, 17, 22, 25, 30] at_p(am=False,mean=3.664,max=4.823)
+case1 p=4 best_off_q=[7, 6, 4, 5, 12] argmax=False meandiff=0.4063 onTokARGMAXat=[] inTop8at=[4, 12, 20, 28, 36, 44] at_p(am=False,mean=0.7342,max=1.405)
+case2 p=4 best_off_q=[4, 6, 5, 12, 13] argmax=False meandiff=0.722 onTokARGMAXat=[] inTop8at=[] at_p(am=False,mean=0.722,max=1.116)
+case3 p=6 best_off_q=[8, 5, 6, 4, 13] argmax=False meandiff=0.3961 onTokARGMAXat=[] inTop8at=[6, 14, 22, 30, 38, 46] at_p(am=False,mean=0.6146,max=0.9323)
+pre_div {"n_positions": 53, "argmax_match_fraction": 1.0, "bins_max_abs_lp_diff_common": {"le_0.05": 10, "0.05_0.5": 9, "0.5_2": 17, "gt_2": 17}, "max_chosen_lp_diff": 1.3244487419724464, "n_chosen_lp_diff_gt_0.5": 6, "n_off_chosen_not_own_argmax": 0, "n_on_chosen_not_own_argmax": 0}

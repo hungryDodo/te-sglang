@@ -1,0 +1,614 @@
+{
+ "cases": [
+  {
+   "best_off_positions_by_match": [
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 0.988276481628418,
+     "mean_abs_lp_diff_common": 0.550776481628418,
+     "n_common": 2,
+     "offset_vs_p": -11,
+     "q": 4,
+     "q_token": 258
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 0.7373647689819336,
+     "mean_abs_lp_diff_common": 0.7373647689819336,
+     "n_common": 1,
+     "offset_vs_p": -2,
+     "q": 13,
+     "q_token": 110430
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 2.111753761768341,
+     "mean_abs_lp_diff_common": 0.9296874552965164,
+     "n_common": 4,
+     "offset_vs_p": -8,
+     "q": 7,
+     "q_token": 100023
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 1.9583230018615723,
+     "mean_abs_lp_diff_common": 1.03125,
+     "n_common": 2,
+     "offset_vs_p": -10,
+     "q": 5,
+     "q_token": 110430
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 2.290677070617676,
+     "mean_abs_lp_diff_common": 1.7281770706176758,
+     "n_common": 3,
+     "offset_vs_p": -9,
+     "q": 6,
+     "q_token": 48977
+    }
+   ],
+   "case": 0,
+   "n_off_positions_where_on_token_is_argmax": 0,
+   "off_positions_where_on_token_is_argmax": [],
+   "off_primary_top1_lp": -0.0022518294863402843,
+   "off_primary_vs_off_replay_at_p": {
+    "argmax_match": true,
+    "bit_identical": false,
+    "max_abs_lp_diff_common": 0.1444549560546875,
+    "mean_abs_lp_diff_common": 0.0619926085928455,
+    "n_common": 8
+   },
+   "off_top8_at_p": [
+    [
+     -0.0022518294863402843,
+     100023
+    ],
+    [
+     -6.951470375061035,
+     44157
+    ],
+    [
+     -8.076470375061035,
+     4314
+    ],
+    [
+     -8.420220375061035,
+     34341
+    ],
+    [
+     -10.076470375061035,
+     1452
+    ],
+    [
+     -10.138970375061035,
+     52457
+    ],
+    [
+     -10.138970375061035,
+     45817
+    ],
+    [
+     -10.201470375061035,
+     85142
+    ]
+   ],
+   "on_chosen_lp": -1.7843565940856934,
+   "on_committed_token": 3642,
+   "on_reported_top1_lp": -1.7843565940856934,
+   "on_token_in_any_off_top8_position": [
+    1,
+    6,
+    9,
+    14,
+    17,
+    22,
+    25,
+    30,
+    33,
+    38,
+    41,
+    46
+   ],
+   "on_top8": [
+    [
+     -1.7843565940856934,
+     3642
+    ],
+    [
+     -2.3468565940856934,
+     100023
+    ],
+    [
+     -2.3781065940856934,
+     220
+    ],
+    [
+     -3.3468565940856934,
+     1685
+    ],
+    [
+     -3.4093565940856934,
+     276
+    ],
+    [
+     -3.4718565940856934,
+     4901
+    ],
+    [
+     -3.5968565940856934,
+     34341
+    ],
+    [
+     -4.253106594085693,
+     4314
+    ]
+   ],
+   "on_vs_off_at_p": {
+    "argmax_match": false,
+    "max_abs_lp_diff_common": 4.823363780975342,
+    "mean_abs_lp_diff_common": 3.6637774421833456,
+    "n_common": 3,
+    "offset_vs_p": 0,
+    "q": 15,
+    "q_token": 100023
+   },
+   "p": 15
+  },
+  {
+   "best_off_positions_by_match": [
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 0.40628576278686523,
+     "mean_abs_lp_diff_common": 0.40628576278686523,
+     "n_common": 1,
+     "offset_vs_p": 3,
+     "q": 7,
+     "q_token": 100023
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 1.0314106941223145,
+     "mean_abs_lp_diff_common": 0.7189106941223145,
+     "n_common": 2,
+     "offset_vs_p": 2,
+     "q": 6,
+     "q_token": 48977
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 1.4051780700683594,
+     "mean_abs_lp_diff_common": 0.7341606140136718,
+     "n_common": 5,
+     "offset_vs_p": 0,
+     "q": 4,
+     "q_token": 258
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 1.851738452911377,
+     "mean_abs_lp_diff_common": 1.0755794843037922,
+     "n_common": 3,
+     "offset_vs_p": 1,
+     "q": 5,
+     "q_token": 110430
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 2.569983959197998,
+     "mean_abs_lp_diff_common": 2.1289062332361937,
+     "n_common": 2,
+     "offset_vs_p": 8,
+     "q": 12,
+     "q_token": 258
+    }
+   ],
+   "case": 1,
+   "n_off_positions_where_on_token_is_argmax": 0,
+   "off_positions_where_on_token_is_argmax": [],
+   "off_primary_top1_lp": -1.7860312461853027,
+   "off_primary_vs_off_replay_at_p": {
+    "argmax_match": true,
+    "bit_identical": false,
+    "max_abs_lp_diff_common": 0.1426246166229248,
+    "mean_abs_lp_diff_common": 0.08984372019767761,
+    "n_common": 8
+   },
+   "off_top8_at_p": [
+    [
+     -1.7860312461853027,
+     258
+    ],
+    [
+     -2.8485312461853027,
+     86
+    ],
+    [
+     -2.8485312461853027,
+     27
+    ],
+    [
+     -3.3172812461853027,
+     220
+    ],
+    [
+     -3.4735312461853027,
+     276
+    ],
+    [
+     -4.223531246185303,
+     397
+    ],
+    [
+     -4.223531246185303,
+     302
+    ],
+    [
+     -4.254781246185303,
+     784
+    ]
+   ],
+   "on_chosen_lp": -1.659959316253662,
+   "on_committed_token": 86,
+   "on_reported_top1_lp": -1.659959316253662,
+   "on_token_in_any_off_top8_position": [
+    4,
+    12,
+    20,
+    28,
+    36,
+    44
+   ],
+   "on_top8": [
+    [
+     -1.659959316253662,
+     86
+    ],
+    [
+     -1.706834316253662,
+     258
+    ],
+    [
+     -3.691209316253662,
+     220
+    ],
+    [
+     -4.034959316253662,
+     4901
+    ],
+    [
+     -4.097459316253662,
+     276
+    ],
+    [
+     -4.253709316253662,
+     27
+    ],
+    [
+     -4.534959316253662,
+     282
+    ],
+    [
+     -4.659959316253662,
+     775
+    ]
+   ],
+   "on_vs_off_at_p": {
+    "argmax_match": false,
+    "max_abs_lp_diff_common": 1.4051780700683594,
+    "mean_abs_lp_diff_common": 0.7341606140136718,
+    "n_common": 5,
+    "offset_vs_p": 0,
+    "q": 4,
+    "q_token": 258
+   },
+   "p": 4
+  },
+  {
+   "best_off_positions_by_match": [
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 1.115877628326416,
+     "mean_abs_lp_diff_common": 0.7220012843608856,
+     "n_common": 4,
+     "offset_vs_p": 0,
+     "q": 4,
+     "q_token": 258
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 1.4668617248535156,
+     "mean_abs_lp_diff_common": 0.9062501192092896,
+     "n_common": 2,
+     "offset_vs_p": 2,
+     "q": 6,
+     "q_token": 48977
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 1.5886826515197754,
+     "mean_abs_lp_diff_common": 0.9453125,
+     "n_common": 2,
+     "offset_vs_p": 1,
+     "q": 5,
+     "q_token": 110430
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 2.6575959902256727,
+     "mean_abs_lp_diff_common": 1.8886718144640326,
+     "n_common": 2,
+     "offset_vs_p": 8,
+     "q": 12,
+     "q_token": 258
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 3.42726993560791,
+     "mean_abs_lp_diff_common": 2.25539493560791,
+     "n_common": 2,
+     "offset_vs_p": 9,
+     "q": 13,
+     "q_token": 110430
+    }
+   ],
+   "case": 2,
+   "n_off_positions_where_on_token_is_argmax": 0,
+   "off_positions_where_on_token_is_argmax": [],
+   "off_primary_top1_lp": -1.7494007349014282,
+   "off_primary_vs_off_replay_at_p": {
+    "argmax_match": true,
+    "bit_identical": false,
+    "max_abs_lp_diff_common": 0.13324499130249023,
+    "mean_abs_lp_diff_common": 0.07009632885456085,
+    "n_common": 8
+   },
+   "off_top8_at_p": [
+    [
+     -1.7494007349014282,
+     258
+    ],
+    [
+     -2.7181506156921387,
+     86
+    ],
+    [
+     -2.9056506156921387,
+     27
+    ],
+    [
+     -3.3431506156921387,
+     220
+    ],
+    [
+     -3.4994006156921387,
+     276
+    ],
+    [
+     -4.249400615692139,
+     784
+    ],
+    [
+     -4.249400615692139,
+     397
+    ],
+    [
+     -4.280650615692139,
+     302
+    ]
+   ],
+   "on_chosen_lp": -2.6465282440185547,
+   "on_committed_token": 267,
+   "on_reported_top1_lp": -2.6465282440185547,
+   "on_token_in_any_off_top8_position": [],
+   "on_top8": [
+    [
+     -2.6465282440185547,
+     267
+    ],
+    [
+     -2.6777782440185547,
+     258
+    ],
+    [
+     -2.9902782440185547,
+     276
+    ],
+    [
+     -3.0527782440185547,
+     86
+    ],
+    [
+     -3.4902782440185547,
+     4901
+    ],
+    [
+     -3.8027782440185547,
+     351
+    ],
+    [
+     -3.9277782440185547,
+     3642
+    ],
+    [
+     -4.021528244018555,
+     27
+    ]
+   ],
+   "on_vs_off_at_p": {
+    "argmax_match": false,
+    "max_abs_lp_diff_common": 1.115877628326416,
+    "mean_abs_lp_diff_common": 0.7220012843608856,
+    "n_common": 4,
+    "offset_vs_p": 0,
+    "q": 4,
+    "q_token": 258
+   },
+   "p": 4
+  },
+  {
+   "best_off_positions_by_match": [
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 0.3961300849914551,
+     "mean_abs_lp_diff_common": 0.3961300849914551,
+     "n_common": 1,
+     "offset_vs_p": 2,
+     "q": 8,
+     "q_token": 109536
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 0.7638440132141113,
+     "mean_abs_lp_diff_common": 0.4375,
+     "n_common": 2,
+     "offset_vs_p": -1,
+     "q": 5,
+     "q_token": 110430
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 0.9323253631591797,
+     "mean_abs_lp_diff_common": 0.6146073256220136,
+     "n_common": 7,
+     "offset_vs_p": 0,
+     "q": 6,
+     "q_token": 48977
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 0.755836009979248,
+     "mean_abs_lp_diff_common": 0.65625,
+     "n_common": 2,
+     "offset_vs_p": -2,
+     "q": 4,
+     "q_token": 258
+    },
+    {
+     "argmax_match": false,
+     "max_abs_lp_diff_common": 3.767733573913574,
+     "mean_abs_lp_diff_common": 1.8927335739135742,
+     "n_common": 2,
+     "offset_vs_p": 7,
+     "q": 13,
+     "q_token": 110430
+    }
+   ],
+   "case": 3,
+   "n_off_positions_where_on_token_is_argmax": 0,
+   "off_positions_where_on_token_is_argmax": [],
+   "off_primary_top1_lp": -0.582139790058136,
+   "off_primary_vs_off_replay_at_p": {
+    "argmax_match": true,
+    "bit_identical": false,
+    "max_abs_lp_diff_common": 0.03837728500366211,
+    "mean_abs_lp_diff_common": 0.030035981110164096,
+    "n_common": 7
+   },
+   "off_top8_at_p": [
+    [
+     -0.582139790058136,
+     48977
+    ],
+    [
+     -1.7383897304534912,
+     1271
+    ],
+    [
+     -3.582139730453491,
+     3642
+    ],
+    [
+     -3.769639730453491,
+     1028
+    ],
+    [
+     -4.45713996887207,
+     302
+    ],
+    [
+     -4.45713996887207,
+     276
+    ],
+    [
+     -4.55088996887207,
+     2581
+    ],
+    [
+     -4.61338996887207,
+     220
+    ]
+   ],
+   "on_chosen_lp": -1.4466896057128906,
+   "on_committed_token": 1271,
+   "on_reported_top1_lp": -1.4466896057128906,
+   "on_token_in_any_off_top8_position": [
+    6,
+    14,
+    22,
+    30,
+    38,
+    46
+   ],
+   "on_top8": [
+    [
+     -1.4466896057128906,
+     1271
+    ],
+    [
+     -1.4623146057128906,
+     48977
+    ],
+    [
+     -2.9310646057128906,
+     3642
+    ],
+    [
+     -3.5248146057128906,
+     302
+    ],
+    [
+     -3.5560646057128906,
+     1028
+    ],
+    [
+     -3.6185646057128906,
+     2581
+    ],
+    [
+     -4.056064605712891,
+     276
+    ],
+    [
+     -4.462314605712891,
+     351
+    ]
+   ],
+   "on_vs_off_at_p": {
+    "argmax_match": false,
+    "max_abs_lp_diff_common": 0.9323253631591797,
+    "mean_abs_lp_diff_common": 0.6146073256220136,
+    "n_common": 7,
+    "offset_vs_p": 0,
+    "q": 6,
+    "q_token": 48977
+   },
+   "p": 6
+  }
+ ],
+ "limits": "Response-level real packet only: 4 replay cases / 3 unique prefixes; replay probes are max_tokens=1. LP values are BF16 engine reports, not recomputed logits. No live accept-len=1, mask, KV-mover or overlap observation; nothing here is a gate, speed, numeric or promotion claim.",
+ "pre_divergence_histogram": {
+  "argmax_match_fraction": 1.0,
+  "bins_max_abs_lp_diff_common": {
+   "0.05_0.5": 9,
+   "0.5_2": 17,
+   "gt_2": 17,
+   "le_0.05": 10
+  },
+  "max_chosen_lp_diff": 1.3244487419724464,
+  "n_chosen_lp_diff_gt_0.5": 6,
+  "n_off_chosen_not_own_argmax": 0,
+  "n_on_chosen_not_own_argmax": 0,
+  "n_positions": 53
+ }
+}
