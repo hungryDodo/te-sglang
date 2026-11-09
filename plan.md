@@ -1,98 +1,66 @@
-# G3 trial 6 — deepseek-a: NGRAM accept-path correctness (diagnose / fix)
+# G3 trial 7 — deepseek-a — NGRAM accept-path bounded CPU oracle (with self-diagonal)
 
-## Context
+## Context (canonical)
+- **F1**: NGRAM self-speculation throughput +21.6% real, but greedy correctness NOT preserved
+  (divergence set == ON nondeterminism set; committed tokens 1.0–3.9 nat behind replay argmax).
+  **No promotion** until fixed and re-adjudicated ALGORITHM_PRESERVING.
+- Previous a3/i3, i4, i5 results are **partial**: i4 model was correct only on its own
+  assumptions; i5 mask model (and its expected rows) **omitted the self diagonal**, while real
+  `fillResult` sets `mask[i*n+i]=1`. So i5's 12/12 does NOT certify real mask assembly.
+- Next-task directive (completion-and-controller-capabilities-001 /
+  ngram-mask-width-review-005): a **bounded fixed CPU topology/accept-index oracle** that
+  *includes the current token + ancestors*, compares **exact source conventions**, preserves
+  fault controls, and states its synthetic scope. Not another whole-source sweep.
 
-Canonical F1: NGRAM self-speculation is **BUG_CONFIRMED** (G2-E1). Throughput
-+21.6% is real but greedy t=0 output diverges (12/48 comparable passes; ON
-pass-nondeterministic 6/24, OFF 0/24; committed token 1.0–3.9 nat behind a
-replay-stable argmax). Promotion is forbidden until an ALGORITHM_PRESERVING fix
-is demonstrated.
+## Objective (this trial, CPU only; no GPU/SSH)
+Build and *execute* one bounded oracle that models the real NGRAM verify/accept path from
+extracted source expressions, including the self diagonal, and determine whether a concrete
+off-by-one / indexing defect explains the F1 divergence signature (first-diff at positions
+4 and 6, ON nondeterminism, wrong committed token reported as its own top-1).
 
-Trial-3 source audit narrowed the fault to two live candidates:
+Sub-questions, ranked:
+1. **Q1 (accept-index semantics).** In the flat verify layout
+   `target_predict = argmax(logits).reshape(bs, draft_token_num)`, does the C++ accept loop
+   compare the *child* draft token against the **parent** row's argmax, or against its own
+   row? Model both variants over the exact BFS/`retrieve_index` topology produced by
+   `ngram_info`/`spec_tree` for CUDA, with the self-diagonal mask semantics of real
+   `fillResult`. Which variant reproduces greedy on a synthetic controlled corpus, and which
+   reproduces the observed divergence pattern?
+2. **Q2 (bonus row).** `bonus = target_predict[last_accepted_retrive_idx]` — is the bonus the
+   argmax of the last accepted row (correct: next-token distribution after accepted prefix)
+   or off by one under any accept-length (esp. accept_len == 1, the untested discriminator
+   from trial 3)?
+3. **Q3 (commit slice).** `predict[accept_index]` commit set: does it include exactly the
+   accepted draft tokens plus the bonus, in tree order, and is it consistent with the KV
+   compaction rows? Fault controls: empty accept, full accept, single-node accept.
 
-- **A** — verify-row context misalignment: the flat `target_predict` indexed by
-  `last_accepted_retrive_idx` (eagle_utils.py:630-655) does not correspond to
-  the tree node the draft token came from, i.e. logits argmax is computed under
-  the wrong prefix (mask/positions/BFS order vs flat index).
-- **B** — post-commit KV/bonus misalignment (`move_accept_tokens_to_target_kvcache`
-  / `out_cache_loc`/`accept_index`), so the committed context is polluted.
+## Method
+- Extract the **real source expressions** with `ast` (like glm-b's successful pattern) from
+  `ngram_info.py`, `spec_tree.py`, `eagle_utils.py`, `ngram_worker.py`; assert line anchors.
+- Build a pure-stdlib oracle with an explicit, documented mask including `mask[i][i] = 1`
+  (self), ancestors, and root handling; compare two independent mask conventions where the
+  source is ambiguous.
+- Ground truth = greedy reference decode on the same token distribution (synthetic
+  deterministic logits with known repeats, plus fault-injected logits).
+- Fault controls that must FAIL the oracle (sensitivity): missing self diagonal, ancestor
+  omitted, off-by-one accept index, bonus taken from wrong row.
+- Preserve raw JSON output under `g3-t7/raw/`.
+- State limits: synthetic CPU model, not a live CUDA/overlap reproduction.
 
-C4 adds: `retrieve_index` identity does **not** exclude accepted rows `[0,2,4]`
-needing compaction to `[0,1,2]`.
+## Deliverables
+- `g3-t7/topology_accept_oracle.py` (+ raw output).
+- `reports/rsi/g3-t7-ngram-accept-oracle.md` — what is falsified, what remains open.
+- `iteration-proposal.json` with bottleneck/hypothesis/patch/tests/learning/next_proposal
+  and `request_fast_gate` (false unless a BF16-applicable engine candidate is justified —
+  NGRAM must NOT be promoted while unresolved).
+- Git commit(s), early recoverable checkpoint.
 
-## Plan (bounded, ~20 min, CPU only)
+## Budget / stop rule
+45 turns, 20 min, USD 3. Reserve final quarter for proposal JSON + tests + final commit.
+A precise executed negative finding is a valid Iteration.
 
-1. Read the pinned NGRAM accept path: `ngram_worker.py` (`_prepare_draft_tokens`,
-   accept/commit), `eagle_utils.py` (tree mask/position/target_predict),
-   `spec_utils.py` (KV move), `ngram_info.py` (tree construction).
-2. Build a **pure-CPU, deterministic topology oracle** that replicates the
-   exact index arithmetic from the pinned source (extract expressions where
-   possible) for a small BFS tree, and checks the invariant:
-   for every accepted draft token, its verify row's logits must be computed
-   under the prefix that ends at that draft token's parent; the bonus token
-   taken from `target_predict[last_accepted_retrive_idx]` must be the argmax
-   continuation of the *committed* context.
-3. Falsifier: if the oracle finds a concrete (tree, accept-path) where the row
-   used for the bonus/commit is NOT the row whose prefix equals the committed
-   prefix, that is candidate A confirmed with an exact mechanism; if instead
-   the tree arithmetic is causal for all reachable accept paths, A is refuted
-   and the remaining blame shifts to B (KV move), which this trial will state
-   as the precise open question rather than re-sweeping the whole source.
-4. Preserve raw oracle output + the extracted source anchors under
-   `reports/rsi/` (or a dedicated trial dir). No GPU/SSH; do not claim live
-   measurement.
-5. Write `iteration-proposal.json` with string fields
-   `bottleneck,hypothesis,patch,tests,learning,next_proposal` and boolean
-   `request_fast_gate`, commit.
-
-## Decision rules
-
-- **Kill rule**: if the CPU oracle cannot be tied to the pinned source
-  expressions (anchors drift / semantics are not faithful), record
-  INCONCLUSIVE and do not patch.
-- Any patch must be a *correctness* patch (ALGORITHM_PRESERVING direction), not
-  a speed patch; no promotion claim is made this trial.
-- `request_fast_gate=false` unless a genuinely BF16-applicable, correctness-
-  clean candidate exists. NGRAM must not be promoted while unresolved.
-- Negative findings are a valid iteration; no invented measurements.
-
-## Constraints
-
-- Frozen workload/evaluator/corpus/seed/reference untouched.
-- No precision change; BF16 frozen. Quality budgets remain NOT_CLOSED where
-  undefined.
-- Provider identity claims remain unverified without gateway evidence.
-
----
-
-## RESULTS (executed, CPU-only, this session)
-
-Prior branch state: t3 mask-contract audit + `_sanitize_tree_mask` no-op guard;
-t4 topology/accept-index/KV-mover oracle (compaction excluded given a valid
-root); t5 single-request mask-width oracle (latent h_i != d_i hazard). This
-session does not repeat them.
-
-New component: **batched flat-mask block alignment** on the FA2 CUDA-graph
-verify path — builder uses host per-request widths, packer uses
-device-cumulative offsets.
-
-- Artifact: `ngram_oracle/verify_window_oracle.py`; raw output
-  `ngram_oracle/results/verify_window_oracle.json`; write-up
-  `ngram_oracle/README-verify-window.md`. `python3 -I`, stdlib only, exit 0.
-- Ported: `ngram_worker.py:352-361` build; `ngram_info.py:76-117`
-  device-derived `mask_numel` + global True padding;
-  `flashinfer_backend.py:263-285` packed_indptr capacity-only assert;
-  `pack_verify_mask.py:12-24` `kv_start*Q` block read.
-- Result: aligned 32/32, 36/36, 40/40 bits exact. Mid-batch drift (req1
-  d=6/h=5): req0 exact, req1 18/40 bits wrong, **req2 16/40 bits wrong while
-  req2 is itself aligned** — cross-request contamination. First-request drift:
-  all three requests wrong (12/28, 16/36, 16/40). No exception anywhere.
-- Interpretation: exactness requires `h_i == d_i` for every request; a single
-  drift shifts all later blocks in the same flat buffer and the True padding
-  hides the size mismatch. Reachability of drift is **NOT established**
-  (FutureMap audit argues equality), so this is a sharper latent hazard +
-  falsifier, not the F1 root cause and not a fix.
-
-No engine change; no GPU/fast gate (`request_fast_gate=false`); no throughput,
-quality, EXACT or promotion claim. NGRAM remains non-promotable until an
-ALGORITHM_PRESERVING adjudication on a fixed commit.
+## RESULT (executed, 2026-11-09)
+- Oracle `g3-t7/accept_oracle.py` exit 0; raw `g3-t7/raw/accept_oracle.json`.
+- Clean scenarios all exact (bs1 D8, bs3 mixed trees, branch tops, D12); sanitize drops 0 bits; KV mapping exact.
+- Faults diverge: no_self, wrong_root, bonus_from_parent. ancestor_dropped is rejection-only => exact (new narrowing: under-attention cannot explain F1).
+- No engine change; request_fast_gate=false; NGRAM remains non-promotable.

@@ -1,0 +1,512 @@
+{
+ "source_anchors": {
+  "fillResult": "ngram_corpus/result.cpp:12-46",
+  "truncate": "ngram_corpus/result.cpp:128-137",
+  "sanitize": "srt/speculative/ngram_worker.py:76-103",
+  "reconstruct": "jit/include/sgl_kernel/speculative/ngram.cuh:26-91",
+  "verify_tree_greedy": "jit/include/sgl_kernel/speculative/eagle.cuh:211-252",
+  "kv_move": "srt/speculative/spec_utils.py:855-897 + cpu/spec.cpp:528-556"
+ },
+ "self_diagonal_present_in_fillResult": true,
+ "sanitize_dropped_bits_total": 0,
+ "sanitize_is_noop_on_real_fillResult_mask": true,
+ "device_and_cpu_accept_kernel_logic_identical": true,
+ "clean_scenarios_all_exact": true,
+ "fault_controls_all_diverge": true,
+ "efficiency_only_control": {
+  "scenario": "FAULT_ancestor_dropped",
+  "why_exact": "mask defect that only causes rejection cannot break greedy; acceptance of an off-argmax token or a wrong-context root/bonus is required to explain F1 divergence"
+ },
+ "scenarios": [
+  {
+   "scenario": "exact_chain_bs1_D8",
+   "bs": 1,
+   "D": 8,
+   "faults": [],
+   "sanitize_dropped_bits": 0,
+   "exact": true,
+   "detail": [],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 8,
+     "accept_index": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36,
+      43,
+      6
+     ]
+    }
+   ]
+  },
+  {
+   "scenario": "exact_chain_bs3_D8",
+   "bs": 3,
+   "D": 8,
+   "faults": [],
+   "sanitize_dropped_bits": 0,
+   "exact": true,
+   "detail": [],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 8,
+     "accept_index": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36,
+      43,
+      6
+     ]
+    },
+    {
+     "b": 1,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36
+     ]
+    },
+    {
+     "b": 2,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36
+     ]
+    }
+   ]
+  },
+  {
+   "scenario": "exact_branch_bs2_D8",
+   "bs": 2,
+   "D": 8,
+   "faults": [],
+   "sanitize_dropped_bits": 0,
+   "exact": true,
+   "detail": [],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 4,
+     "accept_index": [
+      0,
+      1,
+      3,
+      7,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36,
+      25,
+      42,
+      24
+     ]
+    },
+    {
+     "b": 1,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36
+     ]
+    }
+   ]
+  },
+  {
+   "scenario": "exact_chain_bs2_D12",
+   "bs": 2,
+   "D": 12,
+   "faults": [],
+   "sanitize_dropped_bits": 0,
+   "exact": true,
+   "detail": [],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 12,
+     "accept_index": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36,
+      43,
+      6,
+      17,
+      0,
+      47,
+      31
+     ]
+    },
+    {
+     "b": 1,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36
+     ]
+    }
+   ]
+  },
+  {
+   "scenario": "FAULT_no_self",
+   "bs": 2,
+   "D": 8,
+   "faults": [
+    "no_self"
+   ],
+   "sanitize_dropped_bits": 0,
+   "exact": false,
+   "detail": [
+    {
+     "req": 0,
+     "first_diff": 0,
+     "accept_len": 1,
+     "committed": [
+      4
+     ],
+     "greedy": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36
+     ]
+    },
+    {
+     "req": 1,
+     "first_diff": 0,
+     "accept_len": 1,
+     "committed": [
+      4
+     ],
+     "greedy": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36
+     ]
+    }
+   ],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      4
+     ]
+    },
+    {
+     "b": 1,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "scenario": "FAULT_ancestor_dropped",
+   "bs": 1,
+   "D": 8,
+   "faults": [
+    "ancestor_dropped"
+   ],
+   "sanitize_dropped_bits": 0,
+   "exact": true,
+   "detail": [],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 7,
+     "accept_index": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36,
+      43
+     ]
+    }
+   ]
+  },
+  {
+   "scenario": "FAULT_wrong_root",
+   "bs": 2,
+   "D": 8,
+   "faults": [
+    "wrong_root"
+   ],
+   "sanitize_dropped_bits": 0,
+   "exact": false,
+   "detail": [
+    {
+     "req": 0,
+     "first_diff": 1,
+     "accept_len": 2,
+     "committed": [
+      36,
+      23
+     ],
+     "greedy": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36
+     ]
+    }
+   ],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 2,
+     "accept_index": [
+      0,
+      1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": false,
+     "committed": [
+      36,
+      23
+     ]
+    },
+    {
+     "b": 1,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": false,
+     "committed": [
+      36
+     ]
+    }
+   ]
+  },
+  {
+   "scenario": "FAULT_bonus_from_parent",
+   "bs": 2,
+   "D": 8,
+   "faults": [
+    "bonus_from_parent"
+   ],
+   "sanitize_dropped_bits": 0,
+   "exact": false,
+   "detail": [
+    {
+     "req": 0,
+     "first_diff": 3,
+     "accept_len": 4,
+     "committed": [
+      36,
+      25,
+      42,
+      42
+     ],
+     "greedy": [
+      36,
+      25,
+      42,
+      24,
+      34,
+      36
+     ]
+    }
+   ],
+   "reqs": [
+    {
+     "b": 0,
+     "accept_len": 4,
+     "accept_index": [
+      0,
+      1,
+      3,
+      7,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36,
+      25,
+      42,
+      42
+     ]
+    },
+    {
+     "b": 1,
+     "accept_len": 1,
+     "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+     ],
+     "kv_pairs_ok": true,
+     "committed": [
+      36
+     ]
+    }
+   ]
+  }
+ ],
+ "limits": [
+  "pure CPU index/bit arithmetic; no torch, CUDA, kernel launch or graph replay",
+  "target model is a deterministic synthetic full-context argmax, not the real LLM",
+  "attention order modeled as prefix then admitted nodes sorted by RoPE position",
+  "bs=1 KV-move arithmetic is per request; batches are checked independently",
+  "no throughput, quality, EXACT or promotion claim"
+ ]
+}
