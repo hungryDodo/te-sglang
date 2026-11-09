@@ -1,0 +1,93 @@
+{
+ "cells": [
+  {
+   "batch": 1,
+   "count": 588,
+   "kernel": "mmvq",
+   "mmvq_safe": 2,
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 4,
+   "count": 15868,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 6,
+   "count": 84,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 512,
+   "count": 252,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 1536,
+   "count": 252,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 1,
+   "count": 403,
+   "kernel": "mmvq",
+   "mmvq_safe": 2,
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 3,
+   "count": 3,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 4,
+   "count": 10766,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 6,
+   "count": 56,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 512,
+   "count": 168,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 1536,
+   "count": 168,
+   "kernel": "mmq",
+   "mmvq_safe": 2,
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  }
+ ],
+ "trace_calls": 28608
+}

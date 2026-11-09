@@ -1,0 +1,408 @@
+#!/usr/bin/env python3
+"""One-shot a3 NGRAM ON/OFF diagnostic, never a formal Gate or baseline.
+
+Prepared artifact only. --help and syntax checks do not acquire a GPU lock.
+The two committed overlays must differ only by removal of the known NGRAM
+default-injection block. No accept_lens==1 intervention is implemented.
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import random
+import re
+import signal
+import socket
+import subprocess
+import sys
+import threading
+import time
+import urllib.error
+import urllib.request
+import uuid
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+CAMPAIGN = 'continuous-20261109-01'
+NODE = 'a3'
+ON_COMMIT = 'b9a91aa13b7c69dcbbce815ef4302e4ddb7b8eb4'
+OFF_COMMIT = '999d4b24355a12ea2d50959b7da4d3263cca08e2'
+ORIGINAL_DEADLINE = 1794278254.0812237
+CLEANUP_RESERVE = 150
+HOOK = 'python/sglang/srt/arg_groups/speculative_hook.py'
+INJECTION_START = '    # RSI trial-2 overlay: default to lossless NGRAM self-speculation when the\n'
+INJECTION_END = '\n    algo = None\n'
+MODEL = '/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b'
+
+
+def utc():
+    return dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def sha_bytes(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def artifact(path):
+    return {'path': str(path), 'sha256': sha_bytes(path.read_bytes()), 'bytes': path.stat().st_size}
+
+
+def fixed_prompt():
+    # Exact repeat-512 prompt from the reviewed G2-E1 fixed_prompts function:
+    # OPEN_SEED=1064, span seed OPEN_SEED+999, eight tokens repeated 64 times.
+    rng = random.Random(1064 + 999)
+    return {'name': 'repeat-512', 'input_ids': [rng.randrange(4, 131072) for _ in range(8)] * 64}
+
+
+def require_toggle_pair(on, off):
+    """Compare all executable payload blobs; manifest labels may differ."""
+    def files(root):
+        return {str(p.relative_to(root)): sha_bytes(p.read_bytes())
+                for base in ('python/sglang', 'wheel-binaries')
+                for p in sorted((root / base).rglob('*'))
+                if p.is_file() and '__pycache__' not in p.parts}
+    a, b = files(on), files(off)
+    if set(a) != set(b) or [name for name in sorted(a) if a[name] != b[name]] != [HOOK]:
+        raise RuntimeError('ON/OFF executable payloads must differ only at the known speculative hook')
+    source = (on / HOOK).read_text()
+    if source.count(INJECTION_START) != 1:
+        raise RuntimeError('Unique known ON injection start not established')
+    start = source.index(INJECTION_START)
+    end = source.index(INJECTION_END, start) + 1
+    removed = source[start:end]
+    if 'speculative_algorithm="NGRAM"' not in removed or len(removed.splitlines()) != 17:
+        raise RuntimeError('Unexpected NGRAM injection body')
+    if (off / HOOK).read_text() != source[:start] + source[end:]:
+        raise RuntimeError('OFF is not exactly ON with the known injection block deleted')
+    return {'only_changed_payload': HOOK, 'removed_block_sha256': sha_bytes(removed.encode()),
+            'removed_block_lines': len(removed.splitlines()), 'on_source_sha256': a[HOOK],
+            'off_source_sha256': b[HOOK]}
+
+
+def first_divergence(a, b):
+    return next((i for i in range(min(len(a), len(b))) if a[i] != b[i]),
+                None if len(a) == len(b) else min(len(a), len(b)))
+
+
+def run(args):
+    from controller.gpu_lock import acquire_node_lock, gpu_admission_check
+    from scripts.rsi_node import build_command, load_gate_config, phase0_env, verify_overlay
+    from scripts.run_engine_job import atomic, readiness_probe, spawn_owned_process, stop_owned_server
+
+    node = next(n for n in json.loads((ROOT / 'configs/nodes.json').read_text())['nodes'] if n['name'] == NODE)
+    if socket.gethostname() != node['hostname'] or ROOT != Path(node['workdir']).resolve():
+        raise RuntimeError('Execute only inside the configured a3 checkout')
+    if Path(sys.prefix).resolve() != (ROOT / '.venvs/sglang').resolve():
+        raise RuntimeError('Use the existing node .venvs/sglang/bin/python')
+    if not time.time() + CLEANUP_RESERVE < args.deadline_epoch <= ORIGINAL_DEADLINE:
+        raise RuntimeError('Original deadline cannot be extended; cleanup time is required')
+    overlays = {'ON': args.on_overlay.resolve(), 'OFF': args.off_overlay.resolve()}
+    directory = args.out_dir.resolve()
+    if any(not p.is_relative_to(ROOT / 'runs/rsi/overlays') for p in overlays.values()) or not directory.is_relative_to(ROOT / 'runs'):
+        raise RuntimeError('Use deployed runs/rsi/overlays and a fresh runs/ output directory')
+    directory.mkdir(parents=True, exist_ok=False)
+    result_paths = [directory / 'result.json']
+    if os.environ.get('TE_RESULT_PATH'):
+        attempt = Path(os.environ['TE_RUN_DIR']).resolve()
+        target = Path(os.environ['TE_RESULT_PATH']).resolve()
+        if not directory.is_relative_to(attempt) or not target.is_relative_to(attempt):
+            raise RuntimeError('Controller evidence/result must remain in its current attempt')
+        result_paths.append(target)
+    pair_id = uuid.uuid4().hex
+    work_deadline = min(args.deadline_epoch - CLEANUP_RESERVE, time.time() + args.max_work_seconds)
+    prompt = fixed_prompt()
+    state = {'schema_version': 1, 'campaign': CAMPAIGN, 'node': NODE, 'worker': 'deepseek-a',
+             'job_id': os.environ.get('TE_JOB_ID'), 'actual_pair_uuid': pair_id,
+             'purpose': 'ordinary_ngram_same_source_ab_diagnostic', 'status': 'RUNNING',
+             'eligible_for_baseline': False, 'metrics': {}, 'started_at': utc(),
+             'original_deadline_epoch': ORIGINAL_DEADLINE, 'effective_work_deadline_epoch': work_deadline,
+             'prompt': prompt, 'prompt_sha256': sha_bytes(json.dumps(prompt['input_ids']).encode()),
+             'roles': {}, 'records': [], 'replay': [],
+             'evidence_boundary': 'Finite repeat-512 C1/C4same two-pass ON/OFF experiment. Raw HTTP entity bodies and headers retained, not TCP framing. No accept_lens==1 intervention, formal Gate, numerical class, promotion, throughput or causal root diagnosis.'}
+
+    def publish():
+        for path in result_paths:
+            atomic(path, state)
+
+    def remaining(limit):
+        value = min(limit, work_deadline - time.time())
+        if value <= 0:
+            raise TimeoutError('Bounded work deadline reached; cleanup starts')
+        return value
+
+    def interrupted(signum, frame):
+        raise InterruptedError(f'Diagnostic interrupted by signal {signum}')
+
+    def request(role, label, instance, ids, new_tokens):
+        rid = uuid.uuid4().hex
+        role_dir = directory / role.lower()
+        stem = role_dir / 'raw-http' / rid
+        stem.parent.mkdir(parents=True, exist_ok=True)
+        payload = {'sampling_params': {'max_new_tokens': new_tokens, 'temperature': 0, 'ignore_eos': True},
+                   'return_logprob': True, 'top_logprobs_num': 8, 'input_ids': ids}
+        body = json.dumps(payload).encode()
+        stem.with_suffix('.request.json').write_bytes(body)
+        rec = {'role': role, 'role_run_uuid': state['roles'][role]['actual_run_uuid'], 'request_uuid': rid,
+               'label': label, 'instance': instance, 'commit': state['roles'][role]['commit'],
+               'snapshot_tree_sha256': state['roles'][role]['snapshot_tree_sha256'],
+               'method': 'POST', 'url': f'http://127.0.0.1:{args.port}/generate',
+               'request_headers': {'Content-Type': 'application/json'},
+               'request_sha256': sha_bytes(body), 'started_at': utc(), 'status': 'RUNNING',
+               'request_path': str(stem.with_suffix('.request.json')), 'response_path': str(stem.with_suffix('.response.bin')),
+               'transport_body_complete': False}
+        try:
+            req = urllib.request.Request(f'http://127.0.0.1:{args.port}/generate', data=body,
+                                         headers={'Content-Type': 'application/json'})
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            try:
+                response = opener.open(req, timeout=remaining(args.request_timeout))
+            except urllib.error.HTTPError as error:
+                response = error
+            with response, stem.with_suffix('.response.bin').open('wb') as output:
+                rec.update(http_status=response.status, response_headers=list(response.headers.items()))
+                while True:
+                    chunk = getattr(response, 'read1', response.read)(65536)
+                    if not chunk:
+                        break
+                    output.write(chunk)
+                    output.flush()
+                rec['transport_body_complete'] = True
+            raw = stem.with_suffix('.response.bin').read_bytes()
+            rec.update(response_sha256=sha_bytes(raw), response_bytes=len(raw))
+            parsed = json.loads(raw)
+            rec['response'] = parsed  # Full parsed response; never a lossy projection.
+            ids_out = parsed.get('output_ids')
+            meta = parsed.get('meta_info') or {}
+            rec.update(output_ids=ids_out, chosen_logprobs=meta.get('output_token_logprobs'),
+                       top_logprobs=meta.get('output_top_logprobs'))
+            if response.status != 200 or not isinstance(ids_out, list) or len(ids_out) != new_tokens:
+                raise RuntimeError('HTTP 200 with the complete requested output token budget was not established')
+            rec['status'] = 'SUCCEEDED'
+        except Exception as error:
+            rec.update(status='FAILED', error=f'{type(error).__name__}: {error}')
+            raw_path = stem.with_suffix('.response.bin')
+            if raw_path.exists():
+                rec.update(response_sha256=sha_bytes(raw_path.read_bytes()), response_bytes=raw_path.stat().st_size)
+        finally:
+            rec['ended_at'] = utc()
+            atomic(stem.with_suffix('.json'), rec)
+        return rec
+
+    def batch(role, label, ids, concurrency, new_tokens):
+        records = [None] * concurrency
+        def one(index):
+            records[index] = request(role, label, index, ids, new_tokens)
+        threads = []
+        for index in range(concurrency):
+            thread = threading.Thread(target=one, args=(index,), daemon=True)
+            threads.append(thread)
+            thread.start()
+            time.sleep(.05)  # Same fixed order as G2-E1; actual scheduler batch is not inferred.
+        join_deadline = time.monotonic() + remaining(args.request_timeout + 5)
+        for thread in threads:
+            thread.join(max(0, join_deadline - time.monotonic()))
+        if any(thread.is_alive() for thread in threads):
+            raise TimeoutError('A bounded HTTP request did not finish; owned server cleanup follows')
+        if any(not r or r['status'] != 'SUCCEEDED' for r in records):
+            state['records'].extend(r for r in records if r)
+            publish()
+            raise RuntimeError('A diagnostic request failed; preserve raw response evidence')
+        return records
+
+    guard, slot, clean = None, {}, False
+    previous = {sig: signal.signal(sig, interrupted) for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGALRM)}
+    try:
+        signal.setitimer(signal.ITIMER_REAL, remaining(args.max_work_seconds))
+        publish()
+        guard = acquire_node_lock('ngram-ab-diagnostic', purpose=f'{CAMPAIGN}/{pair_id}', node=NODE,
+                                  worktree=str(ROOT), job_id=os.environ.get('TE_JOB_ID'))
+        info = os.fstat(int(guard.child_env()['TE_GPU_LOCK_FD']))
+        state['gpu_lock'] = {'path': str(guard.path), 'device': info.st_dev, 'inode': info.st_ino,
+                             'adopted': guard.adopted, 'holder_pid': guard.holder_pid, 'driver_pid': os.getpid()}
+        gpu_admission_check(out_json=directory / 'gpu-admission.json')
+        manifests = {role: verify_overlay(path) for role, path in overlays.items()}
+        commits = {'ON': args.on_commit, 'OFF': args.off_commit}
+        shas = {'ON': args.on_overlay_sha256, 'OFF': args.off_overlay_sha256}
+        for role, manifest in manifests.items():
+            if manifest['base_commit'] != commits[role] or manifest['tree_sha256'] != shas[role] or manifest.get('dirty_files') != []:
+                raise RuntimeError(f'{role} committed snapshot binding differs from requested identity')
+        state['toggle_proof'] = require_toggle_pair(overlays['ON'], overlays['OFF'])
+        state['driver_artifact'] = artifact(Path(__file__).resolve())
+        state['trusted_helpers'] = [artifact(ROOT / p) for p in ('scripts/rsi_node.py', 'scripts/run_engine_job.py', 'controller/gpu_lock.py', 'configs/rsi/fast-gate.json')]
+        state['model_provenance'] = {'model_path': MODEL, 'local_metadata': [artifact(p) for p in sorted(Path(MODEL).iterdir())
+            if p.is_file() and (p.name.startswith('tokenizer') or p.name in ('config.json', 'model.safetensors.index.json', 'special_tokens_map.json'))],
+            'boundary': 'Existing local model artifact; metadata hashes do not independently rehash all weight shards.'}
+        gate_config, _ = load_gate_config()
+        command = build_command(argparse.Namespace(model_path=MODEL, tokenizer_dir=MODEL, port=args.port), gate_config)
+        for role in ('ON', 'OFF'):
+            role_dir = directory / role.lower()
+            role_dir.mkdir(exist_ok=False)
+            gpu_admission_check(out_json=role_dir / 'gpu-admission.json')
+            env, env_dir, _, environment_id = phase0_env('overlay', overlays[role])
+            env.update(guard.child_env())
+            state['roles'][role] = {'actual_run_uuid': uuid.uuid4().hex, 'commit': commits[role],
+                'snapshot_tree_sha256': shas[role], 'overlay_dir': str(overlays[role]),
+                'overlay_manifest': manifests[role], 'overlay_manifest_artifact': artifact(overlays[role] / 'OVERLAY-MANIFEST.json'),
+                'server_argv': command, 'environment_id': environment_id, 'PYTHONPATH': env['PYTHONPATH']}
+            probe = subprocess.run([str(env_dir / 'bin/python'), str(ROOT / 'scripts/rsi_node.py'), 'importpath', '--overlay-dir', str(overlays[role])],
+                cwd=ROOT, env=env, capture_output=True, text=True, timeout=remaining(120))
+            (role_dir / 'importpath.stdout').write_text(probe.stdout)
+            (role_dir / 'importpath.stderr').write_text(probe.stderr)
+            if probe.returncode or not any(line.startswith(str(overlays[role]) + '/') for line in probe.stdout.splitlines()):
+                raise RuntimeError(f'{role} runtime import-path proof failed')
+            with socket.socket() as check:
+                check.settimeout(1)
+                if check.connect_ex(('127.0.0.1', args.port)) == 0:
+                    raise RuntimeError('Endpoint occupied; no existing process will be stopped')
+            publish()
+            slot = {}
+            try:
+                with (role_dir / 'server.log').open('ab') as log:
+                    server = spawn_owned_process(command, slot=slot, cwd=ROOT, env=env, stdin=subprocess.DEVNULL,
+                        stdout=log, stderr=subprocess.STDOUT, pass_fds=(int(guard.child_env()['TE_GPU_LOCK_FD']),))
+                state['roles'][role]['owned_server_identity'] = slot['identity']
+                startup = time.monotonic() + remaining(args.startup_timeout)
+                opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+                while time.monotonic() < startup:
+                    if server.poll() is not None:
+                        raise RuntimeError(f'{role} server exited {server.returncode}')
+                    ready = readiness_probe('sglang', opener, args.port)
+                    if ready['ready']:
+                        break
+                    time.sleep(min(1, remaining(1)))
+                else:
+                    raise TimeoutError(f'{role} bounded startup timed out')
+                # Preserve the actual resolved runtime configuration, in addition
+                # to command/source identity. Both endpoints exist on these commits.
+                for endpoint in ('server_info', 'model_info'):
+                    with opener.open(f'http://127.0.0.1:{args.port}/{endpoint}', timeout=remaining(20)) as response:
+                        raw = response.read()
+                        (role_dir / f'{endpoint}.response.bin').write_bytes(raw)
+                        atomic(role_dir / f'{endpoint}.http.json', {'method': 'GET',
+                            'url': f'http://127.0.0.1:{args.port}/{endpoint}', 'status': response.status,
+                            'response_headers': list(response.headers.items()), 'body_sha256': sha_bytes(raw),
+                            'body_complete': True, 'role_run_uuid': state['roles'][role]['actual_run_uuid']})
+                    info = json.loads(raw)
+                    if endpoint == 'server_info':
+                        actual_algorithm = info.get('speculative_algorithm')
+                        if actual_algorithm != ('NGRAM' if role == 'ON' else None):
+                            raise RuntimeError(f'{role} actual resolved speculative algorithm differs from the intended toggle')
+                        state['roles'][role]['resolved_speculative_algorithm'] = actual_algorithm
+                    elif info.get('model_path') != MODEL:
+                        raise RuntimeError(f'{role} served model path differs from the bound local artifact')
+                for pass_name in ('A', 'B'):
+                    for concurrency in (1, 4):
+                        state['records'].extend(batch(role, f'{pass_name}/repeat-512/c{concurrency}same', prompt['input_ids'], concurrency, 48))
+                        publish()
+                if role == 'OFF':
+                    on = {(r['label'], r['instance']): r for r in state['records'] if r['role'] == 'ON'}
+                    off = {(r['label'], r['instance']): r for r in state['records'] if r['role'] == 'OFF'}
+                    seen = set()
+                    for key in sorted(on):
+                        index = first_divergence(on[key]['output_ids'], off[key]['output_ids'])
+                        if index is None or len(state['replay']) >= args.replay_limit:
+                            continue
+                        prefix = prompt['input_ids'] + on[key]['output_ids'][:index]
+                        token = on[key]['output_ids'][index]
+                        signature = sha_bytes(json.dumps([prefix, token]).encode())
+                        if signature in seen:
+                            continue
+                        seen.add(signature)
+                        item = {'on_request_uuid': on[key]['request_uuid'], 'off_request_uuid': off[key]['request_uuid'],
+                                'first_divergence': index, 'on_token': token, 'prefix': prefix,
+                                'prefix_sha256': sha_bytes(json.dumps(prefix).encode()),
+                                'responses': batch('OFF', f'replay/{len(state["replay"])}', prefix, 4, 1)}
+                        state['replay'].append(item)
+                        publish()
+            finally:
+                if slot.get('process'):
+                    state['roles'][role]['shutdown'] = stop_owned_server(slot, role_dir / 'lifecycle/shutdown.json',
+                        reason=f'ngram-ab-{role.lower()}-final', require_gpu=True, term_grace=10, kill_grace=5, gpu_grace=20)
+                publish()
+            gpu_admission_check(out_json=role_dir / 'gpu-release.json')
+        if len(state['records']) != 20:
+            raise RuntimeError('Expected exactly 20 complete ON/OFF diagnostic responses')
+        on = {(r['label'], r['instance']): r for r in state['records'] if r['role'] == 'ON'}
+        off = {(r['label'], r['instance']): r for r in state['records'] if r['role'] == 'OFF'}
+        differences = [{'key': key, 'first_divergence': first_divergence(on[key]['output_ids'], off[key]['output_ids'])} for key in sorted(on)]
+        full_topk = all(isinstance(r['top_logprobs'], list) and len(r['top_logprobs']) == 48 and all(r['top_logprobs'])
+                       and isinstance(r['chosen_logprobs'], list) and len(r['chosen_logprobs']) == 48 for r in state['records'])
+        state.update(status='SUCCEEDED' if full_topk else 'INCONCLUSIVE', comparison={'pairs': 10, 'differences': differences,
+            'divergent_pairs': sum(r['first_divergence'] is not None for r in differences), 'all_primary_chosen_and_topk_lengths_48': full_topk,
+            'meaning': 'Finite observational comparison only; analyze replay raw logits/probabilities before any correctness classification.'})
+    except BaseException as error:
+        state.update(status='FAILED', error=f'{type(error).__name__}: {error}')
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            signal.signal(sig, signal.SIG_IGN)
+        try:
+            if slot.get('process') and not slot.get('stopped'):
+                state['final_shutdown'] = stop_owned_server(slot, directory / 'lifecycle/final-shutdown.json',
+                    reason='ngram-ab-exception-final', require_gpu=True, term_grace=10, kill_grace=5, gpu_grace=20)
+            if guard:
+                gpu_admission_check(out_json=directory / 'gpu-release.json')
+                with socket.socket() as check:
+                    check.settimeout(1)
+                    if check.connect_ex(('127.0.0.1', args.port)) == 0:
+                        raise RuntimeError('Endpoint remains open after owned cleanup')
+                clean = True
+        except BaseException as error:
+            state.update(status='RECOVERY_REQUIRED', cleanup_error=f'{type(error).__name__}: {error}')
+        finally:
+            if guard:
+                guard.release(clean=clean)
+            for sig, handler in previous.items():
+                signal.signal(sig, handler)
+        try:
+            for role, item in state['roles'].items():
+                manifest = verify_overlay(overlays[role])
+                if manifest['base_commit'] != item['commit'] or manifest['tree_sha256'] != item['snapshot_tree_sha256']:
+                    raise RuntimeError(f'{role} snapshot changed during execution')
+                item['overlay_verified_after_cleanup'] = True
+        except Exception as error:
+            state['post_verification_error'] = f'{type(error).__name__}: {error}'
+            if state['status'] != 'RECOVERY_REQUIRED':
+                state['status'] = 'FAILED'
+        state.update(ended_at=utc(), gpu_release_proven=clean)
+        publish()
+    print(json.dumps({'status': state['status'], 'actual_pair_uuid': pair_id, 'result': str(result_paths[0]), 'eligible_for_baseline': False}))
+    return 0 if state['status'] == 'SUCCEEDED' else (2 if state['status'] == 'INCONCLUSIVE' else 1)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for role in ('on', 'off'):
+        parser.add_argument(f'--{role}-overlay', type=Path, required=True)
+        parser.add_argument(f'--{role}-commit', required=True)
+        parser.add_argument(f'--{role}-overlay-sha256', required=True)
+    parser.add_argument('--out-dir', type=Path, required=True)
+    parser.add_argument('--port', type=int, default=31343)
+    parser.add_argument('--deadline-epoch', type=float, default=ORIGINAL_DEADLINE)
+    parser.add_argument('--max-work-seconds', type=float, default=1800)
+    parser.add_argument('--startup-timeout', type=float, default=600)
+    parser.add_argument('--request-timeout', type=float, default=60)
+    parser.add_argument('--replay-limit', type=int, default=4)
+    args = parser.parse_args()
+    if args.on_commit != ON_COMMIT or args.off_commit != OFF_COMMIT:
+        parser.error('The fixed full ON b9a91aa13 and deletion-only OFF 999d4b24 commits are required')
+    if any(not re.fullmatch('[0-9a-f]{64}', v) for v in (args.on_overlay_sha256, args.off_overlay_sha256)):
+        parser.error('Both expected snapshot tree SHA256 values are required')
+    if not all(math.isfinite(v) for v in (args.deadline_epoch, args.max_work_seconds, args.startup_timeout, args.request_timeout)):
+        parser.error('Time bounds must be finite')
+    if not 1 <= args.port <= 65535 or not 1 <= args.max_work_seconds <= 1800 or not 1 <= args.startup_timeout <= 600 or not 1 <= args.request_timeout <= 120 or not 0 <= args.replay_limit <= 4:
+        parser.error('Bounds: valid port, work<=1800s, startup<=600s, request<=120s, replay<=4 prefixes')
+    try:
+        return run(args)
+    except Exception as error:
+        print(f'ngram_ab_diagnostic: {type(error).__name__}: {error}', file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
