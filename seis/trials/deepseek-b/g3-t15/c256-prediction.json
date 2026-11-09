@@ -1,0 +1,63 @@
+{
+  "anchor_implied_per_forward_ms": 49.59,
+  "assumptions_and_limits": [
+    "C128 per-class GB/s from node a1 commit 15fd7f4 are assumed to hold on the C256 point; a1 reference 5162 tok/s is branch-recorded, not re-measured here.",
+    "Mean decode seq 288.5 assumes the 512 output tokens are uniformly spread; the sliding-window clamp does not bind below seq 512.",
+    "'other' kernels are scaled linearly 128->256 with a +/-30% band.",
+    "The anchor is a whole-run aggregate (includes 2% prefill and any tail/queueing); the prediction is a steady-state per-forward band."
+  ],
+  "branch_recorded_a1_reference_tok_s": 5162.0,
+  "falsifiable_discriminator": {
+    "additional_readouts": "cudaGraphLaunch count per forward (does bs=256 replay a graph under --cuda-graph-max-bs-decode 64?), actual batch label, per-class effective GB/s.",
+    "if_measured_per_forward_ms_in_prediction_band": "the C128 trace's per-byte efficiencies transfer to C256; the anchor comparison is not like-for-like (different run conditions or an unmodelled wall-time term) and there is no C256 kernel bottleneck to chase.",
+    "if_measured_per_forward_ms_is_45_to_52": "the ~10-13 ms excess is real at bs=256; attribute it by kernel class from the same trace (attention vs GEMM vs other vs host gaps / eager-vs-graph) before proposing any patch."
+  },
+  "geometry": {
+    "batch": 256,
+    "gemm_bytes_per_forward": 3423469568,
+    "kv_bytes_per_forward": 4235198464,
+    "mean_seq": 288.5
+  },
+  "implied_gap_ms": [
+    8.97,
+    12.88
+  ],
+  "implied_gap_pct_of_anchor": [
+    18.1,
+    26.0
+  ],
+  "kind": "PLANNING_PREDICTION (not a measurement)",
+  "measured_c128_efficiencies_gbs": {
+    "attention": [
+      225.4,
+      232.4
+    ],
+    "gemm": [
+      199.2,
+      214.2
+    ],
+    "other_ms_per_forward_at_bs128": 1.787
+  },
+  "prediction_per_forward_ms": {
+    "attention": [
+      18.22,
+      18.79
+    ],
+    "gemm": [
+      15.98,
+      17.19
+    ],
+    "other_scaled": 3.57,
+    "total": [
+      36.71,
+      40.62
+    ]
+  },
+  "prediction_throughput_tok_s": [
+    6302,
+    6974
+  ],
+  "schema": 1,
+  "source_analysis": "seis/trials/deepseek-b/g3-t15/decode-trace-analysis.json",
+  "trial": "deepseek-b/g3-t15"
+}

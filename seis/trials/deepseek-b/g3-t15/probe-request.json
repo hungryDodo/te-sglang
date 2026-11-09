@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "trial": "deepseek-b/g3-t15",
+  "kind": "BOUNDED_CUSTOM_GPU_DIAGNOSTIC_REQUEST",
+  "not_executed_in_worker_sandbox": true,
+  "request_fast_gate": false,
+  "why_not_a_fast_gate": "No engine change is proposed; a Fast gate would measure the unchanged tree and cannot answer a kernel-attribution question.",
+  "prerequisite_status": {
+    "F3_f263262": "UNGATED and untouched by this request; C22/C23 dispatch coverage stands; the frozen BF16 gate is structurally blind to GGUF.",
+    "canonical_numeric_topk": "INCONCLUSIVE; this request makes no numeric/quality claim and does not touch the frozen protocol."
+  },
+  "question": "At the frozen DecodeCeiling point (32/512, C256), does the real decode forward match the per-class bandwidth efficiencies measured in the Controller-supplied a1 C128 decode trace, or is there a 9-13 ms/forward (~18-26%) excess? If excess exists, which kernel class (attention / GEMM / lm_head / other / eager-vs-graph host gap) carries it?",
+  "provenance": {
+    "measured_input": "controller_evidence/continuous-20261109-01/20261110-decode-trace/decode.trace.json.gz sha256 09e8dcb9352c1809e05b10b1673420c543a12c5ebccdc57fc864c3ad4372e4b1 (a1, commit 15fd7f47856305e3fbab6383d1579e0754db9423)",
+    "derived_prediction": "seis/trials/deepseek-b/g3-t15/c256-prediction.json",
+    "derived_analysis": "seis/trials/deepseek-b/g3-t15/decode-trace-analysis.json",
+    "anchor": "branch-recorded a1 DecodeCeiling C256 reference 5162 output tok/s (trial-1 branch ledger), NOT re-measured by this worker"
+  },
+  "prediction_to_falsify": {
+    "predicted_per_forward_ms_total": [36.71, 40.62],
+    "predicted_output_tok_per_s": [6302, 6974],
+    "anchor_implied_per_forward_ms": 49.59,
+    "implied_gap_ms": [8.97, 12.88],
+    "class_bands_ms": {"attention": [18.22, 18.79], "gemm": [15.98, 17.19], "other_scaled": 3.57}
+  },
+  "server_launch": "Controller's exact frozen BF16 launch (tp1, bf16, kv-cache bfloat16, context 9216, max-total-tokens 131072, mem-fraction-static 0.6, cuda-graph-max-bs-decode 64, chunked-prefill 8192, max-running-requests 256, max-queued-requests 256, attention-backend flashinfer, trust-remote-code, enable-metrics, disable-radix-cache, cuda-graph-backend-prefill disabled). No flags changed.",
+  "workload": {
+    "shape": "frozen DecodeCeiling: prompt 32 tokens, output 512, concurrency 256, requests 1024, temperature 0",
+    "driver": "seis/trials/deepseek-b/g3-t15/decode_scaling_probe.py (stdlib only; Controller runs it against an already-launched server)",
+    "profile": "POST /start_profile {profile_by_stage: true, profile_stages: [\"decode\"], num_steps: 16, activities: [\"CPU\",\"GPU\"]}; auto-stop after 16 decode forwards is expected; /stop_profile may return 500 by design"
+  },
+  "discriminator": {
+    "leg1_unprofiled_same_run_tok_s": "like-for-like re-measurement of the 5162 anchor on the probe commit/node. In the prediction band (6302-6974) => anchor was not comparable; ~5100 => gap is real.",
+    "leg2_trace_readouts": [
+      "per-forward kernel sum: 36.7-40.6 ms => efficiencies transfer; 45-52 ms => excess is real",
+      "class attribution of any excess: attention vs GEMM vs lm_head vs other vs host gaps",
+      "cudaGraphLaunch count per forward (0 => eager at bs=256 under cuda-graph-max-bs-decode 64)",
+      "actual step[DECODE bs=N] label (steady-state batch)",
+      "attention effective GB/s = bs*mean_seq*2048*28 / time; GEMM = 3.421 GB / time"
+    ]
+  },
+  "expected_controls": [
+    "same request set, temperature 0, 64 output IDs per response retained for token-count verification only",
+    "a second decode profile at C128 on the same server life if the controller prefers an on-probe-node replication of the supplied trace (optional, not required)",
+    "no NGRAM, no GGUF, no precision change, no evaluator/corpus/seed/reference change"
+  ],
+  "bounds": [
+    "profiling perturbs only ~16 of >=512 decode steps; the end-to-end tok/s is reported with that caveat",
+    "one node, one commit, one run; no statistical claim",
+    "no speedup, quality, EXACT, Candidate or Promotion claim follows; this is a diagnostic only"
+  ],
+  "commit": {
+    "base": "9727537 (Controller: supply measured BF16 C128 decode trace input)",
+    "candidate_head": "the commit containing this file in the deepseek-b G3 namespace; engine tree unchanged by this trial (git diff base..HEAD -- python/ is empty)"
+  }
+}

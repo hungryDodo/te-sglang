@@ -1,0 +1,278 @@
+{
+  "input_manifest_sha256": "e615b3b859a6cf546ed19dab8bdd427365b864ee17b3d434d734687c353f0af7",
+  "input_trace_sha256": "09e8dcb9352c1809e05b10b1673420c543a12c5ebccdc57fc864c3ad4372e4b1",
+  "limitations": [
+    "One instrumented C128 decode fragment (16 forwards) on one node/commit; no unprofiled speed ratio.",
+    "Seq length during the fragment is not recorded; attention bandwidth is bounded over seq 513-576.",
+    "Weight bytes assume BF16 (2 B/param) for all params; tied embedding counted once and read once per forward by lm_head.",
+    "273 GB/s is the GB10 theoretical peak, not a measured STREAM ceiling; efficiency percentages are relative to that pinned value.",
+    "Q4 is a NULL control at decode length and says nothing about the 8192-token ragged prefill path."
+  ],
+  "q1_independent_recompute_control": {
+    "cpu_step_labels": 16,
+    "cpu_step_union_ms": 28.303983,
+    "expected_from_packet": {
+      "cpu_step_labels": 16,
+      "cpu_step_union_ms": 28.303983,
+      "kernel_instances": 8560,
+      "kernel_union_ms": 565.549025,
+      "profiler_span_ms": 571.927153
+    },
+    "kernel_instances": 8560,
+    "kernel_sum_ms": 567.334558,
+    "kernel_union_fraction_of_span": 0.988848,
+    "kernel_union_ms": 565.549025,
+    "profiler_span_ms": 571.927153
+  },
+  "q2_kernel_class_attribution": {
+    "attention": {
+      "calls": 448,
+      "names": {
+        "void flashinfer::BatchPrefillWithPagedKVCacheKernel<true, flashinfer::KernelTrai": 448
+      },
+      "share_of_kernel_sum": 0.470369,
+      "sum_ms": 266.856465
+    },
+    "gemm": {
+      "calls": 2704,
+      "names": {
+        "nvjet_sm121_tst_mma_16x16x64_16_16x16x64_tmaAB_splitK_TNNN": 448,
+        "nvjet_sm121_tst_mma_64x128x64_4_64x32x64_tmaAB_bz_TNNN": 448,
+        "nvjet_sm121_tst_mma_96x128x64_3_96x16x64_tmaAB_bz_TNNN": 448,
+        "nvjet_sm121_tst_mma_96x64x64_4_16x64x64_tmaAB_bz_TNNN": 448,
+        "void cublasLt::splitKreduce_kernel<32, 16, int, float, __nv_bfloat16, float, __n": 448,
+        "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x128_64x3": 448
+      },
+      "share_of_kernel_sum": 0.47921,
+      "sum_ms": 271.872432
+    },
+    "kv_rope_act": {
+      "calls": 1344,
+      "names": {
+        "void sglang::act_and_mul_kernel<__nv_bfloat16, (sglang::ActivationKind)2, true, ": 448,
+        "void sglang::fused_rope_kernel<true, 256l, true, __nv_bfloat16, __nv_bfloat16, l": 336,
+        "void sglang::fused_rope_kernel<true, 64l, true, __nv_bfloat16, __nv_bfloat16, lo": 112,
+        "void sglang::store_kvcache_kernel<1024l, 1024l, 64u, true, long>(sglang::StoreKV": 448
+      },
+      "share_of_kernel_sum": 0.0114,
+      "sum_ms": 6.467696
+    },
+    "norm": {
+      "calls": 912,
+      "names": {
+        "kernel_cutlass_kernel_flashinfernormkernelsfused_add_rmsnormFusedAddRMSNormKerne": 896,
+        "kernel_cutlass_kernel_flashinfernormkernelsrmsnormRMSNormKernel_object_at__tenso": 16
+      },
+      "share_of_kernel_sum": 0.006943,
+      "sum_ms": 3.938825
+    },
+    "other": {
+      "calls": 3120,
+      "names": {
+        "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<a": 896,
+        "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<a": 112,
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda": 528,
+        "void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kern": 448,
+        "void at::native::vectorized_elementwise_kernel<4, at::native::sigmoid_kernel_cud": 448,
+        "void flashinfer::PersistentVariableLengthMergeStatesKernel<8u, 32u, 4u, 4u, __nv": 448
+      },
+      "share_of_kernel_sum": 0.012256,
+      "sum_ms": 6.953339
+    },
+    "sampling_logits": {
+      "calls": 32,
+      "names": {
+        "softcap_inplace_logits_kernel": 16,
+        "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::A": 16
+      },
+      "share_of_kernel_sum": 0.019822,
+      "sum_ms": 11.245801
+    }
+  },
+  "q3_bandwidth_accounting": {
+    "attention": [
+      {
+        "attention_effective_gbs": 225.4,
+        "attention_pct_of_pinned_peak": 82.6,
+        "avg_keys_per_layer": 512.25,
+        "kv_bytes_16_forwards": 60158902272,
+        "kv_bytes_per_forward": 3759931392,
+        "seq_len": 513
+      },
+      {
+        "attention_effective_gbs": 232.4,
+        "attention_pct_of_pinned_peak": 85.1,
+        "avg_keys_per_layer": 528.0,
+        "kv_bytes_16_forwards": 62008590336,
+        "kv_bytes_per_forward": 3875536896,
+        "seq_len": 576
+      }
+    ],
+    "lm_head": {
+      "bytes_16_forwards": 8724152320,
+      "calls": 16,
+      "effective_gbs": 214.2,
+      "kernel": "nvjet_sm121_tst_mma_128x208x64_2_32x104x64_tmaAB_bz_TNNN",
+      "measured_ms": 40.734466,
+      "pct_of_pinned_peak": 78.5
+    },
+    "peak_bw_provenance": "GB10 LPDDR5X 273 GB/s theoretical; cited, not measured here",
+    "per_layer_gemm": {
+      "bytes_16_forwards": 46051360768,
+      "effective_gbs": 199.2,
+      "kernels": 6,
+      "measured_ms": 231.137966,
+      "pct_of_pinned_peak": 73.0
+    },
+    "pinned_peak_bw_gbs": 273.0,
+    "whole_step_16_forwards": {
+      "bytes": 114934415360,
+      "effective_gbs": 202.6,
+      "measured_ms": 567.334558,
+      "per_forward_ms": 35.458
+    }
+  },
+  "q3b_config_and_signature_checks": {
+    "computed_params": {
+      "config_source": "./python/sglang/srt/configs/spark2_5.py",
+      "embedding_tied_total": 272629760,
+      "full_layers": 7,
+      "grand_total": 1711734784,
+      "non_embedding_total": 1439105024,
+      "per_layer": {
+        "attn_gate_g_proj": 16384,
+        "down_proj": 13631488,
+        "gate_up_proj": 27262976,
+        "o_proj": 4194304,
+        "qkv_proj": 6291456
+      },
+      "sliding_layers": 21
+    },
+    "config_defaults": {
+      "head_dim": 256,
+      "hidden_size": 2048,
+      "intermediate_size": 6656,
+      "layer_types": [
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "sliding_attention",
+        "full_attention"
+      ],
+      "num_attention_heads": 8,
+      "num_hidden_layers": 28,
+      "num_key_value_heads": 2,
+      "sliding_window": 512,
+      "vocab_size": 133120
+    },
+    "lm_head_bytes_per_forward": 545259520,
+    "signature_checks": {
+      "attention_calls_equals_layers_times_forwards": true,
+      "lm_head_call_count_equals_forwards": true,
+      "lm_head_tile_208_times_640_equals_vocab_133120": true,
+      "per_layer_gemm_families": 6,
+      "rmsnorm_hidden_2048_present": true,
+      "softcap_calls_equals_forwards": true
+    },
+    "weight_bytes_per_forward": 2878210048
+  },
+  "q4_per_layer_attention_test": {
+    "full_candidate_mean_us": 590.95,
+    "hypothesis": "if the 512-token window binds differently on the 7 full layers vs 21 sliding layers, per-layer attention duration should split by (i+1)%4; at seq 513-576 the predicted split is only ~3% and is expected NOT to be resolvable (documented NULL control at decode length).",
+    "layer_mean_us": [
+      598.11,
+      600.05,
+      593.78,
+      592.71,
+      598.98,
+      598.91,
+      594.67,
+      591.97,
+      591.27,
+      596.58,
+      586.72,
+      585.35,
+      589.23,
+      586.48,
+      606.56,
+      585.3,
+      591.03,
+      596.29,
+      584.97,
+      592.71,
+      606.78,
+      597.93,
+      606.78,
+      596.6,
+      608.11,
+      602.6,
+      606.06,
+      592.0
+    ],
+    "limitation": "seq 513-576 means sliding layers clamp 512 vs full 513-576: predicted effect ~3%, below timer resolution; this does NOT test whether the window is applied at 8192-token prefill.",
+    "observed_diff_pct": -1.05,
+    "observed_diff_us": -6.28,
+    "observed_ratio": 0.98948,
+    "other_mean_us": 597.23,
+    "p_two_sided": 0.0367,
+    "permutations": 1184040,
+    "predicted_window_effect_pct_at_seq_513_528": 3.1,
+    "verdict": "NO_RESOLVABLE_WINDOW_EFFECT_AT_DECODE_LENGTH",
+    "verdict_detail": "observed layer-type difference is -1.1% and has the OPPOSITE sign to a window-binding effect (full layers should be slower by <=3.1% at seq 513-528); the exact permutation p is a layer-order statistic, not proof of no window. The test cannot discriminate at this length; a 8192-token prefill profile is required."
+  },
+  "q4b_per_forward_kernel_ms": [
+    16.716,
+    16.847,
+    16.695,
+    16.756,
+    16.569,
+    16.589,
+    16.757,
+    16.642,
+    16.567,
+    16.663,
+    16.651,
+    16.658,
+    16.659,
+    16.654,
+    16.674,
+    16.76
+  ],
+  "q5_findings": {
+    "all_other_share_of_kernel_time": 0.0504,
+    "attention_effective_gbs_range": [
+      225.4,
+      232.4
+    ],
+    "attn_share_of_kernel_time": 0.4704,
+    "conclusion": "All three large kernel classes independently measure 200-235 GB/s (73-86% of the 273 GB/s theoretical peak) at the real C128 decode step: the step is uniformly memory-bandwidth-bound, not launch- or Python-dispatch-bound.  Non-attention/non-GEMM kernels are 5.0% of GPU time, so fusing/skipping them caps out far below 1% of the step. Exact-numerics source work at C128 decode therefore has <=~15-20% theoretical headroom; the only >20% byte-reduction lever is precision (KV or weight dtype), which is quality-budget gated.",
+    "gemm_share_of_kernel_time": 0.4792,
+    "lm_head_effective_gbs": 214.2,
+    "per_layer_gemm_effective_gbs": 199.2
+  },
+  "schema": 1,
+  "trial": "deepseek-b/g3-t15"
+}
