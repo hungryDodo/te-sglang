@@ -1,0 +1,767 @@
+{
+  "generated_by": "seis/trials/deepseek-b/g3-t4/verify_index_invariants.py",
+  "source": "python/sglang/srt/layers/attention/flashinfer_backend.py",
+  "Q1_decode": {
+    "all_equal": true,
+    "n_cases": 27,
+    "cases": [
+      {
+        "case": "decode_bs16_seq512",
+        "bs": 16,
+        "seq_len": 512,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 8192,
+        "device_kv_indptr_last": 8192,
+        "equal": true
+      },
+      {
+        "case": "decode_bs16_seq1024",
+        "bs": 16,
+        "seq_len": 1024,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 8192,
+        "device_kv_indptr_last": 8192,
+        "equal": true
+      },
+      {
+        "case": "decode_bs16_seq2048",
+        "bs": 16,
+        "seq_len": 2048,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 8192,
+        "device_kv_indptr_last": 8192,
+        "equal": true
+      },
+      {
+        "case": "decode_bs16_seq4096",
+        "bs": 16,
+        "seq_len": 4096,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 8192,
+        "device_kv_indptr_last": 8192,
+        "equal": true
+      },
+      {
+        "case": "decode_bs16_seq8192",
+        "bs": 16,
+        "seq_len": 8192,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 8192,
+        "device_kv_indptr_last": 8192,
+        "equal": true
+      },
+      {
+        "case": "decode_bs32_seq512",
+        "bs": 32,
+        "seq_len": 512,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 16384,
+        "device_kv_indptr_last": 16384,
+        "equal": true
+      },
+      {
+        "case": "decode_bs32_seq1024",
+        "bs": 32,
+        "seq_len": 1024,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 16384,
+        "device_kv_indptr_last": 16384,
+        "equal": true
+      },
+      {
+        "case": "decode_bs32_seq2048",
+        "bs": 32,
+        "seq_len": 2048,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 16384,
+        "device_kv_indptr_last": 16384,
+        "equal": true
+      },
+      {
+        "case": "decode_bs32_seq4096",
+        "bs": 32,
+        "seq_len": 4096,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 16384,
+        "device_kv_indptr_last": 16384,
+        "equal": true
+      },
+      {
+        "case": "decode_bs32_seq8192",
+        "bs": 32,
+        "seq_len": 8192,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 16384,
+        "device_kv_indptr_last": 16384,
+        "equal": true
+      },
+      {
+        "case": "decode_bs64_seq512",
+        "bs": 64,
+        "seq_len": 512,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 32768,
+        "device_kv_indptr_last": 32768,
+        "equal": true
+      },
+      {
+        "case": "decode_bs64_seq1024",
+        "bs": 64,
+        "seq_len": 1024,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 32768,
+        "device_kv_indptr_last": 32768,
+        "equal": true
+      },
+      {
+        "case": "decode_bs64_seq2048",
+        "bs": 64,
+        "seq_len": 2048,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 32768,
+        "device_kv_indptr_last": 32768,
+        "equal": true
+      },
+      {
+        "case": "decode_bs64_seq4096",
+        "bs": 64,
+        "seq_len": 4096,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 32768,
+        "device_kv_indptr_last": 32768,
+        "equal": true
+      },
+      {
+        "case": "decode_bs64_seq8192",
+        "bs": 64,
+        "seq_len": 8192,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 32768,
+        "device_kv_indptr_last": 32768,
+        "equal": true
+      },
+      {
+        "case": "decode_bs128_seq512",
+        "bs": 128,
+        "seq_len": 512,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 65536,
+        "device_kv_indptr_last": 65536,
+        "equal": true
+      },
+      {
+        "case": "decode_bs128_seq1024",
+        "bs": 128,
+        "seq_len": 1024,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 65536,
+        "device_kv_indptr_last": 65536,
+        "equal": true
+      },
+      {
+        "case": "decode_bs128_seq2048",
+        "bs": 128,
+        "seq_len": 2048,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 65536,
+        "device_kv_indptr_last": 65536,
+        "equal": true
+      },
+      {
+        "case": "decode_bs128_seq4096",
+        "bs": 128,
+        "seq_len": 4096,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 65536,
+        "device_kv_indptr_last": 65536,
+        "equal": true
+      },
+      {
+        "case": "decode_bs128_seq8192",
+        "bs": 128,
+        "seq_len": 8192,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 65536,
+        "device_kv_indptr_last": 65536,
+        "equal": true
+      },
+      {
+        "case": "decode_bs256_seq512",
+        "bs": 256,
+        "seq_len": 512,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "decode_bs256_seq1024",
+        "bs": 256,
+        "seq_len": 1024,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "decode_bs256_seq2048",
+        "bs": 256,
+        "seq_len": 2048,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "decode_bs256_seq4096",
+        "bs": 256,
+        "seq_len": 4096,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "decode_bs256_seq8192",
+        "bs": 256,
+        "seq_len": 8192,
+        "window_cap": 512,
+        "paged_len_each": 512,
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "decode_ragged_bs64",
+        "bs": 64,
+        "seq_lens": [
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          512,
+          8192
+        ],
+        "host_mirror": 32768,
+        "device_kv_indptr_last": 32768,
+        "equal": true
+      },
+      {
+        "case": "decode_ragged_bs128",
+        "bs": 128,
+        "seq_lens": [
+          600,
+          601,
+          602,
+          603,
+          604,
+          605,
+          606,
+          607,
+          608,
+          609,
+          610,
+          611,
+          612,
+          613,
+          614,
+          615,
+          616,
+          617,
+          618,
+          619,
+          620,
+          621,
+          622,
+          623,
+          624,
+          625,
+          626,
+          627,
+          628,
+          629,
+          630,
+          631,
+          632,
+          633,
+          634,
+          635,
+          636,
+          637,
+          638,
+          639,
+          640,
+          641,
+          642,
+          643,
+          644,
+          645,
+          646,
+          647,
+          648,
+          649,
+          650,
+          651,
+          652,
+          653,
+          654,
+          655,
+          656,
+          657,
+          658,
+          659,
+          660,
+          661,
+          662,
+          663,
+          664,
+          665,
+          666,
+          667,
+          668,
+          669,
+          670,
+          671,
+          672,
+          673,
+          674,
+          675,
+          676,
+          677,
+          678,
+          679,
+          680,
+          681,
+          682,
+          683,
+          684,
+          685,
+          686,
+          687,
+          688,
+          689,
+          690,
+          691,
+          692,
+          693,
+          694,
+          695,
+          696,
+          697,
+          698,
+          699,
+          700,
+          701,
+          702,
+          703,
+          704,
+          705,
+          706,
+          707,
+          708,
+          709,
+          710,
+          711,
+          712,
+          713,
+          714,
+          715,
+          716,
+          717,
+          718,
+          719,
+          720,
+          721,
+          722,
+          723,
+          724,
+          725,
+          726,
+          727
+        ],
+        "host_mirror": 65536,
+        "device_kv_indptr_last": 65536,
+        "equal": true
+      }
+    ]
+  },
+  "Q2_prefill": {
+    "plain_all_equal": true,
+    "dq_diverges": [
+      {
+        "case": "prefill_dq_bs16",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 10440,
+        "device_kv_indptr_last_from_dq": 10441,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_dq_bs32",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 22672,
+        "device_kv_indptr_last_from_dq": 22673,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_dq_bs64",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 52512,
+        "device_kv_indptr_last_from_dq": 52513,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_dq_bs128",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 133696,
+        "device_kv_indptr_last_from_dq": 133697,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_dq_bs256",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 382080,
+        "device_kv_indptr_last_from_dq": 382081,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      }
+    ],
+    "cases": [
+      {
+        "case": "prefill_plain_bs16_p0_e8192",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs16_p8192_e0",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs16_p4096_e1024",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 81920,
+        "device_kv_indptr_last": 81920,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs16_p448_e64",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 8192,
+        "device_kv_indptr_last": 8192,
+        "equal": true
+      },
+      {
+        "case": "prefill_dq_bs16",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 10440,
+        "device_kv_indptr_last_from_dq": 10441,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_custom_only_bs16",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens None",
+        "host_mirror": 10440,
+        "device_kv_indptr_last": 10440,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs32_p0_e8192",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 262144,
+        "device_kv_indptr_last": 262144,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs32_p8192_e0",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 262144,
+        "device_kv_indptr_last": 262144,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs32_p4096_e1024",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 163840,
+        "device_kv_indptr_last": 163840,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs32_p448_e64",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 16384,
+        "device_kv_indptr_last": 16384,
+        "equal": true
+      },
+      {
+        "case": "prefill_dq_bs32",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 22672,
+        "device_kv_indptr_last_from_dq": 22673,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_custom_only_bs32",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens None",
+        "host_mirror": 22672,
+        "device_kv_indptr_last": 22672,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs64_p0_e8192",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 524288,
+        "device_kv_indptr_last": 524288,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs64_p8192_e0",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 524288,
+        "device_kv_indptr_last": 524288,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs64_p4096_e1024",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 327680,
+        "device_kv_indptr_last": 327680,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs64_p448_e64",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 32768,
+        "device_kv_indptr_last": 32768,
+        "equal": true
+      },
+      {
+        "case": "prefill_dq_bs64",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 52512,
+        "device_kv_indptr_last_from_dq": 52513,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_custom_only_bs64",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens None",
+        "host_mirror": 52512,
+        "device_kv_indptr_last": 52512,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs128_p0_e8192",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 1048576,
+        "device_kv_indptr_last": 1048576,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs128_p8192_e0",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 1048576,
+        "device_kv_indptr_last": 1048576,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs128_p4096_e1024",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 655360,
+        "device_kv_indptr_last": 655360,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs128_p448_e64",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 65536,
+        "device_kv_indptr_last": 65536,
+        "equal": true
+      },
+      {
+        "case": "prefill_dq_bs128",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 133696,
+        "device_kv_indptr_last_from_dq": 133697,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_custom_only_bs128",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens None",
+        "host_mirror": 133696,
+        "device_kv_indptr_last": 133696,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs256_p0_e8192",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 2097152,
+        "device_kv_indptr_last": 2097152,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs256_p8192_e0",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 2097152,
+        "device_kv_indptr_last": 2097152,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs256_p4096_e1024",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 1310720,
+        "device_kv_indptr_last": 1310720,
+        "equal": true
+      },
+      {
+        "case": "prefill_plain_bs256_p448_e64",
+        "branch": "custom_kv_indices=None",
+        "host_mirror": 131072,
+        "device_kv_indptr_last": 131072,
+        "equal": true
+      },
+      {
+        "case": "prefill_dq_bs256",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens set",
+        "host_mirror_from_paged_lens": 382080,
+        "device_kv_indptr_last_from_dq": 382081,
+        "equal": false,
+        "note": "host mirror over paged_kernel_lens would be WRONG here; the prefill patch must fall back to kv_indptr[-1]"
+      },
+      {
+        "case": "prefill_custom_only_bs256",
+        "branch": "custom_kv_indices set, dq_paged_kernel_lens None",
+        "host_mirror": 382080,
+        "device_kv_indptr_last": 382080,
+        "equal": true
+      }
+    ]
+  },
+  "Q3_static": {
+    "source": "python/sglang/srt/layers/attention/flashinfer_backend.py",
+    "sites": [
+      {
+        "class": "FlashInferIndicesUpdaterDecode",
+        "lineno": 1766,
+        "kv_last_index_assigns": [
+          {
+            "lineno": 1825,
+            "source": "kv_last_index = (\n                host_indptr_last if host_indptr_last is not None else kv_indptr[-1]\n            )"
+          }
+        ]
+      },
+      {
+        "class": "FlashInferIndicesUpdaterPrefill",
+        "lineno": 2243,
+        "kv_last_index_assigns": [
+          {
+            "lineno": 2351,
+            "source": "kv_last_index = kv_indptr[-1]"
+          }
+        ]
+      }
+    ]
+  },
+  "Q3_liveness_facts": [
+    {
+      "file": "python/sglang/srt/layers/attention/flashinfer_backend.py",
+      "match": "740:    def init_forward_metadata_out_graph("
+    },
+    {
+      "file": "python/sglang/srt/layers/attention/flashinfer_backend.py",
+      "match": "2691:    def init_forward_metadata_out_graph("
+    }
+  ]
+}

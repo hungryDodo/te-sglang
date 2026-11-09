@@ -2348,7 +2348,21 @@ class FlashInferIndicesUpdaterPrefill:
 
         if use_sliding_window_kv_pool and not use_swa_source:
             assert self._swa_kv_pool is not None
-            kv_last_index = kv_indptr[-1]
+            # Host mirror: this call rebuilt kv_indptr from paged_kernel_lens
+            # above, so kv_indptr[bs] == sum(paged_kernel_lens) == the host int
+            # the caller already computed. Slicing with the device scalar forces
+            # a .item() D2H drain per extend. The dq branch cumsums
+            # dq_paged_kernel_lens instead; it and spec-decode keep the device
+            # read. (Verified over gate-shaped inputs:
+            # seis/trials/deepseek-b/g3-t4/index-invariants.json.)
+            if (
+                spec_info is None
+                and custom_kv_indices is None
+                and isinstance(paged_kernel_lens_sum, int)
+            ):
+                kv_last_index = paged_kernel_lens_sum
+            else:
+                kv_last_index = kv_indptr[-1]
             kv_indices[:kv_last_index] = (
                 self._swa_kv_pool.translate_loc_from_full_to_swa(
                     kv_indices[:kv_last_index]
