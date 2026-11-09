@@ -58,6 +58,13 @@ Full-identical pair profile (B/c4same 1 vs 3, all 48 emitted tokens equal):
 positions 0–4 deltas ≤ 0.22; position 5 = 1.12, then 1.6–5.16 through position 12;
 position 13 = 0.07; then 1.0–2.9 for the rest.
 
+Execution-overlap control (meta_info timestamps): the four A/c4same and four B/c4same
+requests were submitted within 154 ms / 167 ms of each other with overlapping e2e
+latencies. The full-identical-output pair B/c4same 1 vs 3 finished 0.422 ms apart
+(`request_finished_ts` 1794243237.81777 vs 1794243237.81814), so the row difference
+is not an artifact of comparing runs from different batches: it appears between
+concurrent requests with identical committed output.
+
 Interpretation (bounded): two requests that committed the *same* tokens report
 materially different logits rows at the same positions, with a sharp onset after
 position 4. This is not uniform batching noise: prefill row 0 is bit-identical, and
