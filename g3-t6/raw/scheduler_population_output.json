@@ -1,0 +1,342 @@
+{
+  "trial": "g3-t6",
+  "worker": "glm-b",
+  "question": "Can BatchStrOutput.output_top_logprobs_val be empty at source for the frozen probe shape?",
+  "engine_tree": "python/ identical to 2c854e0 (verified separately by git diff)",
+  "chain_files": [
+    "python/sglang/srt/managers/io_struct.py",
+    "python/sglang/srt/managers/scheduler.py",
+    "python/sglang/srt/managers/schedule_batch.py",
+    "python/sglang/srt/managers/scheduler_components/batch_result_processor.py",
+    "python/sglang/srt/managers/scheduler_components/logprob_result_processor.py",
+    "python/sglang/srt/managers/scheduler_components/output_streamer.py",
+    "python/sglang/srt/managers/detokenizer_manager.py",
+    "python/sglang/srt/layers/logprob_processor.py"
+  ],
+  "extraction_failures": [],
+  "shapes": [
+    {
+      "shape": "S_probe",
+      "request": {
+        "return_logprob": true,
+        "top_logprobs_num": 8,
+        "logprob_start_len": null
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "evidence": "EXECUTED",
+          "k": [
+            8
+          ],
+          "start_len": [
+            -1
+          ],
+          "return_logprob": true,
+          "err": null
+        },
+        "hop1b_tok_normalize": {
+          "evidence": "EXECUTED",
+          "k": 8,
+          "start_len": -1,
+          "err": null
+        },
+        "hop2_start_len_resolution": {
+          "evidence": "EXECUTED",
+          "resolved_start_len": 0,
+          "aborted": null,
+          "errs": [
+            null,
+            "IndentationError: unindent does not match any outer indentation level (<hop2b>, line 14)",
+            null
+          ]
+        },
+        "hop3_batch_flags": {
+          "evidence": "EXECUTED",
+          "batch_return_logprob": true,
+          "top_logprobs_nums": [
+            8
+          ],
+          "err": null
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": true,
+          "err_writeback": null,
+          "next_token_top_logprobs_val": "POPULATED",
+          "chosen_next_token_logprobs": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(guard)",
+          "guard_passed": true,
+          "silent_skip_possible": false,
+          "req_output_top_logprobs_val_len": 1
+        },
+        "hop6_decode_append": {
+          "evidence": "EXECUTED(body, guard implied k>0)",
+          "outcome": "appended",
+          "err": null
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED",
+          "forwarded_rows": 0,
+          "err": "IndentationError: unindent does not match any outer indentation level (<hop7>, line 37)"
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "ANCHORED",
+          "detokenizer_copies": "output_top_logprobs_val=recv_obj.output_top_logprobs_val (+idx) at detokenizer_manager.py:497-498",
+          "streamer_pass": "output_top_logprobs_val=self.output_top_logprobs_val at output_streamer.py:773"
+        }
+      },
+      "verdict": "POPULATED_AT_SOURCE (k>0 flows through every executed guard; only GPU compute or the read path can remove it)"
+    },
+    {
+      "shape": "S_start0",
+      "request": {
+        "return_logprob": true,
+        "top_logprobs_num": 8,
+        "logprob_start_len": 0
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "evidence": "EXECUTED",
+          "k": [
+            8
+          ],
+          "start_len": [
+            0
+          ],
+          "return_logprob": true,
+          "err": null
+        },
+        "hop1b_tok_normalize": {
+          "evidence": "EXECUTED",
+          "k": 8,
+          "start_len": 0,
+          "err": null
+        },
+        "hop2_start_len_resolution": {
+          "evidence": "EXECUTED",
+          "resolved_start_len": 0,
+          "aborted": null,
+          "errs": [
+            null,
+            "IndentationError: unindent does not match any outer indentation level (<hop2b>, line 14)",
+            null
+          ]
+        },
+        "hop3_batch_flags": {
+          "evidence": "EXECUTED",
+          "batch_return_logprob": true,
+          "top_logprobs_nums": [
+            8
+          ],
+          "err": null
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": true,
+          "err_writeback": null,
+          "next_token_top_logprobs_val": "POPULATED",
+          "chosen_next_token_logprobs": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(guard)",
+          "guard_passed": true,
+          "silent_skip_possible": false,
+          "req_output_top_logprobs_val_len": 1
+        },
+        "hop6_decode_append": {
+          "evidence": "EXECUTED(body, guard implied k>0)",
+          "outcome": "appended",
+          "err": null
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED",
+          "forwarded_rows": 0,
+          "err": "IndentationError: unindent does not match any outer indentation level (<hop7>, line 37)"
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "ANCHORED",
+          "detokenizer_copies": "output_top_logprobs_val=recv_obj.output_top_logprobs_val (+idx) at detokenizer_manager.py:497-498",
+          "streamer_pass": "output_top_logprobs_val=self.output_top_logprobs_val at output_streamer.py:773"
+        }
+      },
+      "verdict": "POPULATED_AT_SOURCE (k>0 flows through every executed guard; only GPU compute or the read path can remove it)"
+    },
+    {
+      "shape": "S_k0",
+      "request": {
+        "return_logprob": true,
+        "top_logprobs_num": null,
+        "logprob_start_len": null
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "evidence": "EXECUTED",
+          "k": [
+            0
+          ],
+          "start_len": [
+            -1
+          ],
+          "return_logprob": true,
+          "err": null
+        },
+        "hop1b_tok_normalize": {
+          "evidence": "EXECUTED",
+          "k": 0,
+          "start_len": -1,
+          "err": null
+        },
+        "hop2_start_len_resolution": {
+          "evidence": "EXECUTED",
+          "resolved_start_len": 0,
+          "aborted": null,
+          "errs": [
+            null,
+            "IndentationError: unindent does not match any outer indentation level (<hop2b>, line 14)",
+            null
+          ]
+        },
+        "hop3_batch_flags": {
+          "evidence": "EXECUTED",
+          "batch_return_logprob": true,
+          "top_logprobs_nums": [
+            0
+          ],
+          "err": null
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": false,
+          "err_writeback": null,
+          "next_token_top_logprobs_val": null,
+          "chosen_next_token_logprobs": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(guard)",
+          "guard_passed": false,
+          "silent_skip_possible": false,
+          "req_output_top_logprobs_val_len": 0
+        },
+        "hop6_decode_append": {
+          "evidence": "EXECUTED(body, guard implied k>0)",
+          "outcome": "CRASH:None-index",
+          "err": "TypeError: 'NoneType' object is not subscriptable"
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED",
+          "forwarded_rows": 0,
+          "err": "IndentationError: unindent does not match any outer indentation level (<hop7>, line 37)"
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "ANCHORED",
+          "detokenizer_copies": "output_top_logprobs_val=recv_obj.output_top_logprobs_val (+idx) at detokenizer_manager.py:497-498",
+          "streamer_pass": "output_top_logprobs_val=self.output_top_logprobs_val at output_streamer.py:773"
+        }
+      },
+      "verdict": "EMPTY_AT_SOURCE_BY_REQUEST (k=0; also matches observed null signature)"
+    },
+    {
+      "shape": "S_nologprob",
+      "request": {
+        "return_logprob": false,
+        "top_logprobs_num": 8,
+        "logprob_start_len": null
+      },
+      "steps": {
+        "hop1a_req_normalize": {
+          "evidence": "EXECUTED",
+          "k": [
+            8
+          ],
+          "start_len": [
+            -1
+          ],
+          "return_logprob": false,
+          "err": null
+        },
+        "hop1b_tok_normalize": {
+          "evidence": "EXECUTED",
+          "k": 8,
+          "start_len": -1,
+          "err": null
+        },
+        "hop2_start_len_resolution": {
+          "evidence": "EXECUTED",
+          "resolved_start_len": 0,
+          "aborted": null,
+          "errs": [
+            null,
+            "IndentationError: unindent does not match any outer indentation level (<hop2b>, line 14)",
+            null
+          ]
+        },
+        "hop3_batch_flags": {
+          "evidence": "EXECUTED",
+          "batch_return_logprob": false,
+          "top_logprobs_nums": null,
+          "err": null
+        },
+        "hop4_sampler_topk": {
+          "evidence": "EXECUTED(guard+writeback) + ASSUMED_GPU(torch.topk rows are fixtures)",
+          "guard_any_k_gt0": false,
+          "err_writeback": null,
+          "next_token_top_logprobs_val": null,
+          "chosen_next_token_logprobs": "POPULATED"
+        },
+        "hop5_extend_first_token_append": {
+          "evidence": "EXECUTED(guard)",
+          "guard_passed": false,
+          "silent_skip_possible": true,
+          "req_output_top_logprobs_val_len": 0
+        },
+        "hop6_decode_append": {
+          "evidence": "EXECUTED(body, guard implied k>0)",
+          "outcome": "CRASH:None-index",
+          "err": "TypeError: 'NoneType' object is not subscriptable"
+        },
+        "hop7_streamer_collection": {
+          "evidence": "EXECUTED",
+          "forwarded_rows": 0,
+          "err": "IndentationError: unindent does not match any outer indentation level (<hop7>, line 37)"
+        },
+        "hop8_ipc_forwarding": {
+          "evidence": "ANCHORED",
+          "detokenizer_copies": "output_top_logprobs_val=recv_obj.output_top_logprobs_val (+idx) at detokenizer_manager.py:497-498",
+          "streamer_pass": "output_top_logprobs_val=self.output_top_logprobs_val at output_streamer.py:773"
+        }
+      },
+      "verdict": "EMPTY_AT_SOURCE (return_logprob=False; but then chosen LP would be absent too \u2014 contradicts probe observation)"
+    }
+  ],
+  "discrimination": [
+    {
+      "hypothesis": "k=0 at request normalize",
+      "signature": "chosen LP present, top null",
+      "status": "EXCLUDED by C7 (frozen probe sends top_logprobs_num=8); reproduced here as S_k0"
+    },
+    {
+      "hypothesis": "scheduler-side silent empty population",
+      "signature": "chosen LP present, top null",
+      "status": "EXCLUDED for probe shape by this trial: only POPULATED or CRASH(TypeError) reachable; the one silent-skip site (hop5) requires next_token_top_logprobs_val=None which hop4 cannot produce when any k>0"
+    },
+    {
+      "hypothesis": "response read-path field mismatch (i5)",
+      "signature": "chosen LP present, top null",
+      "status": "STANDING \u2014 consistent with all executed evidence; probe read names are structurally absent on the native surface"
+    },
+    {
+      "hypothesis": "logprob_start_len gating output top-k",
+      "signature": "n/a",
+      "status": "EXCLUDED by hop2 execution: start_len only scopes INPUT logprobs; output containers/appends are independent of it"
+    }
+  ],
+  "scope_limits": [
+    "torch.topk rows in hop4/hop7 are fixtures (ASSUMED_GPU); the guard and write-back semantics are executed real source",
+    "hop8 is anchored dataflow (IPC copies), not executed",
+    "single-request batch; mixed-batch k-lists exercise the same any() guard",
+    "speculative-decoding paths not exercised (frozen workload is non-spec)",
+    "CPU-side evidence only; no GPU, no live server, no HTTP"
+  ]
+}
