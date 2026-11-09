@@ -1,63 +1,70 @@
-# G3 trial 9 — glm-b (i0009), campaign continuous-20261109-01
+# G3 glm-b trial-10 plan (campaign continuous-20261109-01, 2026-11-10)
 
-## Session bounds
-45 turns, 20 min hard, USD 5 nominal cap (prior sessions died at USD 1–3; keep ≤ ~30 turns).
-Early recoverable checkpoint commit; final quarter reserved for iteration-proposal.json + commit.
-No GPU/SSH: CPU-decidable work only; official measurement stays with the controller.
+Direction given: build on SWA + fast_decode_plan; investigate high-concurrency host
+scheduling and decode overhead with existing traces. Direction is not a scope
+restriction; glm-b's own engine lane stays closed absent a new trace showing a gap
+(decode roofline-closed at C256, sync sweep closed, prefill bounded — G2 t2).
 
-## State at entry (i7/i8 + sync-002)
-- Engine lane saturated per existing traces (decode C128/C256 bytes-bound at roofline,
-  99.2% GPU busy at C256; prefill near-roofline; sync sweep closed; prefill-mirror
-  b196fd4 measured no attributable gain in G3-i2 gate). No new engine candidate.
-- Top-k evidence chain CPU-side fully closed (i7/i8). Standing pending controller
-  request = numeric probe re-run with BOTH recipe fixes → candidate-x3 on the
-  2c854e0-identical HEAD if clean. Do not rebuild fixtures for it (008).
-- Promotion candidate tree kept bit-identical to 2c854e0: `git diff 2c854e0 HEAD --
-  python/` EMPTY at entry, stays EMPTY this trial.
+## Input (not my experiment)
 
-## New question for this trial
-The promotion claim for the 076b006+aa45af5 lineage will be ALGORITHM_PRESERVING.
-Three × exact-token 10/10 fast gates are sample evidence; nobody has audited the two
-accepted hunks' edge paths. Reading the live code surfaced three concrete hazards:
+Controller packet `controller_evidence/continuous-20261109-01/20261110-runtime/`
+(canonical C21/C22): real NGRAM ON (`b9a91aa13`) vs OFF (`999d4b243`) paired
+HTTP responses on the real Spark-X2.6 BF16/FlashInfer server, greedy,
+`return_logprob=true, top_logprobs_num=8`, complete top8+chosen LP+IDs, plus
+per-request server-measured timings (`e2e_latency`, `first_token_latency`,
+`queue_time`, `num_retractions`, ts fields). Read-only input; derived analysis
+written separately under g3-t10/.
 
-- H1 (arithmetic exactness of aa45af5): `kv_last_index = int(seq_lens_cpu.sum())`
-  replaces `kv_indptr[-1]`. `kv_indptr` is cumsum over CLAMPED lens on the SWA
-  wrapper-0 path (window+1 clamp at lines 1687–1693) while the raw mirror is
-  UNCLAMPED; exactness holds only because `update_sliding_window` passes the clamped
-  mirror `seq_lens_cpu_tmp` down. Invariant to execute: clamp(mirror) lanes ==
-  clamp(device lens) lanes for every reachable decode shape, incl. above-window seqs.
-- H2 (global lifecycle of `global_override_indptr_cpu`, 076b006): set at :1832
-  (only-if-None), consumed by fast_decode_plan :1853–1894, cleared at :1916 — with NO
-  try/finally. An exception between set and clear leaks a stale override; 1832 then
-  skips rebuild forever after and every later eager step plans against a wrong-length
-  indptr (silent wrong attention), and the prefill save/restore at :2635–2646
-  faithfully restores the stale value. Also: :1832 rebuild lacks the `bs ==
-  seq_lens_cpu.numel()` guard that aa45af5 has; safety there rests on the caller's
-  `seq_lens_cpu[:bs]` slice (:748–846).
-- H3 (mirror origin/aliasing): is `forward_batch.seq_lens_cpu` an immutable per-step
-  snapshot or a tensor the scheduler thread can mutate while the forward thread
-  reads it (overlap scheduler)? Source-level check of its construction.
+## Why this trial
 
-## Method (i7/i8 harness lessons enforced)
-- Extract REAL statements via ast and execute the `ast.unparse` form (dedent
-  re-indent bug; needles match UNPARSED text; enclosing-If extraction).
-- Hard verdict gate: ANY harness error ⇒ NO_CLAIM.
-- Sensitivity controls: an UNSYNCED mirror (≠ device lanes) MUST produce a mismatch;
-  an injected exception mid-plan MUST leave the stale global detectable. Proves the
-  oracle can see the failures it claims to bound.
-- Raw JSON with per-case file:line provenance + sha256 of extracted segments.
+1. glm-b's pending highest-value action (trusted numeric comparison + candidate-x3
+   for the 2c854e0-identical sync-removal lineage) has been blocked on missing
+   top-k arrays. C21 responses are the FIRST real server responses with populated
+   `meta_info.output_top_logprobs` — they empirically exercise the exact request
+   shape (i4) + response read map (i5) + CPU chain (i8) glm-b specified. Verifying
+   that across ALL responses (not one) upgrades the pending re-run request from
+   "recipe predicted" to "recipe proven on real servers".
+2. The same data carries a real decode-overhead measurement opportunity (per-request
+   server-measured decode throughput, ON vs OFF, paired identical prompts/shape)
+   and a real error-structure opportunity (divergence fingerprint of the F1 bug).
+   The controller explicitly welcomes real performance/error observations.
 
-## Deliverables
-1. plan.md (this file) — committed first as recoverable checkpoint.
-2. g3-t9/probe_promotion_invariants.py — executed oracle (exit 0 clean; raw JSON).
-3. g3-t9/VERIFICATION.md — bounded conclusion per hypothesis, limits, next actions.
-4. iteration-proposal.json — string fields + request_fast_gate=false; controller ask
-   unchanged in substance (numeric probe re-run with both fixes → candidate-x3 if
-   clean), now carrying the audit outcome for the ALGORITHM_PRESERVING claim.
+## Falsifiable questions
 
-## Non-goals
-No engine change this trial (python/ untouched — the candidate-x3 request depends on
-2c854e0-identity; the H2 hardening fix is recorded as a one-hunk follow-up commit the
-controller may order before or after promotion). No promotion claim, no precision
-change, no protocol/evaluator change, no missing-k fixture repeats, no NGRAM/MMVQ/GGUF
-lane work.
+- Q1 (recipe closure): EVERY C21 response with `return_logprob=true,
+  top_logprobs_num=8` has populated `meta_info.output_top_logprobs` (8 rows per
+  output position) read through the i5 native nested field. Falsified if any
+  response shows null/absent arrays while its request had k=8.
+- Q2 (error fingerprint, new): for the 10 primary ON/OFF pairs — first-divergence
+  position, chosen-LP gap at divergence, top8 membership of OFF argmax in ON top8,
+  re-convergence after divergence, and the exact response/position of the ON
+  self-top1 mismatch C21 reported (chosen token != own top1 while greedy). These
+  are new quantified observations from real data (C21 lists counts, not structure).
+- Q3 (real performance observation): paired per-request decode throughput
+  (completion_tokens / (e2e_latency - first_token_latency)) ON vs OFF on identical
+  prompts; plus retraction counts and queue/entry timestamps as host-scheduling
+  signals. Falsifies "ON is faster at this shape" or confirms it with bounds
+  (C1/C4 diagnostic runs, not a formal gate; no quality claim implied).
+
+## Method
+
+Single stdlib script `g3-t10/analyze_ngram_pairs.py`: parse ONLY the ngram-raw-http
+*.json + the packet summary's pair list; emit counters + per-pair derived rows to
+`g3-t10/raw/ngram_pair_analysis_output.json`; hard-fail (exit 2) on any harness
+error so no claim rides on a broken parse (i7/i9 lessons). No file in the packet is
+modified. Engine `python/` stays bit-identical to 2c854e0 (promotion candidate
+preserved).
+
+## Requests to controller (tests field)
+
+- request_fast_gate=true: frozen BF16 Fast screen on this HEAD, engine diff vs
+  2c854e0 verified empty → G3-namespace repeat sample of the twice-proven
+  sync-removal lineage (repeat-measurement credibility per G2 t2; expected band
+  ~1.09; NOT a promotion claim, numeric prerequisite still pending).
+- Still pending (do not re-run unchanged): numeric coverage re-run on reference vs
+  2c854e0-identical candidate with the now-real-proven recipe; then candidate-x3.
+
+## Bounds
+
+45 turns / 20 min / USD5. Engine change: none. Save checkpoint early; final quarter
+for tests + iteration-proposal.json + clean-tree commit.
