@@ -1,0 +1,192 @@
+{
+ "inputs": {
+  "current_gguf_py": "/workspace/python/sglang/srt/layers/quantization/gguf.py",
+  "legacy_source": "/workspace/seis/trials/deepseek-b/g3-t13/legacy_gguf_f263262_parent.py.txt",
+  "trace": "/workspace/controller_evidence/continuous-20261109-01/20261110-runtime/gguf-dispatch.json",
+  "trace_calls": 28608,
+  "anchors_executed": [
+   "IMATRIX_QUANT_TYPES",
+   "KQUANT_TYPES",
+   "MMQ_QUANT_TYPES",
+   "MMVQ_QUANT_TYPES",
+   "STANDARD_QUANT_TYPES",
+   "_MMVQ_SAFE_MEASURED",
+   "_mmvq_safe_batch",
+   "legacy_fused_mul_mat_gguf.mmvq_safe_if"
+  ]
+ },
+ "cells": [
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows<=5120",
+   "batch": 1,
+   "calls": 588,
+   "observed_kernel": "mmvq",
+   "patched_safe": 2,
+   "patched_kernel": "mmvq",
+   "legacy_safe": 6,
+   "legacy_kernel": "mmvq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows<=5120",
+   "batch": 4,
+   "calls": 15868,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 6,
+   "legacy_kernel": "mmvq",
+   "mismatch_vs_patched": false,
+   "selection_flip": true
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows<=5120",
+   "batch": 6,
+   "calls": 84,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 6,
+   "legacy_kernel": "mmvq",
+   "mismatch_vs_patched": false,
+   "selection_flip": true
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows<=5120",
+   "batch": 512,
+   "calls": 252,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 6,
+   "legacy_kernel": "mmq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows<=5120",
+   "batch": 1536,
+   "calls": 252,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 6,
+   "legacy_kernel": "mmq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows>5120",
+   "batch": 1,
+   "calls": 403,
+   "observed_kernel": "mmvq",
+   "patched_safe": 2,
+   "patched_kernel": "mmvq",
+   "legacy_safe": 2,
+   "legacy_kernel": "mmvq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows>5120",
+   "batch": 3,
+   "calls": 3,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 2,
+   "legacy_kernel": "mmq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows>5120",
+   "batch": 4,
+   "calls": 10766,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 2,
+   "legacy_kernel": "mmq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows>5120",
+   "batch": 6,
+   "calls": 56,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 2,
+   "legacy_kernel": "mmq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows>5120",
+   "batch": 512,
+   "calls": 168,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 2,
+   "legacy_kernel": "mmq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  },
+  {
+   "weight_type": "Q8_0",
+   "rows_band": "rows>5120",
+   "batch": 1536,
+   "calls": 168,
+   "observed_kernel": "mmq",
+   "patched_safe": 2,
+   "patched_kernel": "mmq",
+   "legacy_safe": 2,
+   "legacy_kernel": "mmq",
+   "mismatch_vs_patched": false,
+   "selection_flip": false
+  }
+ ],
+ "totals": {
+  "recorded_calls": 28608,
+  "calls_where_patched_kernel_differs_from_observed": 0,
+  "calls_where_f263262_changes_selection": 15952,
+  "flip_share_of_recorded_calls": 0.5576
+ },
+ "flip_detail": {
+  "Q8_0|rows<=5120|batch4": {
+   "calls": 15868,
+   "legacy": "mmvq",
+   "patched": "mmq"
+  },
+  "Q8_0|rows<=5120|batch6": {
+   "calls": 84,
+   "legacy": "mmvq",
+   "patched": "mmq"
+  }
+ },
+ "weight_types_present_in_trace": [
+  "Q8_0"
+ ],
+ "limits": [
+  "Replay of controller-supplied trace cells; no GPU/kernel was run here.",
+  "Trace covers Q8_0 only: Q4_K changed cells (rows<=5120, batch 3-6) are NOT exercised by this trace and remain unmeasured.",
+  "Instrumented trace perturbs wall time (canonical C22): no speed claim.",
+  "No numeric-equivalence check; F3 stays UNGATED under the frozen BF16 gate.",
+  "Batch is the traced matmul row count; per-step tail batches are not characterised by this table."
+ ],
+ "verdict": "DISPATCH_CONTRACT_HELD_ON_TRACE"
+}
