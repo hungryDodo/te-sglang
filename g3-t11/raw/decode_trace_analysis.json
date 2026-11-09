@@ -1,0 +1,529 @@
+{
+ "trace": "controller_evidence/continuous-20261109-01/20261110-decode-trace/decode.trace.json.gz",
+ "sha_note": "raw per MANIFEST 09e8dcb9...",
+ "events": 24195,
+ "controls_recompute_vs_README": {
+  "kernel_instances": {
+   "got": 8560,
+   "ref": 8560,
+   "ok": true
+  },
+  "kernel_union_ms": {
+   "got": 565.549025,
+   "ref": 565.549025,
+   "rel_diff": 0.0
+  },
+  "window_ms": {
+   "got": 571.432688,
+   "ref": 571.927153,
+   "rel_diff": 0.00086456
+  },
+  "cpu_step_union_ms": {
+   "got": 28.303983,
+   "ref": 28.303983,
+   "rel_diff": 1e-08
+  }
+ },
+ "controls_ok": true,
+ "pairing": "16/16 CPU<->GPU by External id",
+ "assignment_negative_control": {
+  "kernels_outside_all_gpu_spans": 96,
+  "their_total_ms": 5.161863,
+  "frac_of_kernel_ms": 0.009127
+ },
+ "window": {
+  "envelope_ms": 571.433,
+  "kernel_union_ms": 565.549,
+  "global_gpu_uncovered_ms": 5.884,
+  "global_uncovered_frac": 0.0103
+ },
+ "steps": [
+  {
+   "external_id": 23566,
+   "gpu_span_us": 36870.675,
+   "cpu_label_us": 1440.548,
+   "n_kernels": 529,
+   "kernel_sum_us": 35775.632,
+   "kernel_union_us": 35661.327,
+   "idle_in_span_us": 1209.348,
+   "idle_frac": 0.0328
+  },
+  {
+   "external_id": 23803,
+   "gpu_span_us": 36232.869,
+   "cpu_label_us": 2092.128,
+   "n_kernels": 529,
+   "kernel_sum_us": 36086.695,
+   "kernel_union_us": 35949.543,
+   "idle_in_span_us": 283.326,
+   "idle_frac": 0.00782
+  },
+  {
+   "external_id": 24040,
+   "gpu_span_us": 35480.892,
+   "cpu_label_us": 1659.261,
+   "n_kernels": 529,
+   "kernel_sum_us": 35328.193,
+   "kernel_union_us": 35237.662,
+   "idle_in_span_us": 243.23,
+   "idle_frac": 0.00686
+  },
+  {
+   "external_id": 24277,
+   "gpu_span_us": 35609.464,
+   "cpu_label_us": 1751.034,
+   "n_kernels": 529,
+   "kernel_sum_us": 35488.221,
+   "kernel_union_us": 35350.675,
+   "idle_in_span_us": 258.789,
+   "idle_frac": 0.00727
+  },
+  {
+   "external_id": 24514,
+   "gpu_span_us": 35022.922,
+   "cpu_label_us": 1640.142,
+   "n_kernels": 529,
+   "kernel_sum_us": 34889.01,
+   "kernel_union_us": 34769.035,
+   "idle_in_span_us": 253.887,
+   "idle_frac": 0.00725
+  },
+  {
+   "external_id": 24751,
+   "gpu_span_us": 34965.26,
+   "cpu_label_us": 1654.654,
+   "n_kernels": 529,
+   "kernel_sum_us": 34830.763,
+   "kernel_union_us": 34725.728,
+   "idle_in_span_us": 239.532,
+   "idle_frac": 0.00685
+  },
+  {
+   "external_id": 24988,
+   "gpu_span_us": 35498.94,
+   "cpu_label_us": 1793.226,
+   "n_kernels": 529,
+   "kernel_sum_us": 35353.984,
+   "kernel_union_us": 35234.271,
+   "idle_in_span_us": 264.669,
+   "idle_frac": 0.00746
+  },
+  {
+   "external_id": 25225,
+   "gpu_span_us": 35439.647,
+   "cpu_label_us": 1754.331,
+   "n_kernels": 529,
+   "kernel_sum_us": 35310.912,
+   "kernel_union_us": 35197.277,
+   "idle_in_span_us": 242.37,
+   "idle_frac": 0.00684
+  },
+  {
+   "external_id": 25462,
+   "gpu_span_us": 35032.973,
+   "cpu_label_us": 1946.837,
+   "n_kernels": 529,
+   "kernel_sum_us": 34906.574,
+   "kernel_union_us": 34791.947,
+   "idle_in_span_us": 241.026,
+   "idle_frac": 0.00688
+  },
+  {
+   "external_id": 25699,
+   "gpu_span_us": 34984.381,
+   "cpu_label_us": 1778.089,
+   "n_kernels": 529,
+   "kernel_sum_us": 34853.823,
+   "kernel_union_us": 34744.696,
+   "idle_in_span_us": 239.685,
+   "idle_frac": 0.00685
+  },
+  {
+   "external_id": 25936,
+   "gpu_span_us": 34952.829,
+   "cpu_label_us": 1678.077,
+   "n_kernels": 529,
+   "kernel_sum_us": 34860.449,
+   "kernel_union_us": 34710.325,
+   "idle_in_span_us": 242.504,
+   "idle_frac": 0.00694
+  },
+  {
+   "external_id": 26179,
+   "gpu_span_us": 34956.191,
+   "cpu_label_us": 1906.358,
+   "n_kernels": 529,
+   "kernel_sum_us": 34822.721,
+   "kernel_union_us": 34712.733,
+   "idle_in_span_us": 243.458,
+   "idle_frac": 0.00696
+  },
+  {
+   "external_id": 26416,
+   "gpu_span_us": 35112.025,
+   "cpu_label_us": 1807.896,
+   "n_kernels": 529,
+   "kernel_sum_us": 34969.692,
+   "kernel_union_us": 34862.936,
+   "idle_in_span_us": 249.089,
+   "idle_frac": 0.00709
+  },
+  {
+   "external_id": 26653,
+   "gpu_span_us": 35112.472,
+   "cpu_label_us": 1820.52,
+   "n_kernels": 529,
+   "kernel_sum_us": 34939.453,
+   "kernel_union_us": 34858.997,
+   "idle_in_span_us": 253.475,
+   "idle_frac": 0.00722
+  },
+  {
+   "external_id": 26890,
+   "gpu_span_us": 35003.037,
+   "cpu_label_us": 1772.826,
+   "n_kernels": 529,
+   "kernel_sum_us": 34847.009,
+   "kernel_union_us": 34760.056,
+   "idle_in_span_us": 242.981,
+   "idle_frac": 0.00694
+  },
+  {
+   "external_id": 27127,
+   "gpu_span_us": 35062.587,
+   "cpu_label_us": 1808.056,
+   "n_kernels": 529,
+   "kernel_sum_us": 34909.564,
+   "kernel_union_us": 34819.958,
+   "idle_in_span_us": 242.629,
+   "idle_frac": 0.00692
+  }
+ ],
+ "inter_step_gaps": [
+  {
+   "between": [
+    23566,
+    23803
+   ],
+   "gap_us": 344.115,
+   "kernel_covered_us": 321.527,
+   "uncovered_us": 22.588
+  },
+  {
+   "between": [
+    23803,
+    24040
+   ],
+   "gap_us": 344.276,
+   "kernel_covered_us": 323.767,
+   "uncovered_us": 20.509
+  },
+  {
+   "between": [
+    24040,
+    24277
+   ],
+   "gap_us": 349.811,
+   "kernel_covered_us": 329.622,
+   "uncovered_us": 20.189
+  },
+  {
+   "between": [
+    24277,
+    24514
+   ],
+   "gap_us": 340.02,
+   "kernel_covered_us": 320.087,
+   "uncovered_us": 19.933
+  },
+  {
+   "between": [
+    24514,
+    24751
+   ],
+   "gap_us": 341.876,
+   "kernel_covered_us": 320.598,
+   "uncovered_us": 21.278
+  },
+  {
+   "between": [
+    24751,
+    24988
+   ],
+   "gap_us": 340.147,
+   "kernel_covered_us": 319.222,
+   "uncovered_us": 20.926
+  },
+  {
+   "between": [
+    24988,
+    25225
+   ],
+   "gap_us": 342.003,
+   "kernel_covered_us": 321.59,
+   "uncovered_us": 20.413
+  },
+  {
+   "between": [
+    25225,
+    25462
+   ],
+   "gap_us": 342.93,
+   "kernel_covered_us": 320.789,
+   "uncovered_us": 22.141
+  },
+  {
+   "between": [
+    25462,
+    25699
+   ],
+   "gap_us": 342.068,
+   "kernel_covered_us": 321.591,
+   "uncovered_us": 20.477
+  },
+  {
+   "between": [
+    25699,
+    25936
+   ],
+   "gap_us": 343.54,
+   "kernel_covered_us": 322.709,
+   "uncovered_us": 20.831
+  },
+  {
+   "between": [
+    25936,
+    26179
+   ],
+   "gap_us": 342.387,
+   "kernel_covered_us": 323.222,
+   "uncovered_us": 19.165
+  },
+  {
+   "between": [
+    26179,
+    26416
+   ],
+   "gap_us": 342.067,
+   "kernel_covered_us": 319.287,
+   "uncovered_us": 22.78
+  },
+  {
+   "between": [
+    26416,
+    26653
+   ],
+   "gap_us": 347.028,
+   "kernel_covered_us": 325.622,
+   "uncovered_us": 21.406
+  },
+  {
+   "between": [
+    26653,
+    26890
+   ],
+   "gap_us": 341.396,
+   "kernel_covered_us": 320.855,
+   "uncovered_us": 20.541
+  },
+  {
+   "between": [
+    26890,
+    27127
+   ],
+   "gap_us": 340.275,
+   "kernel_covered_us": 320.567,
+   "uncovered_us": 19.708
+  }
+ ],
+ "per_step_means": {
+  "gpu_span_us": 35333.573,
+  "idle_in_span_us": 309.375,
+  "mean_idle_frac": 0.00868,
+  "kernel_count_minmax": [
+   529,
+   529
+  ]
+ },
+ "family_share_of_kernel_time": {
+  "gemm": {
+   "us": 271872.4,
+   "pct": 47.92
+  },
+  "attention_flashinfer": {
+   "us": 268700.2,
+   "pct": 47.36
+  },
+  "other": {
+   "us": 11148.1,
+   "pct": 1.97
+  },
+  "reduce": {
+   "us": 4995.2,
+   "pct": 0.88
+  },
+  "elementwise": {
+   "us": 4881.5,
+   "pct": 0.86
+  },
+  "norm": {
+   "us": 3938.8,
+   "pct": 0.69
+  },
+  "store_kv": {
+   "us": 1798.3,
+   "pct": 0.32
+  }
+ },
+ "top_kernels_by_total_us": [
+  {
+   "name": "void flashinfer::BatchPrefillWithPagedKVCacheKernel<true, flashinfer::KernelTraits<(flashinfer::MaskMode)0, 16u, 1u, 1u,",
+   "count": 448,
+   "total_us": 266856.5,
+   "per_step": 28.0,
+   "mean_us": 595.66
+  },
+  {
+   "name": "nvjet_sm121_tst_mma_96x128x64_3_96x16x64_tmaAB_bz_TNNN",
+   "count": 448,
+   "total_us": 115569.3,
+   "per_step": 28.0,
+   "mean_us": 257.97
+  },
+  {
+   "name": "nvjet_sm121_tst_mma_64x128x64_4_64x32x64_tmaAB_bz_TNNN",
+   "count": 448,
+   "total_us": 64681.8,
+   "per_step": 28.0,
+   "mean_us": 144.38
+  },
+  {
+   "name": "nvjet_sm121_tst_mma_128x208x64_2_32x104x64_tmaAB_bz_TNNN",
+   "count": 16,
+   "total_us": 40734.5,
+   "per_step": 1.0,
+   "mean_us": 2545.9
+  },
+  {
+   "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x128_64x3_tn_align8>(cutlass_80_tensorop_bf16_s16",
+   "count": 448,
+   "total_us": 29994.5,
+   "per_step": 28.0,
+   "mean_us": 66.95
+  },
+  {
+   "name": "nvjet_sm121_tst_mma_96x64x64_4_16x64x64_tmaAB_bz_TNNN",
+   "count": 448,
+   "total_us": 18396.6,
+   "per_step": 28.0,
+   "mean_us": 41.06
+  },
+  {
+   "name": "softcap_inplace_logits_kernel",
+   "count": 16,
+   "total_us": 6250.6,
+   "per_step": 1.0,
+   "mean_us": 390.66
+  },
+  {
+   "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, ",
+   "count": 16,
+   "total_us": 4995.2,
+   "per_step": 1.0,
+   "mean_us": 312.2
+  },
+  {
+   "name": "kernel_cutlass_kernel_flashinfernormkernelsfused_add_rmsnormFusedAddRMSNormKernel_object_at__tensorptrbf16gmemalign128oi",
+   "count": 896,
+   "total_us": 3900.7,
+   "per_step": 56.0,
+   "mean_us": 4.35
+  },
+  {
+   "name": "void sglang::act_and_mul_kernel<__nv_bfloat16, (sglang::ActivationKind)2, true, false, false, false, false, false>(sglan",
+   "count": 448,
+   "total_us": 3532.0,
+   "per_step": 28.0,
+   "mean_us": 7.88
+  },
+  {
+   "name": "nvjet_sm121_tst_mma_16x16x64_16_16x16x64_tmaAB_splitK_TNNN",
+   "count": 448,
+   "total_us": 1955.8,
+   "per_step": 28.0,
+   "mean_us": 4.37
+  },
+  {
+   "name": "void flashinfer::PersistentVariableLengthMergeStatesKernel<8u, 32u, 4u, 4u, __nv_bfloat16, __nv_bfloat16, int>(__nv_bflo",
+   "count": 448,
+   "total_us": 1843.7,
+   "per_step": 28.0,
+   "mean_us": 4.12
+  },
+  {
+   "name": "void sglang::store_kvcache_kernel<1024l, 1024l, 64u, true, long>(sglang::StoreKVCacheParams)",
+   "count": 448,
+   "total_us": 1798.3,
+   "per_step": 28.0,
+   "mean_us": 4.01
+  },
+  {
+   "name": "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<c10::BFloat16, ",
+   "count": 448,
+   "total_us": 970.1,
+   "per_step": 28.0,
+   "mean_us": 2.17
+  },
+  {
+   "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}:",
+   "count": 448,
+   "total_us": 956.6,
+   "per_step": 28.0,
+   "mean_us": 2.14
+  }
+ ],
+ "memcpy_top": [
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 20.895
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 12.416
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 8.608
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 7.615
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 7.52
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 7.136
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 7.104
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 6.88
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 6.176
+  },
+  {
+   "name": "Memcpy DtoD (Device -> Device)",
+   "us": 5.984
+  }
+ ],
+ "n_memcpy": 80,
+ "n_memset": 16
+}

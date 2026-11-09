@@ -1,0 +1,158 @@
+{
+ "trace": "controller_evidence/continuous-20261109-01/20261110-decode-trace/decode.trace.json.gz",
+ "leftover_kernels_outside_spans": {
+  "n": 96,
+  "total_us": 5161.9,
+  "names": [
+   [
+    "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native:",
+    48
+   ],
+   [
+    "void sglang::clamp_position_kernel<long>(long*, long const*, unsigned long)",
+    16
+   ],
+   [
+    "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::ArgMaxOps<f",
+    16
+   ],
+   [
+    "void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctorOnSelf_add<long>,",
+    16
+   ]
+  ],
+  "first_ts_rel_to_first_span_us": -621.5,
+  "all_before_first_span_end": false
+ },
+ "per_step_idle_incl_memcpy": [
+  {
+   "span_us": 36870.7,
+   "idle_us": 1205.1
+  },
+  {
+   "span_us": 36232.9,
+   "idle_us": 274.4
+  },
+  {
+   "span_us": 35480.9,
+   "idle_us": 234.4
+  },
+  {
+   "span_us": 35609.5,
+   "idle_us": 250.0
+  },
+  {
+   "span_us": 35022.9,
+   "idle_us": 245.0
+  },
+  {
+   "span_us": 34965.3,
+   "idle_us": 229.8
+  },
+  {
+   "span_us": 35498.9,
+   "idle_us": 255.9
+  },
+  {
+   "span_us": 35439.6,
+   "idle_us": 233.5
+  },
+  {
+   "span_us": 35033.0,
+   "idle_us": 232.2
+  },
+  {
+   "span_us": 34984.4,
+   "idle_us": 230.9
+  },
+  {
+   "span_us": 34952.8,
+   "idle_us": 233.7
+  },
+  {
+   "span_us": 34956.2,
+   "idle_us": 234.6
+  },
+  {
+   "span_us": 35112.0,
+   "idle_us": 240.3
+  },
+  {
+   "span_us": 35112.5,
+   "idle_us": 244.5
+  },
+  {
+   "span_us": 35003.0,
+   "idle_us": 233.9
+  },
+  {
+   "span_us": 35062.6,
+   "idle_us": 233.9
+  }
+ ],
+ "steady_state_mean_idle_us": 240.5,
+ "steady_state_mean_span_us": 35231.1,
+ "steady_state_idle_frac": 0.00683,
+ "memcpy": {
+  "n": 80,
+  "total_us": 308.8,
+  "names": [
+   [
+    "Memcpy HtoD (Pinned -> Device)",
+    32
+   ],
+   [
+    "Memcpy DtoD (Device -> Device)",
+    32
+   ],
+   [
+    "Memcpy DtoH (Device -> Pinned)",
+    16
+   ]
+  ],
+  "n_memset": 16,
+  "memset_total_us": 9.1
+ },
+ "runtime_census": {
+  "counts": {
+   "cudaLaunchKernel": 368,
+   "cudaEventQuery": 337,
+   "cudaDeviceGetAttribute": 160,
+   "cudaStreamIsCapturing": 130,
+   "cudaPeekAtLastError": 128,
+   "cudaMemcpyAsync": 80,
+   "cudaEventRecordWithFlags": 66,
+   "cudaStreamWaitEvent": 48,
+   "cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": 32,
+   "cudaLaunchKernelExC": 16,
+   "cudaGraphLaunch": 16,
+   "cudaMemsetAsync": 16,
+   "cudaEventRecord": 16,
+   "cudaEventSynchronize": 16,
+   "cudaDeviceSynchronize": 1
+  },
+  "total_us": {
+   "cudaEventSynchronize": 472169.2,
+   "cudaDeviceSynchronize": 33575.3,
+   "cudaGraphLaunch": 14859.6,
+   "cudaLaunchKernel": 2131.5,
+   "cudaMemcpyAsync": 644.3,
+   "cudaEventQuery": 211.0,
+   "cudaMemsetAsync": 153.1,
+   "cudaLaunchKernelExC": 114.6,
+   "cudaEventRecordWithFlags": 45.5,
+   "cudaStreamWaitEvent": 35.4,
+   "cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags": 33.7,
+   "cudaDeviceGetAttribute": 31.5,
+   "cudaStreamIsCapturing": 31.3,
+   "cudaEventRecord": 19.7,
+   "cudaPeekAtLastError": 9.5
+  },
+  "cudaGraphLaunch_n": 16,
+  "cudaGraphLaunch_mean_us": 928.7
+ },
+ "interpretation": {
+  "eventSynchronize_note": "cudaEventSynchronize 472169us total (~29.5ms/step) is the overlap-scheduler result-sync; GPU kernels are busy during it (README: overlaps kernels 469.531ms), so it is not host-caused GPU idle.",
+  "step1_anomaly": "step 1 span idle 1205us is a profiler-start artifact; steps 2-16 are the steady state."
+ }
+}

@@ -1,70 +1,54 @@
-# G3 glm-b trial-10 plan (campaign continuous-20261109-01, 2026-11-10)
+# G3 trial 11 (glm-b) — plan
 
-Direction given: build on SWA + fast_decode_plan; investigate high-concurrency host
-scheduling and decode overhead with existing traces. Direction is not a scope
-restriction; glm-b's own engine lane stays closed absent a new trace showing a gap
-(decode roofline-closed at C256, sync sweep closed, prefill bounded — G2 t2).
+Campaign continuous-20261109-01, iteration 11. Direction: high-concurrency host
+scheduling / decode overhead from existing traces.
 
-## Input (not my experiment)
+## Input (Controller packet, read-only)
+`controller_evidence/continuous-20261109-01/20261110-decode-trace/`:
+real BF16 Medium 512/64 C128 decode profile on a1/GB10, glm-a source commit
+15fd7f4, 16 paired CPU/GPU `step[DECODE bs=128]` forwards, actual
+cudaGraphLaunch per step (NOT eager; do not assume graph-max-64), 8560 kernel
+instances, profiler window 571.927 ms, kernel union 565.549 ms (README).
 
-Controller packet `controller_evidence/continuous-20261109-01/20261110-runtime/`
-(canonical C21/C22): real NGRAM ON (`b9a91aa13`) vs OFF (`999d4b243`) paired
-HTTP responses on the real Spark-X2.6 BF16/FlashInfer server, greedy,
-`return_logprob=true, top_logprobs_num=8`, complete top8+chosen LP+IDs, plus
-per-request server-measured timings (`e2e_latency`, `first_token_latency`,
-`queue_time`, `num_retractions`, ts fields). Read-only input; derived analysis
-written separately under g3-t10/.
+## Question (falsifiable, new — not an inventory)
+Q1 HOST-LEVER: does the trace show GPU idle attributable to host scheduling at
+C128 graph-replayed decode? Measurable: total + per-step kernel-union coverage
+of the GPU step spans and of inter-step gaps. Falsifier threshold: if idle
+between/within steps is ≲2% of the window, NO host lever exists at this
+operating point (extends the g2-t2 C256 roofline closure to C128+graphs) —
+negative finding.
+Q2 COMPOSITION: which kernel families dominate the per-step GPU span; is any
+non-attention/non-GEMM family (norm/copy/memcpy/other) anomalously large
+(>5% of step span)? If yes → candidate direction; if no → negative.
 
-## Why this trial
+## Controls / independent checks
+- Recompute kernel instance count, window, kernel union, CPU step union from
+  raw events; require agreement with README totals (±0.1%) before any claim.
+- 16/16 CPU↔GPU pairing by External id; per-step kernel-count invariance.
+- Negative control for the pairing: kernels assigned outside all GPU step
+  spans must be <1% of total (else assignment is wrong).
 
-1. glm-b's pending highest-value action (trusted numeric comparison + candidate-x3
-   for the 2c854e0-identical sync-removal lineage) has been blocked on missing
-   top-k arrays. C21 responses are the FIRST real server responses with populated
-   `meta_info.output_top_logprobs` — they empirically exercise the exact request
-   shape (i4) + response read map (i5) + CPU chain (i8) glm-b specified. Verifying
-   that across ALL responses (not one) upgrades the pending re-run request from
-   "recipe predicted" to "recipe proven on real servers".
-2. The same data carries a real decode-overhead measurement opportunity (per-request
-   server-measured decode throughput, ON vs OFF, paired identical prompts/shape)
-   and a real error-structure opportunity (divergence fingerprint of the F1 bug).
-   The controller explicitly welcomes real performance/error observations.
+## Steps
+1. plan.md (this file) — early checkpoint. [done]
+2. g3-t11/analyze_decode_trace.py (stdlib gzip/json only) →
+   g3-t11/raw/decode_trace_analysis.json + printed summary.
+3. Read results, decide: candidate patch (only if Q1/Q2 shows a real gap with
+   an actionable site) or bounded negative + what a next experiment would be.
+4. Update plan.md outcome, write iteration-proposal.json, commit, verify
+   `git status --porcelain` empty.
 
-## Falsifiable questions
-
-- Q1 (recipe closure): EVERY C21 response with `return_logprob=true,
-  top_logprobs_num=8` has populated `meta_info.output_top_logprobs` (8 rows per
-  output position) read through the i5 native nested field. Falsified if any
-  response shows null/absent arrays while its request had k=8.
-- Q2 (error fingerprint, new): for the 10 primary ON/OFF pairs — first-divergence
-  position, chosen-LP gap at divergence, top8 membership of OFF argmax in ON top8,
-  re-convergence after divergence, and the exact response/position of the ON
-  self-top1 mismatch C21 reported (chosen token != own top1 while greedy). These
-  are new quantified observations from real data (C21 lists counts, not structure).
-- Q3 (real performance observation): paired per-request decode throughput
-  (completion_tokens / (e2e_latency - first_token_latency)) ON vs OFF on identical
-  prompts; plus retraction counts and queue/entry timestamps as host-scheduling
-  signals. Falsifies "ON is faster at this shape" or confirms it with bounds
-  (C1/C4 diagnostic runs, not a formal gate; no quality claim implied).
-
-## Method
-
-Single stdlib script `g3-t10/analyze_ngram_pairs.py`: parse ONLY the ngram-raw-http
-*.json + the packet summary's pair list; emit counters + per-pair derived rows to
-`g3-t10/raw/ngram_pair_analysis_output.json`; hard-fail (exit 2) on any harness
-error so no claim rides on a broken parse (i7/i9 lessons). No file in the packet is
-modified. Engine `python/` stays bit-identical to 2c854e0 (promotion candidate
-preserved).
-
-## Requests to controller (tests field)
-
-- request_fast_gate=true: frozen BF16 Fast screen on this HEAD, engine diff vs
-  2c854e0 verified empty → G3-namespace repeat sample of the twice-proven
-  sync-removal lineage (repeat-measurement credibility per G2 t2; expected band
-  ~1.09; NOT a promotion claim, numeric prerequisite still pending).
-- Still pending (do not re-run unchanged): numeric coverage re-run on reference vs
-  2c854e0-identical candidate with the now-real-proven recipe; then candidate-x3.
+## Outcome (executed this session)
+NEGATIVE finding, verified — see g3-t11/RESULTS.md. Controls reproduce README
+totals exactly (8560 kernels; union 565.549025 ms; CPU union 28.303983 ms);
+16/16 pairing. Q1: steady-state GPU idle 0.68 % in-span + ~20.6 µs/gap → no
+host lever at C128 graph-replayed decode (extends g2-t2 C256 closure).
+Q2: 95.3 % of kernel time is attention+GEMM; only anomaly (sm_80 cutlass
+fallback GEMM, 5.3 %) is quantified sub-noise and reduction-order-risky —
+dismissed. No engine change (python/ diff vs 2c854e0 empty). Raw outputs in
+g3-t11/raw/. No gate requested.
 
 ## Bounds
-
-45 turns / 20 min / USD5. Engine change: none. Save checkpoint early; final quarter
-for tests + iteration-proposal.json + clean-tree commit.
+No GPU/SSH here; controller executes any measurement. No engine change unless
+the trace shows a gap. Do not touch evaluator/corpus/seed/protocol. Absolute
+wall times in this trace are profiler-inflated (CUPTI per-kernel overhead on
+graph replays); only ratios/composition/idle-coverage are interpreted.
