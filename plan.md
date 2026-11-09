@@ -1,55 +1,51 @@
-# G3 trial 3 (glm-b) — promotion track on the proven sync-removal lineage
+# G3 trial 4 (glm-b) — plan
 
-Campaign: continuous-20261109-01, Iteration 3. Date: 2026-11-09.
+Campaign `continuous-20261109-01`, iteration 4, worker glm-b. Session HEAD starts
+at `b46e13a` (engine bit-identical to `2c854e0`, verified: `git diff 2c854e0 HEAD
+-- python/` empty).
 
-## Context (i1/i2 + canonical register)
-- i1 (b196fd4) added host mirrors for 5 blocking D2H reads on the SWA extend path
-  (sites A/B/C, construction-equality proven, device fallbacks kept). Never full-gated.
-- i2 fast screen on b9474807 (= b196fd4 + docs), G3 namespace: **1.0933**, GATE_VALID,
-  FAST_SCREEN_GAIN_OBSERVED — but `slot_claimed: false` (fast gates only screen) and
-  full-gate exact-token for the mirrors remains unconfirmed (i2 correctness UNRESOLVED).
-- **2c854e0** (076b006 fast_decode_plan + aa45af5 SWA host-bound; additive,
-  interaction 0.995–1.001) is the twice-proven candidate: G2 full gates **1.0920 /
-  1.0984** on a2, 10/10 exact-token each. Per canonical F4, G2 gates do NOT transfer
-  into G3: candidate×3 must run in G3's own namespace, distinct accepted slots, before
-  any promotion gate. F6: zero promotions campaign-wide (structural).
-- Fast screen 1.0933 sits INSIDE the 2c854e0 G2 band (1.0920–1.0984): the prefill
-  mirrors add ~0 measurable aggregate → i2's decision-tree branch (b) applies:
-  promotion track returns to 2c854e0.
+## Why not the trial-3 carry-over request
 
-## Hypothesis
-- H1 (promotion): 2c854e0's tree gated in the G3 namespace reproduces ~1.09 vs the
-  campaign baseline with 10/10 exact-token. Three distinct accepted full-gate slots
-  (min-of-3 reported) then unblock the promotion gate request for the whole
-  sync-removal lineage as one ALGORITHM_PRESERVING candidate.
-- H0: score outside the band or exactness fails → G2 numbers were namespace-bound or
-  the environment moved; record and halt the promotion track.
+Trial-3 requested a FULL gate slot in prose with `request_fast_gate=false`. Per
+the controller capability notes that launches nothing, and the brief explicitly
+says not to repeat an unexecuted request and count it as progress. Candidate-x3
+prerequisites are also unmet: **numeric verification is blocked because both
+numeric probes returned `top_logprobs: null`** (numeric-coverage-001), so the
+promotion pipeline (canonical F6) is gated on *evidence coverage*, not on
+throughput. Meanwhile glm-b's engine lane is measurement-saturated (decode
+roofline-closed at 99.2% GPU busy; prefill syncs bounded ~0 by the 1.0933 fast
+screen; engine-wide blocking-read sweep closed statically in i2).
 
-## Negative finding recorded this trial (bounded by fast screen, not full-gate-closed)
-Prefill-side blocking D2H syncs are bounded at ~0 aggregate effect on the frozen
-workload: b9474807 fast screen 1.0933 ∈ 2c854e0 G2 full-gate band [1.0920, 1.0984].
-Consistent with the overlap scheduler hiding extend-batch syncs. The construction-exact
-mirror patch is preserved at b196fd4 (reverted from the candidate line this trial).
+## Hypothesis (new, CPU-testable in this sandbox)
+
+**H1:** `top_logprobs` is null because the request → sampling-params mapping in
+this tree requires an explicit top-k field that the numeric probe omitted
+(native `/generate`: `return_logprob=true` alone yields chosen logprobs but
+`top_logprobs_num` defaults to 0 → no per-token top-k; OpenAI-compat:
+`logprobs=true` without `top_logprobs=k`, or an endpoint that never maps it).
+The serving path itself can produce per-token top-k once asked correctly.
+**H0 (fix-worthy variant):** this fork has a real drop-bug in the mapping
+(e.g. chat adapter ignores `top_logprobs`) — then the fix is an engine change
+in my own tree and the fast screen doubles as boot verification.
+
+Falsifier: exact source trace of the field plumbing (io_struct →
+tokenizer_manager → openai adapters → sampler gating), plus a self-contained
+CPU script that executes the request-construction logic with stubbed heavy
+imports and records raw JSON output showing which request shapes yield null
+vs populated top-k slots.
 
 ## Steps
-1. Verify history: 2c854e0 (candidate), b196fd4 (prefill mirrors), b9474807 (i2 head;
-   evidence shows the controller gates the SESSION HEAD commit, so HEAD must carry the
-   candidate tree).
-2. Restore the engine tree to bit-identical-to-2c854e0 (checkout python/ from
-   2c854e0); `git diff 2c854e0 HEAD -- python/` must be empty. b196fd4 stays reachable.
-3. py_compile the touched file; record the empty diff as evidence.
-4. iteration-proposal.json: request FULL trial gate, slot #1 of candidate×3, on the
-   HEAD commit whose engine == 2c854e0 (canonical sha
-   2c854e0bfeff1e2f1424ca1560fbb3d90c3ea8fa; full 40-char shas only — abbreviated
-   shas caused GATE_INVALID provenance flags). request_fast_gate=false. Exact-token
-   10/10 mandatory.
-5. Commit; final quarter of budget reserved for tests/proposal/final commit.
 
-## Out of scope (reasons)
-- New decode candidates: roofline-closed (C256 GPU busy 99.2%, attention 242–270 GB/s
-  at/above the ~225 GB/s copy ceiling).
-- Precision changes: BF16 objective frozen; F2/F4 NOT_CLOSED_QUALITY_BUDGET.
-- NGRAM fault-line isolation / MMVQ gate / fp8+SWA ×3: other workers' open lanes
-  (canonical 下一轮 list); not reproducible from this sandbox.
-- torch.compile eager decode: dead at high concurrency (dispatch fully overlapped).
-- Prefill-mirror re-proposal: only if a future trace shows extend-batch sync bubbles.
+1. This file + early commit (recoverable checkpoint).
+2. Source trace of logprob fields across the serving path; identify the null
+   root cause; distinguish probe-parameter gap vs server bug.
+3. `g3-t4/probe_top_logprobs_recipe.py` — CPU falsifier, raw output preserved
+   to `g3-t4/raw/`.
+4. Engine change ONLY if a genuine in-tree bug is found; `py_compile`; commit.
+5. `iteration-proposal.json` (request_fast_gate per outcome) + final commit.
+
+## Budget
+
+45 turns / 1200 s hard / USD 3. Reserve final quarter for proposal + commits.
+No GPU here: everything measured stays a controller-side request; nothing is
+claimed without controller raw evidence.
