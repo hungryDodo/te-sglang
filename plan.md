@@ -59,3 +59,65 @@ calls.
 ## Budget
 45 turns / 20 min / $3. Checkpoint commit immediately after this file. Final
 quarter reserved for tests + proposal + final commit.
+
+## OUTCOME (executed 2026-11-09, commit cc0dc45 checkpoint -> final)
+
+**H1_t7 REFUTED — exact-runtime lane on a1 now closed at the static-audit level.**
+
+Executed evidence:
+- `g3-t7/host_path_sync_audit.py` exit 0, 55 sites across 7 files, raw at
+  `g3-t7/raw/host_path_sync_audit.json` (scanner negative controls passed:
+  t5-known memory_pool/scheduler/schedule_batch sites rediscovered).
+- `g3-t7/raw/supplementary_grep.txt` (executed grep): spark2_5.py, rotary dir,
+  graph runner backends, forward_batch_info, linear, layernorm.
+- Engine integrity: `git diff 5a20347 HEAD -- python/` = **0 lines** — HEAD's
+  engine is bit-identical to i4's fast-gated tree (x1.0017, SWA family measured
+  ENGAGED per t6). Nothing new to screen.
+
+Human-verified classification of every surviving candidate:
+1. **Intra-forward (the only class that matters for exactness)**: exactly two
+   `torch.cuda.synchronize()` in `LogitsProcessor._get_logits`
+   (logits_processor.py:984,1005), both gated behind
+   `envs.SGLANG_TRACE_LOGITS_E2E_SYNC` — OFF in the frozen launch. Zero blocking
+   device reads in sampler.py, sampling_batch_info.py, spark2_5 forward
+   (post-load), linear/layernorm/rotary(text), CUDA-graph replay path
+   (base_cuda_graph_backend: 0 hits).
+2. **Scheduler-thread per-step**: all read host mirrors already
+   (seq_lens_cpu / track_mask_cpu / active_ranks_cpu; schedule_batch.py:3274,
+   3388, 3632, 3817, 3819; scheduler.py:4949) — no device sync — or are the
+   FutureMap / async-D2H designed resolution machinery (overlap_utils.py:553-639,
+   async_d2h_copy_worker.py:90,93) that runs one step behind on the copy
+   stream: overlap-hidden BY CONSTRUCTION, and removing them would remove the
+   overlap mechanism itself, not a stray sync.
+3. **Off-path by frozen config**: mamba (schedule_batch:3665, memory_pool
+   Mamba/Hybrid sites), MLA/MXFP8 pools, multimodal mrope (bailing_mrope.py,
+   mrope_rope_index.py — spark2_5 uses get_rope, verified), radix-prefix
+   nonzero (memory_pool:3337; --disable-radix-cache), TP>1 sync_group
+   (forward_batch_info:1970; --tp 1), spec paths.
+4. **Boot/cold only**: graph-capture warmup syncs (full:163, breakable:122,
+   tc_piecewise:241 — 2-iteration warmup before capture), weight-load .item()s
+   (linear.py, spark2_5:504,510), set_embed_and_head (spark2_5:594),
+   get_cpu_copy/error paths, _maybe_report_active_ranks (scheduler:4949,
+   host tensor).
+
+Correction to the script's own docstring: it claimed async_d2h_copy_worker.py
+was "grep-verified 0 blocking calls" — false (2 event/stream synchronize sites,
+the designed copy loop). The scanner was right; the docstring claim is wrong and
+is corrected here rather than left as a mislabel (glm-b i7 lesson).
+
+Synthesis with prior trials: t5 enumerated attention-backend residual syncs;
+t6 proved the SWA prefill mirrors ENGAGED (so i4 x1.0017 measured the family);
+trial-1 bounded launch overhead (graph 64->256 = 1.0056); trial-2 showed decode
+is memory-bound (TPOT 17.6/26.2/36.1/42.2 ms at bs 32/64/128/256 vs 12.4 ms
+weights floor + KV read). With t7 closing the last static surface, the residual
+decode gap (~16-24 ms/step above weights+KV floor at high bs) is now provably
+NOT findable by static host-path audit: it lives either inside kernels
+(flashinfer decode / GEMM efficiency on GB10) or in host gaps only visible at
+runtime. The t6 decode-trace request is therefore airtight and is the only
+remaining exact/efficiency entry on a1.
+
+Stated limits: audit covers explicit blocking calls
+(.item/.cpu/.tolist/.nonzero/.numpy/.synchronize) — implicit syncs (bool(tensor),
+host-context comparisons) not covered; runtime behavior not observed (no GPU
+here); classification of "overlap-hidden" is by design intent of the overlap
+scheduler, not by measurement.

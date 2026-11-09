@@ -1,0 +1,57 @@
+# executed 2026-11-09T16:48:55Z — supplementary blocking-read grep outside t7 script targets
+# pattern: .item()/.cpu()/.tolist()/.nonzero()/.numpy()/torch.cuda.synchronize/.synchronize()
+== python/sglang/srt/models/spark2_5.py
+504:                    value = int(loaded_weight.item())
+510:                    loaded_weight.item()
+594:        current_platform.synchronize()
+== python/sglang/srt/layers/rotary_embedding/bailing_mrope.py
+192:        min_position = int(positions.min().item())
+193:        max_position = int(positions.max().item())
+264:        input_tokens = input_ids.tolist()
+284:                t, h, w = torch.as_tensor(image_grid_thw[image_index]).tolist()
+290:                t, h, w = torch.as_tensor(video_grid_thw[video_index]).tolist()
+305:                int(position_chunks[-1][0].max().item()) + 1 if position_chunks else 0
+346:                int(position_chunks[-1][0].max().item()) + 1 if position_chunks else 0
+== python/sglang/srt/layers/rotary_embedding/base.py
+   (0 hits)
+== python/sglang/srt/layers/rotary_embedding/factory.py
+   (0 hits)
+== python/sglang/srt/layers/rotary_embedding/__init__.py
+   (0 hits)
+== python/sglang/srt/layers/rotary_embedding/mrope.py
+   (0 hits)
+== python/sglang/srt/layers/rotary_embedding/mrope_rope_index.py
+109:            input_tokens = input_ids.tolist()
+269:            input_tokens = current_input_ids.tolist()
+366:                        * second_per_grids[video_idx].cpu().float()
+400:                        * second_per_grids[video_idx].cpu().float()
+530:            input_tokens = ids_masked.tolist()
+561:                    st_idx = llm_pos_ids_list[-1].max().item() + 1
+706:            input_tokens = input_ids.tolist()
+746:                        t.item(),
+747:                        h.item() // spatial_conv_size,
+748:                        w.item() // spatial_conv_size,
+782:                        t.item() // temporal_conv_size,
+783:                        h.item() // spatial_conv_size,
+784:                        w.item() // spatial_conv_size,
+== python/sglang/srt/layers/rotary_embedding/rope_variant.py
+   (0 hits)
+== python/sglang/srt/layers/rotary_embedding/utils.py
+   (0 hits)
+== python/sglang/srt/layers/rotary_embedding/yarn.py
+   (0 hits)
+== python/sglang/srt/model_executor/runner_backend/base_cuda_graph_backend.py
+   (0 hits)
+== python/sglang/srt/model_executor/forward_batch_info.py
+1628:                deltas_list[i] = mm.mrope_position_delta.item() if mm is not None else 0
+1931:                    self.extend_prefix_lens_cpu = self.extend_prefix_lens.cpu().tolist()
+1932:                    self.extend_seq_lens_cpu = self.extend_seq_lens.cpu().tolist()
+1970:                self.global_late_layer_num_tokens_cpu = late_rows.tolist()
+== python/sglang/srt/layers/linear.py
+358:            param.weight_type = loaded_weight.item()
+536:            param.weight_type = loaded_weight.item()
+730:            param.shard_weight_type[loaded_shard_id] = loaded_weight.item()
+1343:            param.shard_weight_type[loaded_shard_id] = loaded_weight.item()
+1657:            param.weight_type = loaded_weight.item()
+== python/sglang/srt/layers/layernorm.py
+   (0 hits)
