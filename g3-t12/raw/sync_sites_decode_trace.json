@@ -1,0 +1,205 @@
+{
+ "trace": "controller_evidence/continuous-20261109-01/20261110-decode-trace/decode.trace.json.gz",
+ "gate": {
+  "ok": true,
+  "kernel_instances": 8560,
+  "kernel_union_ms": 565.549025,
+  "gpu_steps": 16,
+  "cpu_steps": 16,
+  "pairing": 16
+ },
+ "memcpy_census": {
+  "Memcpy HtoD (Pinned -> Device)": {
+   "count": 32,
+   "total_us": 123.675,
+   "bytes": [
+    3151
+   ],
+   "dur_us_min": 1.248,
+   "dur_us_max": 4.352
+  },
+  "Memcpy DtoD (Device -> Device)": {
+   "count": 32,
+   "total_us": 121.821,
+   "bytes": [
+    1024
+   ],
+   "dur_us_min": 0.832,
+   "dur_us_max": 20.895
+  },
+  "Memcpy DtoH (Device -> Pinned)": {
+   "count": 16,
+   "total_us": 63.324,
+   "bytes": [
+    1024
+   ],
+   "dur_us_min": 3.615,
+   "dur_us_max": 5.888
+  }
+ },
+ "memset_census": {
+  "Memset (Device)": {
+   "count": 16,
+   "total_us": 9.055,
+   "bytes": [
+    512
+   ],
+   "dur_us_min": 0.479,
+   "dur_us_max": 0.704
+  }
+ },
+ "dtoh_sites": [
+  {
+   "dur_us": 5.888,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 8.383,
+   "post_sync_idle_us_200w": 71.261,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.68,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 6.047,
+   "post_sync_idle_us_200w": 71.229,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 4.191,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 8.67,
+   "post_sync_idle_us_200w": 85.789,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.68,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 9.951,
+   "post_sync_idle_us_200w": 87.613,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.616,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 9.951,
+   "post_sync_idle_us_200w": 73.021,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 4.191,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 8.702,
+   "post_sync_idle_us_200w": 72.061,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.648,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 9.95,
+   "post_sync_idle_us_200w": 73.5,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.711,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 6.046,
+   "post_sync_idle_us_200w": 71.198,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.776,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 9.951,
+   "post_sync_idle_us_200w": 73.374,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.744,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 7.199,
+   "post_sync_idle_us_200w": 72.575,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.615,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 7.838,
+   "post_sync_idle_us_200w": 73.789,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.744,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 9.951,
+   "post_sync_idle_us_200w": 81.916,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 4.192,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 8.735,
+   "post_sync_idle_us_200w": 85.085,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 4.128,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 8.639,
+   "post_sync_idle_us_200w": 73.407,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.68,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 6.047,
+   "post_sync_idle_us_200w": 70.846,
+   "edge_excluded": false
+  },
+  {
+   "dur_us": 3.84,
+   "bytes": 1024,
+   "in_step_span": false,
+   "dist_to_span_us": 333.109,
+   "post_sync_idle_us_200w": null,
+   "edge_excluded": true
+  }
+ ],
+ "dtoh_per_step": 1.0,
+ "dtoh_summary": {
+  "n": 16,
+  "probed": 15,
+  "edge_excluded_tail": 1,
+  "in_span": 0,
+  "in_gap": 16,
+  "bytes_values": [
+   1024
+  ],
+  "mean_post_sync_idle_us_200w": 75.778,
+  "mean_control_idle_us_200w": 18.816,
+  "control_n": 16,
+  "excess_idle_us_vs_control": 56.961
+ },
+ "controls": {
+  "detector_negative_dtoh_count": 0,
+  "detector_selftest_found": 17
+ },
+ "limits": [
+  "single operating point (C128 graph decode, glm-a 15fd7f4)",
+  "post-sync idle is an upper bound on sync-attributable idle; overlap scheduler may hide host stall under queued kernels",
+  "window W=200us fixed a priori; random control excludes in-span windows, matching DtoH gap placement"
+ ]
+}
