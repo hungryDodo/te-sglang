@@ -1,0 +1,1217 @@
+{
+ "changed_batches": [
+  3,
+  4,
+  5,
+  6
+ ],
+ "changed_cell_count": 8,
+ "changed_cells": [
+  {
+   "batch": 3,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 4,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 5,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 6,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 3,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 4,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 5,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 6,
+   "legacy_kernel": "mmvq",
+   "legacy_mmvq_safe": 6,
+   "rows_band": "rows<=5120",
+   "shipped_kernel": "mmq",
+   "shipped_mmvq_safe": 2,
+   "weight_type": "Q8_0"
+  }
+ ],
+ "changed_cells_at_gate_batches": 0,
+ "changed_types": [
+  "Q4_K",
+  "Q8_0"
+ ],
+ "expected_dispatch": [
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_0"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": true,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_K"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q6_K"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q4_0"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 6,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows<=5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmq",
+   "expected_mmvq_safe": 2,
+   "legacy_kernel": "mmq",
+   "rows_band": "rows>5120",
+   "weight_type": "Q8_1"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "dequant",
+   "expected_mmvq_safe": 16,
+   "legacy_kernel": "dequant",
+   "rows_band": "rows<=5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 1,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 2,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 3,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 4,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 5,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 6,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 7,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 8,
+   "changed_by_f263262": false,
+   "expected_kernel": "mmvq",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "mmvq",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 16,
+   "changed_by_f263262": false,
+   "expected_kernel": "dequant",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "dequant",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  },
+  {
+   "batch": 64,
+   "changed_by_f263262": false,
+   "expected_kernel": "dequant",
+   "expected_mmvq_safe": 8,
+   "legacy_kernel": "dequant",
+   "rows_band": "rows>5120",
+   "weight_type": "IQ4_XS"
+  }
+ ],
+ "experiment_assertions": [
+  "Dispatch probe must run with --disable-cuda-graph: under graph replay Python dispatch is captured once and not re-executed per step, so the trace would show capture-time batch sizes only (padded), not the per-batch decision.",
+  "At batches 3..6, every Q8_0 and Q4_K cell with rows<=5120 must appear in the trace as kernel=mmq with mmvq_safe=2. The legacy arm expects kernel=mmvq with mmvq_safe=6 for the same cells.",
+  "At batches 1..2 the same cells must stay kernel=mmvq, mmvq_safe=2.",
+  "Cells for weight types not present in the loaded artifact are N/A. The controls that must always be present are the unchanged Q8_0 cells: rows>5120 at every probed batch, and rows<=5120 at batches 1,2,7,8,16,64. They must match expected_kernel and expected_mmvq_safe exactly; a missing Q8_0 control means the tracer did not cover that matmul and the experiment is INCONCLUSIVE, not PASS.",
+  "Greedy token ids: parent f263262^ vs candidate must match at batches 1,2,7,8,16,64. Divergence is allowed only at batches 3..6 and only in Q8_0/Q4_K rows<=5120 cells; record the per-request divergence count.",
+  "This probe is not a timing gate. Any throughput number from it is excluded from official scoring; the formal objective remains the frozen BF16 gate, which never imports this module."
+ ],
+ "generated_from": "python/sglang/srt/layers/quantization/gguf.py",
+ "policy_measured": {
+  "Q4_K": [
+   2,
+   2
+  ],
+  "Q6_K": [
+   6,
+   2
+  ],
+  "Q8_0": [
+   2,
+   2
+  ]
+ },
+ "pre_registration_failures": [],
+ "probe_batches": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  16,
+  64
+ ],
+ "tracer_static_checks": {
+  "atexit_dump": true,
+  "branch_assignments": {
+   "dequant": 1,
+   "mmq": 1,
+   "mmvq": 1
+  },
+  "default_off_env_gate": true,
+  "inert_by_default": true,
+  "record_call_sites": 3
+ }
+}

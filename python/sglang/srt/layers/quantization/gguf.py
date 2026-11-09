@@ -3,8 +3,13 @@
 # Adapted from: https://github.com/vllm-project/vllm/blob/ab3e80042eac24dd362408e6d63ad98768046359/vllm/model_executor/layers/quantization/gguf.py
 from __future__ import annotations
 
+import atexit
+import json
 import logging
+import os
+import threading
 import warnings
+from collections import Counter
 from typing import TYPE_CHECKING, Any, List, Optional
 
 import gguf
@@ -241,33 +246,129 @@ def dequantize_gguf_weight(
     return ggml_dequantize(qweight, qweight_type, *shape, dtype)
 
 
+# Optional GGUF kernel-dispatch trace (observation only; default off).
+#
+# Set SGLANG_GGUF_DISPATCH_TRACE=1 (or to a JSON path) to record which kernel
+# fused_mul_mat_gguf actually selected, keyed by the inputs that selected it:
+# (weight type, rows band, batch, kernel, mmvq_safe). This exists so a GGUF
+# experiment can prove runtime dispatch instead of inferring it from the
+# threshold table. It never changes the selection or the returned tensor.
+_TRACE_ENV = os.environ.get("SGLANG_GGUF_DISPATCH_TRACE", "").strip()
+_DISPATCH_TRACE_FILE = None
+if _TRACE_ENV.lower() not in ("", "0", "false", "off"):
+    _DISPATCH_TRACE_FILE = (
+        _TRACE_ENV
+        if _TRACE_ENV.lower() not in ("1", "true", "on")
+        else os.environ.get(
+            "SGLANG_GGUF_DISPATCH_TRACE_PATH",
+            "/tmp/sglang_gguf_dispatch_trace.json",
+        )
+    )
+
+_dispatch_counts: Counter = Counter()
+_dispatch_calls = 0
+_dispatch_lock = threading.Lock()
+_DISPATCH_DUMP_EVERY = 1024
+
+
+def _dispatch_type_name(qweight_type: int) -> str:
+    try:
+        return WeightType(int(qweight_type)).name
+    except (TypeError, ValueError):
+        return str(qweight_type)
+
+
+def _record_dispatch(qweight_type, rows, batch, kernel, mmvq_safe) -> None:
+    global _dispatch_calls
+    if _DISPATCH_TRACE_FILE is None:
+        return
+    key = (
+        _dispatch_type_name(qweight_type),
+        "rows>5120" if rows > 5120 else "rows<=5120",
+        int(batch),
+        kernel,
+        int(mmvq_safe),
+    )
+    with _dispatch_lock:
+        _dispatch_counts[key] += 1
+        _dispatch_calls += 1
+        due = _dispatch_calls % _DISPATCH_DUMP_EVERY == 0
+    if due:
+        dump_gguf_dispatch_trace()
+
+
+def dump_gguf_dispatch_trace(path: Optional[str] = None):
+    """Write the accumulated dispatch table as JSON; returns the path."""
+    target = path or _DISPATCH_TRACE_FILE
+    if target is None:
+        return None
+    with _dispatch_lock:
+        calls = _dispatch_calls
+        items = list(_dispatch_counts.items())
+    payload = {
+        "trace_calls": calls,
+        "cells": [
+            {
+                "weight_type": key[0],
+                "rows_band": key[1],
+                "batch": key[2],
+                "kernel": key[3],
+                "mmvq_safe": key[4],
+                "count": count,
+            }
+            for key, count in sorted(items)
+        ],
+    }
+    tmp = f"{target}.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=1, sort_keys=True)
+    os.replace(tmp, target)
+    return target
+
+
+if _DISPATCH_TRACE_FILE is not None:
+    atexit.register(dump_gguf_dispatch_trace)
+
+
 def fused_mul_mat_gguf(
     x: torch.Tensor, qweight: torch.Tensor, qweight_type: int
 ) -> torch.Tensor:
     mmvq_safe = _mmvq_safe_batch(qweight_type, qweight.shape[0])
+    trace = _DISPATCH_TRACE_FILE is not None
     # HACK: when doing chunked prefill we don't generate output tokens
     # so input to logits generator is empty which causes invalid parameter
     if x.shape[0] == 0:
+        if trace:
+            _record_dispatch(qweight_type, qweight.shape[0], 0, "empty", mmvq_safe)
         return torch.empty(x.shape[0], qweight.shape[0], dtype=x.dtype, device=x.device)
     # there is no need to call any kernel for fp16/bf16
     if qweight_type in UNQUANTIZED_TYPES:
+        if trace:
+            _record_dispatch(
+                qweight_type, qweight.shape[0], x.shape[0], "unquantized", mmvq_safe
+            )
         return x @ qweight.T
     # enable MMVQ in contiguous batching with batch_size=1
     if x.shape[0] <= mmvq_safe and qweight_type in MMVQ_QUANT_TYPES:
         y = ggml_mul_mat_vec_a8(qweight, x, qweight_type, qweight.shape[0])
+        kernel = "mmvq"
     # Use MMQ Kernel if it's available (standard + k-quants)
     elif qweight_type in MMQ_QUANT_TYPES:
         y = ggml_mul_mat_a8(qweight, x, qweight_type, qweight.shape[0])
+        kernel = "mmq"
     # If there is no available MMQ kernel, fallback to dequantize
     elif qweight_type in DEQUANT_TYPES:
         weight = dequantize_gguf_weight(qweight, qweight_type, x.dtype)
         y = x @ weight.T
+        kernel = "dequant"
     else:
         # Raise an error if the quantization type is not supported.
         # Might be useful if llama.cpp adds a new quantization type.
         # Wrap to GGMLQuantizationType IntEnum to make sure it's a valid type.
         qweight_type = WeightType(qweight_type)
         raise NotImplementedError(f"Unsupported GGUF quantization type: {qweight_type}")
+    if trace:
+        _record_dispatch(qweight_type, qweight.shape[0], x.shape[0], kernel, mmvq_safe)
     return y
 
 

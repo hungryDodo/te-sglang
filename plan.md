@@ -1,108 +1,130 @@
-# G3 trial-1 plan — worker deepseek-b (candidate `f263262`)
+# deepseek-b / G3 trial 2 plan
 
-Campaign `continuous-20261109-01`, Iteration 1. Candidate repo: SGLang @
-`codex/continuous-20261109-01/deepseek-b` (HEAD `f263262`, parent `ec55606`).
+Campaign `continuous-20261109-01`, Iteration 2. Worker deepseek-b. No GPU/SSH in
+this sandbox: every performance claim below is either prior verified evidence or
+explicitly UNVERIFIED. The controller owns all official gates.
 
-## Mandate and prior state
+## 0. Binding context
 
-- Canonical `F3`: the GGUF MMVQ threshold fix `f263262` is delivered but
-  **UNGATED**. This trial's first duty is to subject it to a controller gate;
-  until that gate exists it must not be treated as a valid candidate.
-- Canonical `F1`/`F2`: NGRAM self-speculation is BUG_CONFIRMED (greedy
-  correctness not preserved) and fp8-KV is COMPUTE_DIFFERS with an undefined
-  quality budget. Neither is admissible here.
-- Branch learning (deepseek-b, authoritative for this worker): all frozen gate
-  points decode at concurrency `>= 16` (PrefillHeavy c16 is the minimum) and
-  prefill with thousands of extend tokens; the MMVQ/MMQ switch is a pure
-  kernel-selection change in `gguf.py`; the remaining measured headroom is
-  `bs <= 8`, which no gate point touches. `ec55606` (fast_decode_plan) is
-  KEPT_NEUTRAL at 1.0018 and was shown inert on a4.
-- Branch learning also records the largest identified BF16 lever: the
-  no-prefix ragged prefill path does **not** apply the 512-token sliding
-  window on 21/28 layers, but applying it is a *semantics* change vs the
-  reference wheel and is blocked on a >512-token exact-token parity harness.
+- Canonical F3: GGUF MMVQ threshold fix `f263262` is **UNGATED**. It may not be
+  treated as a valid candidate, and no gain may be attributed to it, until a
+  gate verifies it.
+- Controller finding `applicability-001` (authoritative): the frozen formal Gate
+  loads **BF16 safetensors** (`Spark-X2.6-1.7B`, rev `e6406af8...`), never a
+  GGUF file and never `--quantization gguf`. `f263262` changes
+  `fused_mul_mat_gguf` kernel **selection**, so the BF16 screen executes none of
+  its changed cells. A BF16 score cannot close F3, and importing `gguf.py` is
+  not dispatch evidence.
+- Consequence: first deliverable is a **separately identified GGUF experiment**
+  (dispatch + correctness) under the existing GPU lock, kept outside the BF16
+  formal Gate. Only after that may any GGUF number be interpreted.
+- Second deliverable: explore full-engine bottlenecks with an exact
+  (ALGORITHM_PRESERVING) BF16-safe change, since the formal objective is
+  aggregate output tokens/s on the frozen BF16 workload.
 
-## Step 0 (mandated): evaluate `f263262` before interpreting any gain
+## 1. Profile (from prior verified evidence only)
 
-This trial makes **no new engine change**. The candidate stays exactly
-`f263262` so that any gate result is attributable to that commit alone; adding
-a second patch now would confound F3 closure. Worktree additions are
-`plan.md`, `iteration-proposal.json` and one GPU-free replay artifact under
-`seis/trials/deepseek-b/g3-t1/`; none is on a runtime import path.
+- g2-t1 microbench: MMVQ (`mul_mat_vec_q`, integer-dot, 0 tensor-core ops) is
+  faster than MMQ (`mul_mat_q4_K`, also integer-dot) only at small batch.
+  Measured **last MMVQ win** batch = 2 for Q8_0 and Q4_K, 6 for Q6_K (when
+  rows<=5120 band; different for rows>5120). `dequant+bf16 GEMM` at runtime is
+  0.18-0.25 ms flat, never competitive on that path.
+- g2-t2 GPU-free replay: the shipped rows-only heuristic (`mmvq_safe` 8/16 for
+  K-quants, 2/6 for Q8_0) was over-permissive on 3/6 measured shapes, max
+  +24.1% kernel time at the hardcode boundary. `f263262` replaced it with
+  measured batch cutoffs (Q8_0 2/2, Q4_K 2/2, Q6_K 6/2) and is expected to be
+  exact below the cutoff and MMQ above it.
+- **Why no gate can show a gain today**: every gate point runs batch >= 32
+  (Short c32/c128, Medium c32/c128, Standard c32/c64, DecodeHeavy c64/c128,
+  DecodeCeiling c256, PrefillHeavy c16 prefill). Old and new thresholds select
+  the same MMQ kernel for all of them. DecodeHeavy c64 measured movement
+  (+1.6-2.0%) is run-to-run variance, not the patch. This is structural, not a
+  measurement failure.
+- Residual unknown that makes F3 closeable: **no recorded runtime dispatch
+  evidence** (which kernel actually ran per shape) and **no correctness check
+  at the changed cells** (Q8_0/Q4_K bs 3..6, Q6_K bs 3..6 and 7..8). The g2-t2
+  numbers are microbench replay and analytic accumulation-order argument
+  (cos ~0.99998), not engine measurements.
 
-### Static verification (done, GPU-free)
+## 2. Bottleneck analysis
 
-`seis/trials/deepseek-b/g3-t1/verify_mmvq_selection.py` parses the shipped
-policy out of `python/sglang/srt/layers/quantization/gguf.py` (no torch / no
-SGLang import; `WeightType` is `gguf.GGMLQuantizationType`, an external
-package, so the script replays only enum names the module actually
-references). It compares legacy rows-only selection with `_mmvq_safe_batch`
-over every referenced type x {rows<=5120, rows>5120} x batch 1..256. Result
-(`mmvq-selection-replay.json`):
+Two distinct surfaces, and they must not be conflated:
 
-- 8 changed selection cells: Q8_0 and Q4_K, `rows <= 5120`, batch 3..6
-  (MMVQ -> MMQ). Nothing else changes; Q6_K 6/2 and Q8_1/IMATRIX legacy
-  thresholds are preserved.
-- `changed_cells_at_batch_ge_16 = 0`; selection is identical to legacy from
-  batch 7 upward, hence at every steady-state gate decode batch
-  (16/32/64/128/256) and at every prefill extend-token batch (thousands of
-  tokens).
-- Residual correctness surface: concurrency is not exactly the decode batch at
-  a point's tail — as requests complete, the batch can decay into 3..6, where
-  this patch does change the kernel (to MMQ, measured 17-24 % faster at batch
-  4). That can flip near-tie greedy tokens in principle. G2-t2 ran this exact
-  commit on the same surface: 9/10 points SUCCEEDED with the exact-token
-  baseline satisfied, and the 10th failed by pre-existing DecodeCeiling
-  timeouts, not token mismatch. The risk is therefore empirically bounded, not
-  structurally eliminated.
-- Live-path audit: `fused_mul_mat_gguf` is the only kernel-dispatch site that
-  used the old inline `mmvq_safe` (no other `mmvq_safe` references remain in
-  `python/sglang/srt`), and it is called from the GGUF linear method, the GGUF
-  MoE path and the DeepSeek GGUF model paths. The patch is live for all GGUF
-  matmuls.
+1. **GGUF small-batch dispatch (F3 surface).** The only cells `f263262` can
+   change are bs<=6; the frozen workload never touches them. Closing F3 is
+   therefore a *correctness/coverage* question, not a score question. It needs
+   (a) runtime dispatch logging proving the new table selects the intended
+   kernel per (quant, rows, batch), and (b) an exactness check at the changed
+   cells vs the wheel. A speed gate at bs>=32 is score-neutral by construction
+   and must not be used to claim or deny the fix.
+2. **BF16 full-engine (formal objective surface).** Highest-weight untouched
+   cost identified on a4: PrefillHeavy C16 (weight 0.15, ~59.3 tok/s, TTFT
+   ~4047 ms) and TTFT-dominated Medium/Standard points. Established mechanism:
+   in the **no-prefix ragged extend** path the 512-token sliding window is not
+   applied, so 21/28 sliding layers do full 8192^2 attention at the gate's
+   8192-token prefill. That is the largest identified exact-cost lever, but
+   applying the window is a **semantics change**: the reference wheel has the
+   same omission, so it flips greedy tokens when the window binds and
+   `rsi_equivalence.py` (<=511-token prompts) cannot certify parity at 8192.
+   It is COMPUTE_DIFFERS, not ALGORITHM_PRESERVING, and is blocked on a
+   >512-token parity harness that cannot be built or run in this GPU-free
+   20-minute session.
 
-Caveat carried forward: this is static selection replay, not a GPU timing. The
-only timing evidence remains the G2-t1 microbench, which is L2-resident and is
-an upper bound; G2-t2 already corrected its derived `mmvq_safe` column.
+## 3. Candidate hypotheses (ranked)
 
-## Hypothesis (H-G3-1)
+- **H1 (primary, this trial): make `f263262` gate-closeable without touching
+  its numerics.** Add an *observation-only*, env-gated dispatch recorder to
+  `gguf.py` that records, per fused matmul call, `(matmul_type, rows, batch)`
+  into a bounded in-process counter/log, plus a GPU-free self-check that
+  reproduces `_mmvq_safe_batch()` selection against the measured crossover
+  table. Exact same kernels, same thresholds: zero semantic delta. This turns
+  the controller's requested GGUF experiment from "import gguf.py" into
+  "record actual dispatched kernel" and yields a falsifiable pass/fail table
+  for the changed cells and unaffected controls.
+- **H2 (fallback, if H1 code is too invasive): static audit + GPU-free replay
+  of the full `f263262` selection function** covering quant types the earlier
+  replay did not cover (Q8_1, I-Matrix, rows<=5120 vs >5120 bands), plus a
+  machine-checkable table for the requested controller experiment. No engine
+  change; still closes the "is the table right for every shipped type" gap.
+- **H3 (out of scope this trial, recorded for next):** >512-token exact-token
+  parity harness, then `window_left` at plan time for sliding layers in the
+  extend-no-prefix branch. Largest BF16 lever; cannot be honestly gated without
+  the harness. Do not implement window semantics without parity evidence.
+- **Rejected now:** any further `mmvq_safe` retune (score-neutral by
+  construction at bs>=32); triton attention (0.9733 negative), graph coverage
+  >64 (1.0056 neutral), Q8_0 GGUF serving as formal baseline (0.24x).
 
-`f263262` is *selection-identical* to the legacy rows-only policy throughout
-the steady state of every frozen gate point. The only cells whose kernel
-choice changes are
-`Q8_0`/`Q4_K` with `rows <= 5120` at **decode batch 3..6** (MMVQ -> MMQ);
-every other `(type, rows band, batch)` cell — including all IMATRIX types and
-all batch >= 7 cells — selects the same kernel under old and new code.
+## 4. Work items and acceptance criteria
 
-Prediction: a fast gate on the GGUF Q8_0 surface lands at score ~1.0
-(neutral), with no attributable regression. Its scientific value is closing F3
-(`UNGATED` -> gated-neutral, hygiene only) and confirming the delivered wheel
-still boots/behaves, not a speedup.
+1. Inspect the shipped `f263262` tree; confirm the selection table and find any
+   type/band where measured data is absent or mis-mapped.
+2. Implement H1 observation-only dispatch recorder, guarded by an env var,
+   default off, no allocation/timing change on the hot path beyond one dict
+   increment when enabled. `py_compile` must pass.
+3. Add a GPU-free verification script (runs on CPU, imports nothing CUDA) that
+   enumerates (quant type, rows, batch) cells and prints expected MMVQ/MMQ per
+   the shipped table, so the controller's experiment has a pre-registered
+   expectation table to compare against.
+4. Commit with repo-local identity; write `iteration-proposal.json` with
+   `request_fast_gate: false` (a BF16 fast gate cannot see this change) and an
+   explicit GGUF experiment request instead.
+5. Reserve the last quarter of the session for the proposal, tests, and final
+   commit.
 
-Falsifier / interpretation rule: a gate point moving outside ~±2 % cannot be
-attributed to this patch, because the patch cannot change kernel selection at
-any gate batch. Such movement is run-to-run variance (documented ±2 % on
-DecodeHeavy c64 in G2-t2), and any apparent *gain* must not be reported as an
-MMVQ fix gain.
+## 5. Uncertainty / negative outcomes (recorded, not hidden)
 
-## Requested controller action
+- The dispatch recorder proves *selection*, not *performance*; the controller
+  must still run the changed cells to claim any speedup, and the quality budget
+  for any numeric delta (MMVQ->MMQ accumulation order) stays
+  NOT_CLOSED_QUALITY_BUDGET unless a registered precision contract exists.
+- If `f263262` selection matches the measured crossover everywhere and the
+  runtime dispatch confirms it, the correct conclusion is still "F3 closes as a
+  hygiene/correctness fix with zero expected formal-score gain", not a speedup.
+- No claim of EXACT is made anywhere without numeric evidence from the
+  controller's run. A BF16 gate score is not evidence about GGUF dispatch.
 
-Fast gate on the candidate (`request_fast_gate: true`), GGUF Q8_0 surface,
-to close F3. Because every gate point is selection-identical, any subset of
-points with decode concurrency >= 16 is equally informative; if a reduced
-protocol is available, the informative minimum is boot/load + two or three
-points. Note the known pre-existing behaviour on this surface: in G2-t2 the
-reference and candidate both time out on DecodeCeiling c256 (44 vs 42
-timeouts), so that point is not attributable to this patch. No promotion is
-requested from a single fast screen.
+## 6. Provider identity
 
-## Explicitly out of scope this trial (with reasons)
-
-- Sliding-window prefill fix: semantics change; reference wheel is identical;
-  no parity evidence for prompts > 511 tokens. Cannot be gated without a
-  registered quality acceptance contract. Proposed as next step.
-- Load-time dequant Q8_0/Q4_K -> BF16 GEMM: ALGORITHM_PRESERVING at best
-  (cos ~0.99998 class), needs ~2x weight memory and a parity harness; not
-  landable without evidence.
-- Any precision/quantization change: NOT_CLOSED_QUALITY_BUDGET.
-- Further eager-decode sync work: trial-1 showed it inert on a4.
+Backend identity remains **UNVERIFIED_BACKEND_VERSION** for this session; the
+provider reports model names only, which do not prove which model executed.
+This plan makes no identity claim.
