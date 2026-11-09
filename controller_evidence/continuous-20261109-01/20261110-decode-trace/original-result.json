@@ -1,0 +1,2088 @@
+{
+  "schema_version": 1,
+  "campaign": "continuous-20261109-01",
+  "worker": "glm-a",
+  "node": "a1",
+  "commit": "15fd7f47856305e3fbab6383d1579e0754db9423",
+  "job_id": "20261109T173034-40f40399a3",
+  "actual_run_uuid": "a3b0f3ec142a468abaf2eef396d4f803",
+  "started_at": "2026-11-09T17:30:34.987049+00:00",
+  "status": "INCONCLUSIVE",
+  "stage": "FINISHED",
+  "metrics": {},
+  "purpose": "bf16_c128_torch_diagnostic_only",
+  "eligible_for_baseline": false,
+  "original_deadline_epoch": 1794278254.0812237,
+  "effective_deadline_epoch": 1794247234.9870384,
+  "evidence_boundary": "Instrumented Scheduler CPU/CUDA fragment, not a formal Gate, throughput baseline, numerical proof, or closure of the exact-runtime family. All received HTTP entity chunks are retained; interruption remains partial.",
+  "gpu_lock": {
+    "path": "/var/lib/tierengine/gpu.lock",
+    "device": 66306,
+    "inode": 2103737,
+    "adopted": true,
+    "holder_pid": 717294,
+    "driver_pid": 717309
+  },
+  "overlay_dir": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7",
+  "overlay_manifest": {
+    "schema_version": 2,
+    "tree_sha256": "4d001d9606fbbc43b5f9a850c415bd52f7008934066e8841f352e1f4f77b1018",
+    "name": "continuous-20261109-01-bf16-c128-i7",
+    "created_at_utc": "2026-11-09T17:22:09Z",
+    "engine": "sglang",
+    "base_commit": "15fd7f47856305e3fbab6383d1579e0754db9423",
+    "base_label": "15fd7f47856305e3fbab6383d1579e0754db9423",
+    "mode": "git_archive",
+    "dirty_files": [],
+    "materialized_committed_links": [
+      {
+        "path": "python/sglang/kernels/jit/include/sgl_kernel/quantization/gguf/device_compat.cuh",
+        "relative_target": "../../../../../aot/include/sgl_kernel/quantization/gguf/device_compat.cuh",
+        "target_path": "python/sglang/kernels/aot/include/sgl_kernel/quantization/gguf/device_compat.cuh",
+        "target_blob_oid": "e69157b8bb6779939b460012d98059be2c7321a0",
+        "content_sha256": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5"
+      },
+      {
+        "path": "python/sglang/kernels/jit/include/sgl_kernel/quantization/gguf/ggml-common.h",
+        "relative_target": "../../../../../aot/include/sgl_kernel/quantization/gguf/ggml-common.h",
+        "target_path": "python/sglang/kernels/aot/include/sgl_kernel/quantization/gguf/ggml-common.h",
+        "target_blob_oid": "7b825df5dda4c5098568cfeffc11a71a39873f8e",
+        "content_sha256": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8"
+      },
+      {
+        "path": "python/sglang/kernels/jit/include/sgl_kernel/quantization/gguf/moe_vec.cuh",
+        "relative_target": "../../../../../aot/include/sgl_kernel/quantization/gguf/moe_vec.cuh",
+        "target_path": "python/sglang/kernels/aot/include/sgl_kernel/quantization/gguf/moe_vec.cuh",
+        "target_blob_oid": "386f5109eb53b167f7cf8c03ceabf1338ed8a945",
+        "content_sha256": "7c51a8832491f593dc520d4e311d3de7c6d959ec7a691ffc7a053e722fce5a4f"
+      },
+      {
+        "path": "python/sglang/kernels/jit/include/sgl_kernel/quantization/gguf/quantize_q8_1.cuh",
+        "relative_target": "../../../../../aot/include/sgl_kernel/quantization/gguf/quantize_q8_1.cuh",
+        "target_path": "python/sglang/kernels/aot/include/sgl_kernel/quantization/gguf/quantize_q8_1.cuh",
+        "target_blob_oid": "ecae2f62ffe7a26ae720e784bcbedae7b4b8869d",
+        "content_sha256": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4"
+      },
+      {
+        "path": "python/sglang/kernels/jit/include/sgl_kernel/quantization/gguf/vecdotq.cuh",
+        "relative_target": "../../../../../aot/include/sgl_kernel/quantization/gguf/vecdotq.cuh",
+        "target_path": "python/sglang/kernels/aot/include/sgl_kernel/quantization/gguf/vecdotq.cuh",
+        "target_blob_oid": "19e990d4da03c1ed03b11221bcb172c5dd7cd069",
+        "content_sha256": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4"
+      }
+    ],
+    "omitted_metadata_paths": [
+      "python/sglang/multimodal_gen/.agents",
+      "python/sglang/multimodal_gen/.claude"
+    ],
+    "metadata_policy": "git archives omit .claude/.agents package metadata; committed file links are materialized from regular Git blobs",
+    "changed_file_sha256": {},
+    "wheel_binary_source": "spark-a1:/home/guorun/Projects/TierEngine/.venvs/sglang (frozen Phase 0 wheel env)",
+    "wheel_binary_sha256": {
+      "sglang/_version.py": "4fd058b5693ae0d57f3d2e9e826f1b39db0d57a30e1d7b7817673c037331e36f",
+      "sglang/srt/rust_extensions/_bench.cpython-312-aarch64-linux-gnu.so": "47df3cbf334c2c2cffbd1797d33dcad954d13908769d5220592036ba4d573301",
+      "sglang/srt/rust_extensions/_grpc.cpython-312-aarch64-linux-gnu.so": "28520a6af47ae925272449bb0a4c38f95d7eb2f1856ecfce41aba0ddf28fb41b",
+      "sglang/srt/rust_extensions/_multimodal.cpython-312-aarch64-linux-gnu.so": "3cc3e1ee1957932cbb361eb2d7957aa68f8adb7cadfdb13e704001d47771e85b",
+      "sglang/srt/rust_extensions/_server.cpython-312-aarch64-linux-gnu.so": "62a71906241d305bbc7f52e1d9e87953bbc76ce18cc54d00d8c1046a2c534db3",
+      "sglang/srt/mem_cache/rust_tree_core/mem_cache.cpython-312-aarch64-linux-gnu.so": "9f70c8752130b47d758569789aec80b2761398f27b5a65a871f072ac6a1099ba"
+    },
+    "file_count": 6055,
+    "note": "python/sglang source + frozen wheel Rust extensions; runtime = PYTHONPATH overlay"
+  },
+  "overlay_manifest_artifact": {
+    "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/OVERLAY-MANIFEST.json",
+    "sha256": "1cf12228743d4feb58145624b9e58e7e0750543fe8c88325ff37c4beecda16a8",
+    "bytes": 4011
+  },
+  "driver_artifact": {
+    "path": "/home/guorun/Projects/TierEngine/runs/control-startup/bf16_c128_torch_diagnostic.py",
+    "sha256": "8c83b1f978ef691ea4c5ed5147a01211ee2d805806487022f38b1dc990dcad1f",
+    "bytes": 20959
+  },
+  "shared_recorder_artifact": {
+    "path": "/home/guorun/Projects/TierEngine/runs/control-startup/gguf_c4_diagnostic.py",
+    "sha256": "c661e091bea2b2fc169343e0cf047996556ef89432c6189a89866493fdf0d88a",
+    "bytes": 20428
+  },
+  "profiler_sources": [
+    {
+      "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/managers/io_struct.py",
+      "sha256": "0518aa62b3d864be6f4d76a7fcf14720a2f5854b557df19ddd8ea717de62cb57",
+      "bytes": 111191
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/managers/scheduler_components/profiler_manager.py",
+      "sha256": "5bf4828dbb4471c87cbd6c363fe1ddd211efb9bf8b4ab9bebec1de6b710af90d",
+      "bytes": 19383
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/utils/nvtx_utils.py",
+      "sha256": "c97d6b542d463f37b54c6e983b0d6ac40ca57f0402b17584ea35103339fd5775",
+      "bytes": 4439
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python/sglang/srt/utils/profile_utils.py",
+      "sha256": "3f6fec78e3aec1ae90c6dcc730baddfa532330d102f7fe16f88f0d6429839a7c",
+      "bytes": 17371
+    }
+  ],
+  "model_provenance": {
+    "model_path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b",
+    "tokenizer_dir": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b",
+    "frozen_registry": {
+      "revision": "e6406af83988f26e87ea92455f31db3f6476131b",
+      "files": [
+        {
+          "name": "LICENSE",
+          "size": 11338,
+          "sha256": "525c465ab952779d2d360a9ff36f7f49ae018a23d80302ff839a850a77784c36"
+        },
+        {
+          "name": "PROVENANCE.json",
+          "size": 5269,
+          "sha256": "de80962f1d6bfdd49100ac4d7e2c1311757652eb689557a582c2a0a752373bfc"
+        },
+        {
+          "name": "chat_template.jinja",
+          "size": 5717,
+          "sha256": "480576bd2ef80726a0dba6406d72ca37f4f4f9ca747c7f1c8d159dbdf40f6929"
+        },
+        {
+          "name": "config.json",
+          "size": 1838,
+          "sha256": "16aa5d3619d0d893e7157f2499675430844eb7b383c80ecc1b3e8e8928a75d52"
+        },
+        {
+          "name": "configuration_spark.py",
+          "size": 4329,
+          "sha256": "02218597240490f490659b184052db940b08163ff9c3af7b7e59323f6f963722"
+        },
+        {
+          "name": "generation_config.json",
+          "size": 281,
+          "sha256": "804a5276a9d237600688267dd2bf6f9d4129ec21faf417f870d5d52b32ad9e6c"
+        },
+        {
+          "name": "merges.txt",
+          "size": 1567883,
+          "sha256": "b06fc88940ae6a20f71142f06304c12547f58ab52c175e56af12a38c3dc62f36"
+        },
+        {
+          "name": "model-00001-of-00002.safetensors",
+          "size": 1997108320,
+          "sha256": "4461aaca4cac9b394ed951697e95a6da3c8952ed5976bbc162c5b085bdc0924a",
+          "tensors": 116,
+          "dtypes": [
+            "BF16"
+          ],
+          "header_valid": true
+        },
+        {
+          "name": "model-00002-of-00002.safetensors",
+          "size": 1418232176,
+          "sha256": "aea734125f5ac9c460847b33836977fe6afa68861b2d687f82bfe7d2b544d699",
+          "tensors": 110,
+          "dtypes": [
+            "BF16"
+          ],
+          "header_valid": true
+        },
+        {
+          "name": "model.safetensors.index.json",
+          "size": 18805,
+          "sha256": "cc2b212985f5d0469bf926903e4bd7ee81856687baa0c6c6b55ff200d4cdc63f"
+        },
+        {
+          "name": "modeling_spark.py",
+          "size": 19418,
+          "sha256": "9cf0d1ad2b54b9f7088792779ddd8b5cb4d4fe63bfea054da7f2dd16362bcaf4"
+        },
+        {
+          "name": "special_tokens_map.json",
+          "size": 156,
+          "sha256": "48a257e3f5f20a004e7c30482a70ae19ae7d9cf713144f2a1394ba20af8c3cb5"
+        },
+        {
+          "name": "tokenizer.json",
+          "size": 10115786,
+          "sha256": "710cce15cf3565674c499f9413997c6e8101f2bdd96245cff8f0311fb501248c"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "size": 5841,
+          "sha256": "57b385dcc2ad031aef4a3786e97cd9a832ecb839cb27ed2cd829d627c90e1bfd"
+        },
+        {
+          "name": "vocab.json",
+          "size": 3032795,
+          "sha256": "9f42cb7e7af5afe27cae2337d272d60b5659e10143ef4bb952f642b847916fe1"
+        }
+      ],
+      "weights_bytes": 3415340496,
+      "weights_signature": "125cf321a24edc224e1108b76287f462d52860a9f4ba86b9ea1ff37f56df650d",
+      "tokenizer_signature": "f750459b88a519e973128394272ffa522673d7d68c2aa323212c26f092099ad7",
+      "config": {
+        "architectures": [
+          "Spark2_5ForCausalLM"
+        ],
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "auto_map": {
+          "AutoConfig": "configuration_spark.Spark2_5Config",
+          "AutoModel": "modeling_spark.Spark2_5Model",
+          "AutoModelForCausalLM": "modeling_spark.Spark2_5ForCausalLM"
+        },
+        "bos_token_id": 0,
+        "dtype": "bfloat16",
+        "eos_token_id": 1,
+        "gate_attn_act_mode": "sigmoid",
+        "head_dim": 256,
+        "headwise_attn_output_gate": true,
+        "hidden_act": "gelu",
+        "hidden_size": 2048,
+        "initializer_range": 0.0221,
+        "intermediate_size": 6656,
+        "layer_types": [
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "sliding_attention",
+          "full_attention"
+        ],
+        "max_position_embeddings": 1048576,
+        "mlp_bias": false,
+        "model_type": "spark2_5",
+        "num_attention_heads": 8,
+        "num_hidden_layers": 28,
+        "num_key_value_heads": 2,
+        "pad_token_id": 2,
+        "rms_norm_eps": 1e-06,
+        "rope_parameters": {
+          "full_attention": {
+            "partial_rotary_factor": 0.25,
+            "rope_theta": 5000000
+          },
+          "sliding_attention": {
+            "partial_rotary_factor": 1.0,
+            "rope_theta": 10000
+          }
+        },
+        "sliding_window": 512,
+        "tie_word_embeddings": true,
+        "transformers_version": "4.57.1",
+        "use_cache": true,
+        "vocab_size": 131072
+      }
+    },
+    "verified_local_files": [
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/LICENSE",
+        "sha256": "525c465ab952779d2d360a9ff36f7f49ae018a23d80302ff839a850a77784c36",
+        "bytes": 11338
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/PROVENANCE.json",
+        "sha256": "de80962f1d6bfdd49100ac4d7e2c1311757652eb689557a582c2a0a752373bfc",
+        "bytes": 5269
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/chat_template.jinja",
+        "sha256": "480576bd2ef80726a0dba6406d72ca37f4f4f9ca747c7f1c8d159dbdf40f6929",
+        "bytes": 5717
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/config.json",
+        "sha256": "16aa5d3619d0d893e7157f2499675430844eb7b383c80ecc1b3e8e8928a75d52",
+        "bytes": 1838
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/configuration_spark.py",
+        "sha256": "02218597240490f490659b184052db940b08163ff9c3af7b7e59323f6f963722",
+        "bytes": 4329
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/generation_config.json",
+        "sha256": "804a5276a9d237600688267dd2bf6f9d4129ec21faf417f870d5d52b32ad9e6c",
+        "bytes": 281
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/merges.txt",
+        "sha256": "b06fc88940ae6a20f71142f06304c12547f58ab52c175e56af12a38c3dc62f36",
+        "bytes": 1567883
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/model-00001-of-00002.safetensors",
+        "sha256": "4461aaca4cac9b394ed951697e95a6da3c8952ed5976bbc162c5b085bdc0924a",
+        "bytes": 1997108320
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/model-00002-of-00002.safetensors",
+        "sha256": "aea734125f5ac9c460847b33836977fe6afa68861b2d687f82bfe7d2b544d699",
+        "bytes": 1418232176
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/model.safetensors.index.json",
+        "sha256": "cc2b212985f5d0469bf926903e4bd7ee81856687baa0c6c6b55ff200d4cdc63f",
+        "bytes": 18805
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/modeling_spark.py",
+        "sha256": "9cf0d1ad2b54b9f7088792779ddd8b5cb4d4fe63bfea054da7f2dd16362bcaf4",
+        "bytes": 19418
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/special_tokens_map.json",
+        "sha256": "48a257e3f5f20a004e7c30482a70ae19ae7d9cf713144f2a1394ba20af8c3cb5",
+        "bytes": 156
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/tokenizer.json",
+        "sha256": "710cce15cf3565674c499f9413997c6e8101f2bdd96245cff8f0311fb501248c",
+        "bytes": 10115786
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/tokenizer_config.json",
+        "sha256": "57b385dcc2ad031aef4a3786e97cd9a832ecb839cb27ed2cd829d627c90e1bfd",
+        "bytes": 5841
+      },
+      {
+        "path": "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b/vocab.json",
+        "sha256": "9f42cb7e7af5afe27cae2337d272d60b5659e10143ef4bb952f642b847916fe1",
+        "bytes": 3032795
+      }
+    ]
+  },
+  "server_argv": [
+    "/home/guorun/Projects/TierEngine/.venvs/sglang/bin/python",
+    "-m",
+    "sglang.launch_server",
+    "--model-path",
+    "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "31341",
+    "--tp",
+    "1",
+    "--dtype",
+    "bfloat16",
+    "--kv-cache-dtype",
+    "bfloat16",
+    "--context-length",
+    "9216",
+    "--max-total-tokens",
+    "131072",
+    "--mem-fraction-static",
+    "0.6",
+    "--cuda-graph-max-bs-decode",
+    "64",
+    "--chunked-prefill-size",
+    "8192",
+    "--max-running-requests",
+    "256",
+    "--max-queued-requests",
+    "256",
+    "--attention-backend",
+    "flashinfer",
+    "--trust-remote-code",
+    "--enable-metrics",
+    "--disable-radix-cache",
+    "--cuda-graph-backend-prefill",
+    "disabled"
+  ],
+  "profile_payload": {
+    "output_dir": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile",
+    "activities": [
+      "CPU",
+      "GPU"
+    ],
+    "profile_by_stage": true,
+    "num_steps": 16,
+    "with_stack": false,
+    "record_shapes": false,
+    "detailed_annotations": false,
+    "merge_profiles": false,
+    "profile_id": "a3b0f3ec142a468abaf2eef396d4f803",
+    "profile_prefix": "bf16-m-c128"
+  },
+  "environment_id": "sglang-4f279728579ce70e",
+  "server_environment": {
+    "PYTHONPATH": "/home/guorun/Projects/TierEngine/runs/rsi/overlays/continuous-20261109-01-bf16-c128-i7/python:/home/guorun/Projects/TierEngine",
+    "CPATH": "/home/guorun/Projects/TierEngine/.tools/deps/python3.12-3.12.3-1ubuntu0.17/usr/include/python3.12:/home/guorun/Projects/TierEngine/.tools/deps/python3.12-3.12.3-1ubuntu0.17/usr/include",
+    "CUDA_HOME": "/usr/local/cuda",
+    "SGLANG_PROFILE_V2": "0",
+    "SGLANG_PROFILE_BY_STAGE_DECODE_MIN_BS": "128"
+  },
+  "trusted_helpers": [
+    {
+      "path": "/home/guorun/Projects/TierEngine/scripts/rsi_node.py",
+      "sha256": "27ba32db06d4b0d27b9662d85b65367eafc9e25481ee455f79b785531c2cb671",
+      "bytes": 19114
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/scripts/run_engine_job.py",
+      "sha256": "a5a9593f44feb06d7503126127a7595e0aa625a0dfb9613ccfede16a0ce4d226",
+      "bytes": 37320
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/controller/gpu_lock.py",
+      "sha256": "8d737124f148e367d7a9d413e8a65614327c9a7a084a4370441f2bd658728362",
+      "bytes": 19783
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/benchmarks/runner.py",
+      "sha256": "301ed01fa7b5817fd079093fe82cdbd9e2c4882356b01b3f60e2014158d4a1cc",
+      "bytes": 25768
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/benchmarks/corpus.py",
+      "sha256": "7e08c7ab1e759ac7bcc74ae2b3ec0aee74a18378b8dcc2d8ee0c7b25c155553e",
+      "bytes": 2707
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/benchmarks/metrics.py",
+      "sha256": "48d6eec52b9b3d3b7e272da13a16c82419654a205e59b5e8402e8268982b5add",
+      "bytes": 4047
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/configs/rsi/fast-gate.json",
+      "sha256": "96cccb1b065b559fd496cdaf9bff196d37d945b285344155f033556d69d03c60",
+      "bytes": 2998
+    },
+    {
+      "path": "/home/guorun/Projects/TierEngine/configs/models.json",
+      "sha256": "76c220f8b17f6f941de7a393ff3efd6561c2a24f3e316383241213dc256f23fc",
+      "bytes": 13341
+    }
+  ],
+  "owned_server_identity": {
+    "pid": 717874,
+    "pgid": 717874,
+    "sid": 717874,
+    "start_ticks": 243206992,
+    "state": "R"
+  },
+  "readiness": {
+    "ready": true,
+    "endpoint": "/ready",
+    "checks": [
+      {
+        "path": "/ready",
+        "status": 200,
+        "error": null
+      }
+    ]
+  },
+  "warmup_argv": [
+    "/home/guorun/Projects/TierEngine/.venvs/sglang/bin/python",
+    "-m",
+    "benchmarks.runner",
+    "--base-url",
+    "http://127.0.0.1:31341",
+    "--engine",
+    "sglang",
+    "--model",
+    "XHToken/Spark-X2.6-1.7B",
+    "--tokenizer",
+    "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b",
+    "--protocol",
+    "sglang",
+    "--node",
+    "a1",
+    "--git-sha",
+    "15fd7f47856305e3fbab6383d1579e0754db9423",
+    "--environment-id",
+    "sglang-4f279728579ce70e",
+    "--precision",
+    "bfloat16",
+    "--baseline",
+    "common",
+    "--context-length",
+    "9216",
+    "--thinking-mode",
+    "raw_token_ids_no_chat_template",
+    "--input-tokens",
+    "512",
+    "--output-tokens",
+    "64",
+    "--concurrency",
+    "128",
+    "--requests",
+    "128",
+    "--warmup",
+    "0",
+    "--seed",
+    "421338",
+    "--cache",
+    "no_shared",
+    "--mode",
+    "closed",
+    "--timeout",
+    "120",
+    "--queue-timeout",
+    "60",
+    "--max-queue",
+    "256",
+    "--record-full-sse",
+    "--workload",
+    "BF16_C128_TORCH_DIAGNOSTIC_WARMUP",
+    "--run-id",
+    "a3b0f3ec142a468abaf2eef396d4f803-warmup",
+    "--output-dir",
+    "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/warmup",
+    "--result-path",
+    "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/warmup/summary.json"
+  ],
+  "warmup_responses": {
+    "requests": 128,
+    "http_200": 128,
+    "server_output_tokens": 64,
+    "server_output_ids_64": 128
+  },
+  "profile_start": {
+    "started_at": "2026-11-09T17:31:30.861780+00:00",
+    "url": "http://127.0.0.1:31341/start_profile",
+    "timeout_seconds": 30,
+    "payload": {
+      "output_dir": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile",
+      "activities": [
+        "CPU",
+        "GPU"
+      ],
+      "profile_by_stage": true,
+      "num_steps": 16,
+      "with_stack": false,
+      "record_shapes": false,
+      "detailed_annotations": false,
+      "merge_profiles": false,
+      "profile_id": "a3b0f3ec142a468abaf2eef396d4f803",
+      "profile_prefix": "bf16-m-c128"
+    },
+    "status_code": 200,
+    "response_body_path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/profile-start.response.bin",
+    "headers": [
+      [
+        "date",
+        "Mon, 09 Nov 2026 17:31:30 GMT"
+      ],
+      [
+        "server",
+        "uvicorn"
+      ],
+      [
+        "content-length",
+        "17"
+      ],
+      [
+        "vary",
+        "Origin"
+      ],
+      [
+        "Connection",
+        "close"
+      ]
+    ],
+    "body": "Start profiling.\n",
+    "ended_at": "2026-11-09T17:31:30.864234+00:00",
+    "already_stopped": false
+  },
+  "workload_argv": [
+    "/home/guorun/Projects/TierEngine/.venvs/sglang/bin/python",
+    "-m",
+    "benchmarks.runner",
+    "--base-url",
+    "http://127.0.0.1:31341",
+    "--engine",
+    "sglang",
+    "--model",
+    "XHToken/Spark-X2.6-1.7B",
+    "--tokenizer",
+    "/data/models/XHToken/Spark-X2.6-1.7B/e6406af83988f26e87ea92455f31db3f6476131b",
+    "--protocol",
+    "sglang",
+    "--node",
+    "a1",
+    "--git-sha",
+    "15fd7f47856305e3fbab6383d1579e0754db9423",
+    "--environment-id",
+    "sglang-4f279728579ce70e",
+    "--precision",
+    "bfloat16",
+    "--baseline",
+    "common",
+    "--context-length",
+    "9216",
+    "--thinking-mode",
+    "raw_token_ids_no_chat_template",
+    "--input-tokens",
+    "512",
+    "--output-tokens",
+    "64",
+    "--concurrency",
+    "128",
+    "--requests",
+    "128",
+    "--warmup",
+    "0",
+    "--seed",
+    "421337",
+    "--cache",
+    "no_shared",
+    "--mode",
+    "closed",
+    "--timeout",
+    "120",
+    "--queue-timeout",
+    "60",
+    "--max-queue",
+    "256",
+    "--record-full-sse",
+    "--workload",
+    "BF16_C128_TORCH_DIAGNOSTIC_WORKLOAD",
+    "--run-id",
+    "a3b0f3ec142a468abaf2eef396d4f803-workload",
+    "--output-dir",
+    "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/workload",
+    "--result-path",
+    "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/workload/summary.json"
+  ],
+  "workload_responses": {
+    "requests": 128,
+    "http_200": 128,
+    "server_output_tokens": 64,
+    "server_output_ids_64": 128
+  },
+  "response_archive": {
+    "status": "APPLICATION_COMPLETE",
+    "raw_received_bodies": [
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-01-bb09fb14fed142988a383e7eb15d9fab.response.bin",
+        "sha256": "52f2b474ff4670e2d6bd88ef4a0c97716eac9cf0015dce872f06bbaea3125603",
+        "bytes": 42346
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-02-2f367584d7a240388cea9eba8e5970e0.response.bin",
+        "sha256": "2734a6f068c99184c966e1e13fb33db95a40c6ef3f08b681acb818e41c8c472c",
+        "bytes": 46256
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-03-9b78a420b01d4cada5ab11c38852cfa9.response.bin",
+        "sha256": "9b71860209edd3a07513fd5611d1213eae6a2c08ccdd9e6649f7f65b414411ab",
+        "bytes": 52240
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-04-1b256207020546aa877d5f83c0729609.response.bin",
+        "sha256": "695014cbf784f504d72163d6cd0d59431937112f49ad2aef09c6d428e57d4632",
+        "bytes": 48403
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-05-d6b8920d55b746d1864e9f1f58775882.response.bin",
+        "sha256": "303ec25491b2a5381456ac2ba8cf10fec02ac37c3a7d53ab5a2af8c430d2b45c",
+        "bytes": 46574
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-06-656acc6f888940f5841026365eccd5e9.response.bin",
+        "sha256": "fe94608ca622f04337793e1afacd8d597e0b5d4aa195159a0a3bb67c5ab7c825",
+        "bytes": 45819
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-07-735f7b11f3404496ae541290d501d1f9.response.bin",
+        "sha256": "33bc8411dde111ae7b0144221cb3b01570850b5e3fe1fa0ad6254446030c120b",
+        "bytes": 54447
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-08-9d58eef65e0a489aac0abb4c0571e39c.response.bin",
+        "sha256": "b1f8806b719e6b96f4be86e9c48a0c4630a86b2ad69792e625622dcee6e8b3ba",
+        "bytes": 44173
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-09-3fe3d3dbf3e54fa69c728e77d1daa6c3.response.bin",
+        "sha256": "bce431ad489957f9513937cfa92c9dc839281455fd294444848c3071462ec27f",
+        "bytes": 52367
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-10-f8804a2d570d4a51aa4676483af6edf2.response.bin",
+        "sha256": "140cda9d4d13ed6d6bc5959b08e2d4ef04665883a1cdbb283b7aa58db750be1d",
+        "bytes": 49813
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-100-8d3e65fbebc7460b92cfa924f905f196.response.bin",
+        "sha256": "787db08aab474db0112d0f16abd5dae75ef6ed0e1c7e6c1559661ed3c88d12f4",
+        "bytes": 53815
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-101-2e656a5408104c04b8061a1d42870903.response.bin",
+        "sha256": "f7d14a384bb157993cae07f7945c06ec8a3299f56235cf03f04d506801328ea7",
+        "bytes": 53756
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-102-4276fe42c61e444f836d7a0a72d543af.response.bin",
+        "sha256": "9fbd0ab4a92930171652a8dff6bf6eb996efa431319245922027f52a90045bfc",
+        "bytes": 49362
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-103-ccb26528fa11404381f52b33c7c08a3b.response.bin",
+        "sha256": "7fa229f38a609845f16fe721cceb97e839f932873536a4dbe570de054d0f72f3",
+        "bytes": 41586
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-104-70404afe4d9f454cab896c1c5d715fc1.response.bin",
+        "sha256": "ffe7b649b93e2f89576eca7b70ba8c93c726210d23dfe08873a75bd043d4e7ff",
+        "bytes": 45805
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-105-b51e12a6acb74ce5820484bb8ddf5794.response.bin",
+        "sha256": "2acadfb83638bcd446ac00b7c9e5945c644e9d14394c4e26d123ac169cfe2683",
+        "bytes": 46096
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-106-7f13a909a1c04b17bf4461c8ebc4942e.response.bin",
+        "sha256": "9a25280d55c3025953d82571085820366452c388125c7a6f9c7b4a5d88fcfad0",
+        "bytes": 40857
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-107-98cd9cb1c8364dbaa925f9a85aac1c84.response.bin",
+        "sha256": "ccb56b6aadda4dcafe8b678195dcb4630dd139f878ecb373a4323d28c4dbcc1e",
+        "bytes": 44824
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-108-56dd461853954d3caf64427f94e80b80.response.bin",
+        "sha256": "c5f0df48979a0c9163adffed0b658b42253ef9185cf42ac2718a507cd1a874fc",
+        "bytes": 42346
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-109-9d07eaf9c54e4a68a3537cbf537809b1.response.bin",
+        "sha256": "4d0cc631d934a116d11fdfd6d341cd01e1f4265697b17ad242ab7a36685ee98d",
+        "bytes": 48976
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-11-0375bd49cbbf477aa28ccf2a1332844a.response.bin",
+        "sha256": "2c61782b7030cc9fa40ac256230ce12f5a49fab14109ec89e92a7a5b69478904",
+        "bytes": 52109
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-110-b3b7853c75e74a97af3d0ad0afbbe074.response.bin",
+        "sha256": "950741d3b541c5062b3ade83da7b2c22f696695be15960c9e20eb3c333cd33c7",
+        "bytes": 43725
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-111-768afd0460084aae9fbb32214e80f188.response.bin",
+        "sha256": "4cb5a5c1b85bd6453be83de912352b7be4e22424425cd2557985d66e21af730b",
+        "bytes": 58047
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-112-3531568c5bfd4e069871edff6b982f81.response.bin",
+        "sha256": "89b5c0eef5f4f0d8653374c044be99035b052491db7c897e7d65c499d33af9fa",
+        "bytes": 45865
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-113-58161e6794c34c7bac92c3a262af08ce.response.bin",
+        "sha256": "e31f151c3efea72a2709d1b30a3f965a805b856e23d784e0eaf011f7e4741dc6",
+        "bytes": 43855
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-114-49cd7ee8c9c8449783889afc00baf47d.response.bin",
+        "sha256": "f252bf5f15b3ee713a1f5cd4b12ea8a346561d869766c5f4c365e6faa005973e",
+        "bytes": 52174
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-115-0b35ed28f21d4866aa930a5be133941c.response.bin",
+        "sha256": "5aec8103666455b3d903da1a091e89e9ce8975d9f81e1a04bbc4742b6c9c1948",
+        "bytes": 47511
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-116-bd680f7e7ad34c5496588dfd70c6b5f8.response.bin",
+        "sha256": "59a0a76e2952fb6f1f5b99d8a3b5014676ff4f5ccd24375540d2f33377636acb",
+        "bytes": 39506
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-117-5e80398918ec48859473703c8500f7b9.response.bin",
+        "sha256": "ea5a7cd23d22b86bf8b755ed4621b987f89c4ca4b4285d2fa0120f8400cf1317",
+        "bytes": 43788
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-118-dbda511c83fc491d921bed8adfbbb104.response.bin",
+        "sha256": "65a318e776dadf5975716eda272cc70013829b80979c62ace124051e9c12c186",
+        "bytes": 51418
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-119-7a901636527145e2921bbd6fec45b08e.response.bin",
+        "sha256": "12d16a0ca73b6be7af08cf4f39c64b3273d6176b17aadfe787d6fe4fae2c039b",
+        "bytes": 48310
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-12-6e1f5945e7c649a28308764c67808b16.response.bin",
+        "sha256": "2e571f2516a61af586b5fcbde402c5f6900be02b236c8b4515f5d7691da11cae",
+        "bytes": 51040
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-120-aaad4fde1d594a3f97d19a0c958cb9df.response.bin",
+        "sha256": "8cb68afc33ad62271d21205452c433f7d8b2096c2112ffdbdd06f72c747695aa",
+        "bytes": 47949
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-121-6b7d52a4461a451ba42bc865d19da100.response.bin",
+        "sha256": "7623464591f35960f336256a6acad38f0f09d4a74a20046671f65d7ea5122bf5",
+        "bytes": 43854
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-122-6fb20b4442ad498cacda90cf9d1923a6.response.bin",
+        "sha256": "123eb85c707599baf674523e22f38f3010ddec7b670ca611748ab13aa3b18fc7",
+        "bytes": 52047
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-123-c6ea0c892e4e41dc9e681e4856e92eb8.response.bin",
+        "sha256": "b1a21d24730057ce9792f3a2170def620f3b901cb1db8e1f766239d604d9ab18",
+        "bytes": 54189
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-124-743c7910f43246ad87597858801bfa3a.response.bin",
+        "sha256": "7bfcebe158269e7ea43a7a5c01d71a070e8c96122697de616d0822ce9ecde38f",
+        "bytes": 50013
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-125-c9a006a345e643e78ecef971f667810a.response.bin",
+        "sha256": "032b10b5ea6948aff5b207d431a22c43c74ddaf8479719fb210f749435ed2f04",
+        "bytes": 51456
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-126-10979e0bb03f494c8400218bec51db85.response.bin",
+        "sha256": "e88d9b3c4a1ff298ac725f472fda0c350558b1b8749d67fb8e6e2b39d422d57a",
+        "bytes": 49461
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-127-6181091e0c964f76abbad9825ef276fe.response.bin",
+        "sha256": "fc64121301852ecb74a3f8af928d264d51765d550903908aa39d1693d4ed1dc4",
+        "bytes": 44942
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-128-9ed775672a2d4c71a72d85d7059f6d61.response.bin",
+        "sha256": "a407c42b3317352b233ffed4014e735ad8c0f74a5d2c318c6af97f16994bd1c8",
+        "bytes": 45933
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-129-a9426c5bae444a19b3fcf5ebb525391d.response.bin",
+        "sha256": "9bcad8907920e3ee1351f21cb8fc90a4636698d3ee6e836f7bbd3490f51a03ce",
+        "bytes": 40913
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-13-54ab9fbfdc534b3cb39da338ff20aec1.response.bin",
+        "sha256": "37076892ab21350796819863bc8ed5d5b155ad0f029656f1439428bc2dd3fba4",
+        "bytes": 51360
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-130-8a16fb21b5b747348f1a239d11837503.response.bin",
+        "sha256": "e776a2d204a0614da90b5be9a29cf0d1b4a0536e77343d5e2ab9fb3b1e2047b9",
+        "bytes": 43434
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-131-a35326f795d34cb4bad4d2e55552c76c.response.bin",
+        "sha256": "c917603227847c1e431a738224992c6444b69276ac2653f22b22351062df14ad",
+        "bytes": 37806
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-132-e1996fe452ea4b4ea2834a7e3b8f4227.response.bin",
+        "sha256": "70cb6d828c53de051942fe46da35d4e8b256a036d2c920e575ca1a005eab60c7",
+        "bytes": 53940
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-133-6458af5288dc42eab909ab7aa37b6af5.response.bin",
+        "sha256": "f578c8c8de94270c27d37aaf7702c5a96d1f53cc3ce44d3617c92821b040eeef",
+        "bytes": 42156
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-134-35671817c20b47289c4cd80ac8d5b708.response.bin",
+        "sha256": "8b8306fd11801db29eeacdcdcf0e8fc3701a51d218d2fb71b277ae72aa85f733",
+        "bytes": 48202
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-135-92432b51b5ea4f8fb9a5a4d9413d75fd.response.bin",
+        "sha256": "f29c9a35a6d9bada550a22f3a8476468c2071798d4dffaa1abbd3dc39365c162",
+        "bytes": 44110
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-136-a2ec9b6aa4984beba802892c6f2d6e96.response.bin",
+        "sha256": "f0e6e935316457a980d050632f995f4e208d0f255e8dfa5ed3d2a64a112c509c",
+        "bytes": 52496
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-137-81f3549ebabf46eb9a5540c7d8f485e6.response.bin",
+        "sha256": "d3600b5a8d42859ff6e9859c3a0e647b8d1172548f7ba5d604742bc02adc9d55",
+        "bytes": 53207
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-138-ac7bbc632d044adcb414e7e2b1f2893a.response.bin",
+        "sha256": "1c09feb7a31241136974e339ee399606a2492e20f328cb590ccccec412bdf964",
+        "bytes": 44047
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-139-ed792886fbbf4b31831dcb888482b0d4.response.bin",
+        "sha256": "52e139e707f7b80e7da1a167a556754f2b223731b0bf23c6ef869aedcc43f244",
+        "bytes": 44045
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-14-678f38ea47c845e4bf84809af4d8bfb7.response.bin",
+        "sha256": "f5443abcb17f665bfd5e37fb23e8871a67f3b1711bdd4a9f508421684ac7f0e6",
+        "bytes": 54127
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-140-7d137724af374386b873e7c9626890e6.response.bin",
+        "sha256": "059de92dab81ccc51813bf00d0e1b658f7e991170627c8268c1b7d79412cbde6",
+        "bytes": 49744
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-141-3129e5adcef242fdb85cd117d0e35c4d.response.bin",
+        "sha256": "46a976960dfdae8ce8783ad94630effced2e4ae656c5b3946b24665387abae14",
+        "bytes": 44044
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-142-7cc664efe4494803b2806de76d3436e1.response.bin",
+        "sha256": "a1df6ef4b5fcf37aa02104e38377981c77fb1717ed75e8c8abf433dc4d6dc44f",
+        "bytes": 52366
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-143-09b074b875af4f9a8423041a6bae6e95.response.bin",
+        "sha256": "5042e3de30478c4a32d8817c6a9ccf277efcd65276487c9d20a87a47cc11b9cc",
+        "bytes": 46280
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-144-0db1cc6df30740b997e03604c7cc1eb7.response.bin",
+        "sha256": "fc49c9f8263f9a12391cf1806d4c0e35e975fbd10c199a4916a94dbe47f9f1dd",
+        "bytes": 50351
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-145-91c95702b6e84380a20629f8f46a8bc9.response.bin",
+        "sha256": "a80b22974c08f5cc00e08bfe57495b9da5e8badd27cdc9bc586f02b4d5c09133",
+        "bytes": 46124
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-146-94dfa1023c044063a633f42fde0e2954.response.bin",
+        "sha256": "c9a32ce5fb8b2e8409649b7faac874d7f0b992e966d1dbd22feb913bb2769cc6",
+        "bytes": 53692
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-147-1909deeafa2c479b862c883d8c879af6.response.bin",
+        "sha256": "6863bb8f2add5ca8db7a150c6854fff885baca2cc053c7e6d0941de58131b870",
+        "bytes": 56241
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-148-3281286f5ce64912b9cba245d29a69e3.response.bin",
+        "sha256": "121f2cb66c9e9ce4d20c5918711eeffe81446cc773a870d72f22c971049e9b7c",
+        "bytes": 52365
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-149-ac9709baa952424888c603b19dd31164.response.bin",
+        "sha256": "e41e463bf32a0d400b9c57b6250113c660c919100ad3677590aed7bafc6ba196",
+        "bytes": 54512
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-15-1cd892bc914b49219a30e99455b31915.response.bin",
+        "sha256": "15e1b2dd9dca47dc792f3b1492b1920f6bf1637cde64752a045c80353a59857a",
+        "bytes": 67238
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-150-ba98896e24ab4fe5ae860414ac093167.response.bin",
+        "sha256": "37c8894e6999f8ce6606723432b33d31de0e1f0c03de55d6e5dfd64354d853e4",
+        "bytes": 52241
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-151-49325d62322d4498860ae000732977b6.response.bin",
+        "sha256": "edc3d3964ac10ac994195a403f35756a90241b0fae09b306a651ba6bd5ca7483",
+        "bytes": 41903
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-152-0bbbfb114274499bb058e6bb6b18f76f.response.bin",
+        "sha256": "5110c9832d9db2014a4ec10c8fbf1f0c02f9297f8cc6a65d8de85b2de141cade",
+        "bytes": 53895
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-153-e71d71ac4055407ea0bb19f3dfe191eb.response.bin",
+        "sha256": "338c920530a7d36d27a3aec1ed2a5c177d85bb1cd8541f2d13fee3596b703165",
+        "bytes": 42590
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-154-c58f8bc2fcf64e2fba71859bc074b97a.response.bin",
+        "sha256": "5d831bd0cba9f59aeb73463fc3d2ceca555ed1c2df0db3a5851af88290440d87",
+        "bytes": 49104
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-155-2198aca467e743669ccd9dea7cfc64a8.response.bin",
+        "sha256": "cf10238d56ed0d04dc60c6f03f7fd00ab51a8c06dc415bef310a0304ced6bb3e",
+        "bytes": 45032
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-156-0279451f502d4da2a8de2fef312f9245.response.bin",
+        "sha256": "36343ee69bcc8267dd77d9634cd3522419cff42058c259babfb8a0ea10c7be05",
+        "bytes": 42791
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-157-5cae93ca9c21420ea2465ab6fe751887.response.bin",
+        "sha256": "4035ed7ce87e0368ea4a6c80ed23e7d3b9d8c70f30911c1582944e9958332751",
+        "bytes": 43980
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-158-ced23a21b3224a3ea88b216cdc896aa6.response.bin",
+        "sha256": "1c3443d3064ca0dbd2683af86c3f8721a1b95c7a9df242acb8c36cb6345ced22",
+        "bytes": 38733
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-159-b4344679518c40de8a98b5a9ade81c90.response.bin",
+        "sha256": "dcdbafb1d4262fd3429b534018cf50a6e4c6e1b45a4b1e9ac8e4a9fb34114675",
+        "bytes": 42094
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-16-3ca1ab10607749af80fef2371f6f1296.response.bin",
+        "sha256": "d4d89d08c7b5b318998e1cc8f0770c5ab4e0c07312be40d03fb7964f7ce7f42b",
+        "bytes": 52174
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-160-b0328002f9ba4b21ac0c7ab3f61f21aa.response.bin",
+        "sha256": "fdb3d4bd61b753cda2fcabd3bc4a3f7de4bde5d911e7bda07aeb4b33164777d4",
+        "bytes": 46248
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-161-37888f8eff994de082e5be895d21c17f.response.bin",
+        "sha256": "8aad319db376060cca660525e2a5656f72492a438b2b78849bcad1de88daa1ad",
+        "bytes": 50156
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-162-487b8878cfa848f8afca03badf1376c5.response.bin",
+        "sha256": "4b55c93499847c36e848560035b4900f5c61e9b0578e7401276bcf2c14942da2",
+        "bytes": 48558
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-163-e9e91f2bfb86453cac4c44fe9b3468c9.response.bin",
+        "sha256": "9a483b973e059e3219a6d163275052e91a153d35031ba13a89aebbb5ea8632ff",
+        "bytes": 52101
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-164-054c330f58034532a51b5ecfc89cdffe.response.bin",
+        "sha256": "c29a5a2ff1b7d1a2b51a631dd4560a147e090e8d6eb2bd2f8d7ac20d018781f9",
+        "bytes": 39660
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-165-36ed502132314a7ab0bfee35ff5422de.response.bin",
+        "sha256": "ed0089ebbe97f75c81dcccf0ff157893bf4e10d79ff4cf11efd0546d77be7f31",
+        "bytes": 45996
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-166-08a308bbb0554ac2bfad3853501b1a58.response.bin",
+        "sha256": "84d31e99ad92967c8e0ece6d6894c5913bc5e3843d8e039943ba08cfd081df9e",
+        "bytes": 44143
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-167-d77240d861f849acb4da3c97ddca445f.response.bin",
+        "sha256": "a3e1ab3cc5d96199d22470267d414b6b489a88d5536869b6dea4bb7b6cf8b274",
+        "bytes": 46065
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-168-d32fb3330a3c4682a92b2eb304943b13.response.bin",
+        "sha256": "f3b3ae88fd73b839048a14bdee531c7cbf3e38d71db6dbe05538423d5849ba10",
+        "bytes": 44527
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-169-6444fb66aae04ad0825fc655b7964e01.response.bin",
+        "sha256": "3026e43b900ddbae2cbf47e34d97dff02556f1e74190ed1b1528994719ca874d",
+        "bytes": 52866
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-17-f967de30fdc8432b802884d440277f14.response.bin",
+        "sha256": "05751715961d207cdaa5f30b7a812461577174f528af2d2b8aa3196d6a0df260",
+        "bytes": 65548
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-170-5063fb5cddac4c8bb8e45dad32840a4d.response.bin",
+        "sha256": "38491cb576442f27e17671f21766446ed883ae74b51af87bca3858174c206ff4",
+        "bytes": 52238
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-171-4ed4b3a7bb1549578734410b15f14b50.response.bin",
+        "sha256": "3bffbe795157d9fdc71d974442c97b942e965ba7e2e3a7a245b89aa5c63257fc",
+        "bytes": 41648
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-172-2357c2adfd964b2e84206b470b0643b8.response.bin",
+        "sha256": "a9f06a5fde10b21f5b99aa7ad2f8ed42307ec3e37d0f521d338d566aa8756b3d",
+        "bytes": 52236
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-173-3d7cbe6e9d5a43da91b8ba400a8e9205.response.bin",
+        "sha256": "9a3d432ce3de16ab11e435ff482aec9673ad0b62338b60c771194c2f397e7548",
+        "bytes": 45998
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-174-89ef57d513494fbe85d325abd070adee.response.bin",
+        "sha256": "df9b12619db49c07ab764f45862997a59f5c08e518d1e0ccf9b1829c91ad384d",
+        "bytes": 43980
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-175-074f27505a04463eaa400227cc208a19.response.bin",
+        "sha256": "8b15f93f42e1306135df85f516234a5ec54d7af9a6ddd52ad950f62959445a76",
+        "bytes": 43728
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-176-47eabd0bd10b4896a05b211113f020d9.response.bin",
+        "sha256": "1f39c63b80a308bf12dec5f9bec7e1d2f052aa7f9abf61b114d93a0a5dfc303e",
+        "bytes": 49786
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-177-53fa48402d00485591fddaefcd10c815.response.bin",
+        "sha256": "d560beb1c6be66d63215e66075339ffaa71120a1919ebce3a5f50f00037a088d",
+        "bytes": 45542
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-178-3ebcc8a3a688465aaa5a03b347a02477.response.bin",
+        "sha256": "0950c4aa63488f284d462651f5de0f3f0ed19e135fbd067c6427913f5fa3c534",
+        "bytes": 51656
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-179-21dd0876e4b14002bccb8a5879b3c0ec.response.bin",
+        "sha256": "5e29a46f079e9b05b445e68d39a47d94a30c1ecacf6bd012d304fdb29a4707bc",
+        "bytes": 44970
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-18-b4aa6272bf9b4417a49c7080598820f5.response.bin",
+        "sha256": "728f3f66acf6a011eea2002d2157a541e475c43835ca9cd797582eb22b6c74ac",
+        "bytes": 46441
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-180-67880075495f45f5ac62defc25cfd990.response.bin",
+        "sha256": "249bdff0004e5d15d54b727ea9cf779f0f35b96bd2def00edb561da442f7b0c4",
+        "bytes": 41899
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-181-c15dac62dad046f2bec8281e9a00bf1d.response.bin",
+        "sha256": "4371853940a4234c9d4201c1a33beb010bca708571c92cd08fd017d0725cbc45",
+        "bytes": 42413
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-182-f68c44f6614d45a7a665740b4dd1d351.response.bin",
+        "sha256": "f0b54f2d7685356903503cbd1ccc96305da461259408744dab17196c62f86891",
+        "bytes": 43853
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-183-d6a4989182d947f8aae564f744303860.response.bin",
+        "sha256": "b99c7c9a91be6c18db1f19de2bb1561c7a74ca7e62969c025c56df7de5d38b86",
+        "bytes": 47885
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-184-d42bbce750b0486197ccef8a270b5217.response.bin",
+        "sha256": "e04e568649b5e35c4a433f7e686c3d11deab16cc2e0ef0978a1964183857886a",
+        "bytes": 45743
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-185-6e67b01d5915483796ff136045ce62ae.response.bin",
+        "sha256": "65657b336825f44d5cc54fc67c2f33c4227509ce2d08c8ec469e5df174ad831e",
+        "bytes": 46895
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-186-d4035649d90e4b9aac7cc718cc9d1b4f.response.bin",
+        "sha256": "38be5f86cb466d22c2976b2aa92fe4dbe650550fb5e0e7fe2a51fb6ac06cfd83",
+        "bytes": 48011
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-187-eb9cc68bd1994283ac68b73d7fc7b8e9.response.bin",
+        "sha256": "595220cfdfeed2fdff0d787e5c6197119b1eb6c6aadcc53cc472f33366d250e3",
+        "bytes": 53695
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-188-b437588bb91d41e6a77a218d4d128df3.response.bin",
+        "sha256": "76cb0aedc1b3028fc119bab37a86d35f242ca5ff1b9f499fa991b486cdf2efcb",
+        "bytes": 41838
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-189-e790f162db924b348b4ad1abde2e5559.response.bin",
+        "sha256": "67e36d5ca38d30bb1dbd9fe75a7f0758f875686aebb29872e1513d621b824359",
+        "bytes": 52173
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-19-091d459f9d2244068f373d1d691ccdaf.response.bin",
+        "sha256": "9d9f02d0696c1e24dd647f6a8f6ff6d7814dd8d418408dedc75656a3a2cf7dca",
+        "bytes": 44493
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-190-60c08fbebf824d5db3894466fe93f5bd.response.bin",
+        "sha256": "a411fb5424f97e545d005ee7c4c72ea7072c9a2b7d95851f979f40fd898d794f",
+        "bytes": 54255
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-191-a18eb989b87f46b1b4d73a2ce0a6d88f.response.bin",
+        "sha256": "c7146c6931ac1d3e481f669d9b642935fd1e1fe5db00cf29e2e0a92f0c4e4449",
+        "bytes": 56335
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-192-c2bbe6f6d1764ea8a089558ba6360fb7.response.bin",
+        "sha256": "d7a0f254e1d611d78342cb10037b38461c2d17678b844c00d11e30b4a7371bed",
+        "bytes": 50894
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-193-6dd4e77c4f56422a99f6f0dcce8944f4.response.bin",
+        "sha256": "e7c4e3bd6d13f8d0bedf724c4478f909e70092419bbc80c56060836ce7696d15",
+        "bytes": 43853
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-194-f2eb9f59a0754fbbbe13870d0f901bbc.response.bin",
+        "sha256": "bc8aa4af44451e6ed266172185c40d1b8a49c800472c9fa356ec20fb1c62db0c",
+        "bytes": 38420
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-195-183a68c5076b4f22bec526acbc6ad0eb.response.bin",
+        "sha256": "11ec6a0dcd8b36ad970b1fa3c017b2a28dd26c7b5b451c42b8aa0ca22fc4ad51",
+        "bytes": 44814
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-196-68a45694481145b480c4626ee73a173d.response.bin",
+        "sha256": "4c440b9a3238183c40f028ac66eb8ceb6e5f6efc02012bbb49570c7391174a6c",
+        "bytes": 43855
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-197-806552940a494780b5bb535860023d7e.response.bin",
+        "sha256": "627384e860ab1fd3d31589919e9a5928500fc7dc3df15c8aec2837a4ecf5582a",
+        "bytes": 43855
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-198-0f7b4bcf82d8403f8396ea502604afdb.response.bin",
+        "sha256": "e0787cc05f61b20fe656d3487db504f354895c6835a6e1e032a85709c4204b14",
+        "bytes": 52028
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-199-330dbed0d7c144539122a54f0fda9fe3.response.bin",
+        "sha256": "312c61ba2ab31e3a4b1eb2481cd7e2585ac1f2a68d9ab453d93bc1e6aa738e92",
+        "bytes": 40331
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-20-7961bf4230c74627b7f730b6cea5edec.response.bin",
+        "sha256": "ff0799be624e852b27ce06efb40cd913b99adc0e283cc970d10a7f65e804de6b",
+        "bytes": 53909
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-200-d487f50252ff4b81ab1d1c62fbb78551.response.bin",
+        "sha256": "ac9ddd87622aa9e13b7bf122e632b7d0c2e52425efcd7c38220f5d027909d56b",
+        "bytes": 46119
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-201-86b5f13476874e0db6bd66a7febbfedc.response.bin",
+        "sha256": "d3bee7e7fb96e2b6c9fc8b75df41d17dd999e006d933727ebbb71748793de52c",
+        "bytes": 48597
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-202-490630bc763641c4b360346196b03445.response.bin",
+        "sha256": "820d4e8299d72b7754bf12376b28a87f9c891f140f626c5102c4fcb600390a89",
+        "bytes": 44303
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-203-9f694809a6794efca8ef0b8f0c6b4d21.response.bin",
+        "sha256": "9941f0e6dd36abe51aef77db759853ab135ea5b985287d26bff7e5c314bf3be8",
+        "bytes": 37613
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-204-ef60a51483654de18372175193e95820.response.bin",
+        "sha256": "0563e86f4e6761de7705a60960c1fb7f499f3f436c246bcc934549116654573f",
+        "bytes": 41775
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-205-7ea69701b335450b81636ce613a5e092.response.bin",
+        "sha256": "2557d7e34428165b63dedd4fa5f6349a626fd796ad5db92559beb82f5c1f83d4",
+        "bytes": 50765
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-206-87072a1d41f94b0c8b45801360b592b1.response.bin",
+        "sha256": "e7839a1a9818a90d4c069c545e3b03955b82ed990a175d3bf245f2935b57a13f",
+        "bytes": 44301
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-207-82444aff1fd9401199a4f5e75900351c.response.bin",
+        "sha256": "2059f1900e22ae62d2fec77763db81688616d883e66a6f9084b066eeeb7bb940",
+        "bytes": 44079
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-208-5390ecf212fb4629a3d99711f0ee85e7.response.bin",
+        "sha256": "0989751ccc120cc162a2665e51ebe0809fdfbfbeaaea2fa50063e3cd77a858ad",
+        "bytes": 52171
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-209-f3217c8e98ff4210a36de8ec45305589.response.bin",
+        "sha256": "06c8b304dd8020799098d09400828226822813418e7901cb2b76d61bd1e39583",
+        "bytes": 40752
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-21-3bec7a596d724246b70ba45f0e504012.response.bin",
+        "sha256": "5d98cd76dbe51f87c2871388b17d5b9c1bfe338827efb51fafd83047a120ca72",
+        "bytes": 42031
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-210-b0c47728877c40e9a8a77f45ed446880.response.bin",
+        "sha256": "537a5be895d5433da30c9f101d8a0e835003f878903eaaa31cf25945aba58634",
+        "bytes": 52239
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-211-bc56fb828cad47da80ecd385c3183ea0.response.bin",
+        "sha256": "8b116aa155603f572fa35c96bfc471dedef9a91cb4ad98dfacc8089f4a13c1a0",
+        "bytes": 41900
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-212-b0714df137ca44b59657a6afdb7d1259.response.bin",
+        "sha256": "ecf57104acf684c41ff466a2117f3f91732d4e481a3b980aa7bc144745b81541",
+        "bytes": 43794
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-213-ce2ae6ecb2ca48e593ec6fc468509223.response.bin",
+        "sha256": "641d29da60d1c70a048367d9eb92d2a8935cb58196f285c790f6899534ff4f08",
+        "bytes": 54502
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-214-24cc8f506e0542228cf3c0ac15f940c1.response.bin",
+        "sha256": "3e3df98e1751a66cba1f0e45fe267cb4264c7b1c01a9ab4ed334316452ae6ccc",
+        "bytes": 44039
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-215-269bb5b482ac47fd985ce5efdd377907.response.bin",
+        "sha256": "830a7ccb9a0f72214235b8ee28209df12541e6bf2f6cacbe53a44e5ca445e90c",
+        "bytes": 51924
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-216-c83b2c194275449e8d8b0d6705786d41.response.bin",
+        "sha256": "be82e9e6c18e50fc68a41e3d6771e8772cf157b085836bc58b53bb4fdc4059dd",
+        "bytes": 42654
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-217-579a7aa2309842258af1531ff98065c8.response.bin",
+        "sha256": "34d99ab756b67c95cedc009b1d47ff486e38989d506fd801649a6868efb1dbff",
+        "bytes": 62576
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-218-ab0a1cafa6604ded96b91a0738e0a6b5.response.bin",
+        "sha256": "55e1554bba08695de72b81a8760e4ba8ec17756696317cbcc771abd91a22cd33",
+        "bytes": 52549
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-219-f61ce65f543d49c3b9312ee33b8937ec.response.bin",
+        "sha256": "72a89cbe5365c38b224d8fef89c955b747eeee1f91a6b72d0af766c4c9f46962",
+        "bytes": 47985
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-22-b84aa8b3bb48431a914ae96e1ee78315.response.bin",
+        "sha256": "84085e671f02ce3ae261f31f52a0ee1772ed4e7e3920779011ead44d2d5bb257",
+        "bytes": 52368
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-220-8fec8b4e5234482c80866741605a2119.response.bin",
+        "sha256": "c4cf86c3b92ee97076c2b06a70a279792e16881aeafd6ecf0d280c68dce039fe",
+        "bytes": 55470
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-221-b50ba508703c4e01a821849e2a2d12ad.response.bin",
+        "sha256": "4c985697e7f68b845a9a51b4e79c18ac2d57908dd163f204aa469408ec04c943",
+        "bytes": 51389
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-222-9e7d927717c64b04a8c234215e5d9a85.response.bin",
+        "sha256": "345d94d42dc9a66c3dc0c56a6c8de892380de8fd4caafce5263a8eab94132d88",
+        "bytes": 43918
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-223-e07bd0affd5e42d4903085fb54021b10.response.bin",
+        "sha256": "60e79b625b4f0bb06c72602b10acab12600624e67a59e97e2e93a9dab354e0c9",
+        "bytes": 40783
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-224-5bcda28845854afc85346ac7594b6a62.response.bin",
+        "sha256": "e556ce0f296818b124be1d345fde81e9b53bd6d966b2e174f68e2f4d72e01c60",
+        "bytes": 46733
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-225-63d93aef788a4ff58047832493e8f59d.response.bin",
+        "sha256": "31d5e91f4f64cf4fbc48259e029cb8c9b1f727185b5c51c8787141eab918a1f5",
+        "bytes": 47792
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-226-f19a34de3a794dd4bd228a1d78926d83.response.bin",
+        "sha256": "08892257945d2b77a9d97e921c846f3f04203d69afd5248ac2cf9396216b1178",
+        "bytes": 54318
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-227-f6afdd89cf3440f5896d069f6ea6097c.response.bin",
+        "sha256": "e983693e40a038fede56ccd32890cc1eaccf49e7e3eab9e2ae4f3eb67b34c922",
+        "bytes": 52174
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-228-da19764caf6b4b10be87bb1d48853da3.response.bin",
+        "sha256": "9a06392e134657cd44be2c118bad43265645ae44493fa06939b5f7acb40bcf1e",
+        "bytes": 54317
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-229-bd540036d7494075ac8ff8265b6b3a86.response.bin",
+        "sha256": "c3120ab607ad837f36fdd3365cc23d5dcdeaf3b34ef4daeb174d875c854d4688",
+        "bytes": 42028
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-23-1fc05b27675c49769463060d617048b9.response.bin",
+        "sha256": "acc54f4437fac8b8fa4bb97b3936287da4acc6f1c5f6553946a5731026ebb1f9",
+        "bytes": 44109
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-230-b241de0366d546b5b7e15d99f6db9976.response.bin",
+        "sha256": "cae1b078bf20e8e738e7ae512c8d3b471c78de17d5bc467da02c7bfe04162897",
+        "bytes": 44111
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-231-f84797491f0544768eb3c483b2bba212.response.bin",
+        "sha256": "80a4430cbb915c7b6fa34b7c301fd9ea2490e5e55fbeeebfd2f391b11e1aab47",
+        "bytes": 45869
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-232-748bb010214b4dabb06efc945aba7938.response.bin",
+        "sha256": "f16406a53082e1ed7db712d3c974b6c3791d4959c438e236c60968d92f79c3fd",
+        "bytes": 47146
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-233-38a9d32b1f0547b8b23869bf44dfa6bc.response.bin",
+        "sha256": "feac73581a5af1ccd661546721aafd5671b31b7543afe61910d72c4ec473d290",
+        "bytes": 54725
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-234-16a11b0ab99b4d349c7d547270514d1c.response.bin",
+        "sha256": "8f01e636dc48e2d44860ac5989a5d24ace1f4ab82fb7c1f75e0a94c7c612be7b",
+        "bytes": 41774
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-235-95f3c7169dac4317ac904ddfd87dd324.response.bin",
+        "sha256": "5225ad5be89caf3ed069c4bed93c31ac90341dda77151109ab13a74764403d30",
+        "bytes": 43920
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-236-37312d30f8db4ef89a55e3a2fdef0455.response.bin",
+        "sha256": "e9ecec2d5f157abae0882bb7e6cc36db7298eed81e30863dce70e0e6c2c048ea",
+        "bytes": 51126
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-237-87af091fb7fa4b78b84afaa5bfe8ef08.response.bin",
+        "sha256": "14523f1092e0b182359ce1001dd5aee1f80ecb438edaf022211b92f2a154f38d",
+        "bytes": 37793
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-238-e18a0f036a634392ba195686aa91621b.response.bin",
+        "sha256": "59f1bc0dca037bf2bf8e6d95b47644461585c49503237fe0501c4b9725596f2e",
+        "bytes": 43918
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-239-b385d289938c4ecdbf38464d3e4eaedd.response.bin",
+        "sha256": "902a05a20ded47587138ca6eda2cc3f50aed4c29c3e236942679682cd415205b",
+        "bytes": 55671
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-24-045575af69ec4a5aa901b059ef6d82fd.response.bin",
+        "sha256": "f5c13bbfbb0b5ba6971cef439a21f6326b886918ade43044f1e150d628374973",
+        "bytes": 43851
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-240-353f5253cbc048d4988294e5538bd06a.response.bin",
+        "sha256": "c05e0ee4a2b2a9c01c8adef70a68ca6368f615dab151b21d40fa4ca3af13b38a",
+        "bytes": 41653
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-241-9488199b6ee047e995fa91c161cda8d2.response.bin",
+        "sha256": "b18c02f9b154de1ec8701543684c073cbf46227ff45a3157298cdc8cdc525072",
+        "bytes": 52171
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-242-e6c26546a22e47a192e15e255b7bd494.response.bin",
+        "sha256": "59cdd37bb64a623cac52fb40a2fe126ad43cd5cc48196e95d6e5470b6da905f4",
+        "bytes": 54018
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-243-a13165baf12f44a9b8d0f8101ba8b609.response.bin",
+        "sha256": "2d4752546ea5c699ba8f1a34cbd785d4f53ce0ec72c0509f09c7b2c13425aec7",
+        "bytes": 52232
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-244-12e17ac2977644eca5c9c6cdd603bfc7.response.bin",
+        "sha256": "47fcbf58b7a4b9c1385010f2daae725acf254ceb916b548ac65e6bf000ba44e9",
+        "bytes": 52075
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-245-bb9ea9edc3c84f62ae01b5c11a407d39.response.bin",
+        "sha256": "af7ba3c4817309e1b6aaaf4f4912ef607ab12a6b112724182da50807ff9354b6",
+        "bytes": 56332
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-246-a6507560a2314bd79980d49a85b2033c.response.bin",
+        "sha256": "34b4815497bc9d9e4fb9b8ca71560b54d492ad4160c1e9fc98f07ee6e8d340be",
+        "bytes": 44975
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-247-501af78a3bc84d2fbccee5f07134a421.response.bin",
+        "sha256": "418d2e61bd2429ad8cc6d4ed0ef962ea32048287edc8c1218df4d8de9d48cca8",
+        "bytes": 44303
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-248-8accc8ac78594802bdf514dafd509ade.response.bin",
+        "sha256": "4d3dc2f7a9f2d282f7eaa449b29738d1a34ab8f992208f2af66d9661821eeaa5",
+        "bytes": 52520
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-249-f961c5fd668a4dbda08a1ea69a49ced5.response.bin",
+        "sha256": "aebf4ea076ddda372a0c08c1b662d1801dd93afbce7c25e458791b97f15b11e8",
+        "bytes": 54223
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-25-2e0c57694edc45d5b55bb8c028e0c227.response.bin",
+        "sha256": "4db85b9a642cc4beb299af5e6d48c8e0df71b8c9a697ed842d8ee0a644f57577",
+        "bytes": 54317
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-250-0dda0a2d110446b2850a7f7c83770091.response.bin",
+        "sha256": "ae73586e3614a458c6a3df641207e82481a5543a66f4df99d04928ba4bd37bb4",
+        "bytes": 52828
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-251-53bad3636d8e42d59fa024ba37237da9.response.bin",
+        "sha256": "bac2b67793f1a62791f76d0c7c1e5044914301244d939e4ae6dcbede141fcebf",
+        "bytes": 46957
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-252-f3fe040debe54e5d89538709c4227291.response.bin",
+        "sha256": "2418fd078128b587c3e18f25a92da504ca89f790cfe8896205e3355d746faf3e",
+        "bytes": 37865
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-253-660cebfd02ba4ad88f41175c8f8bd1fd.response.bin",
+        "sha256": "f1bff64358b0f0fd5092cadc3f6f8d7513b37497a9966927f89a6194a024fff9",
+        "bytes": 44546
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-254-01f548594a334bc5b69e3d96a3b37f0f.response.bin",
+        "sha256": "6db0384f16dd721a8a5777cd4a57d154cb107d27a9933d0f8068e651457cd007",
+        "bytes": 48013
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-255-0e61019d969f458ebde1b8cfd35908f1.response.bin",
+        "sha256": "51f53d8704badcd0179a9ebcb2210541e1f90118d6598a19c25790d4119ac088",
+        "bytes": 42272
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-256-514010562b4c48529da2bb3bcadc0cf7.response.bin",
+        "sha256": "9a47b57fb812a313ae6eed79b56081088204647e75615a7fa565037f6ac20010",
+        "bytes": 54190
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-26-60d33cbfa1184668885db173e8587192.response.bin",
+        "sha256": "d0825067a8a036296765098ededafc04a644af889362e169502372c540343811",
+        "bytes": 54255
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-27-b09e0f77097b4b8bb965b2939128733a.response.bin",
+        "sha256": "36e7f0eff43c9796a5b26106be360ef24d450f3bdf8dc293036ca3a29158b795",
+        "bytes": 38688
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-28-751722b3a40942a199794916c5b5a59d.response.bin",
+        "sha256": "e3fcd557529e1d64dd7c601fe6dd55aa2769b5ac4b13a8fbb5c4cafc8e1e941a",
+        "bytes": 44544
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-29-2eb6fc51ef73450c85fa347e2db964a7.response.bin",
+        "sha256": "26aac1f8f813a7e758ca317f3256e7b00982a2782faa25f44b0c36bdd5b6c4c7",
+        "bytes": 43856
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-30-9bdcff29150f40beb324aee69b126835.response.bin",
+        "sha256": "74a8340e7e64feed8b80f0ebaced6e0eb35a7730d1721f285c99d1ada06e1f41",
+        "bytes": 42735
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-31-0e1fffa1cc564f108de85eaf71e113c9.response.bin",
+        "sha256": "26e8ce25a7f3bdded91546c4b3144ede6e98d0aee4b864706ce1a8a44eac2529",
+        "bytes": 44172
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-32-c320593865164893bb6339fc52c3af6b.response.bin",
+        "sha256": "cb8e0942255c5cafec726808c0c781c26881ecedf30cc19e570077394f8614d6",
+        "bytes": 56399
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-33-0d5dddc8e7c4415ab8f1bffdb6e47354.response.bin",
+        "sha256": "63121afcd4cb0ce21dc357052d19f03586eaf723b9edd4fdd8bef2a46dbbe066",
+        "bytes": 54320
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-34-6115dcbae98f4d78a3f218233781e7a4.response.bin",
+        "sha256": "0a2248cc0e0c662ac57947fe2edb7da302628320ec42592e53ce1059fd5301b8",
+        "bytes": 44552
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-35-ff712803d0b84c94b91b737ee100ee1f.response.bin",
+        "sha256": "f2338e821166dd53575e58943bdb8e2563d8171934ed5865a5a722bd81fd44f2",
+        "bytes": 42150
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-36-5d99ea22e04e4d32bc78c8b886d60ad2.response.bin",
+        "sha256": "04ce793eac248769387f0887cb556a0f963029648e4998cfc1314b693f2152aa",
+        "bytes": 48014
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-37-af139a1f38a74a058288eec8d220010c.response.bin",
+        "sha256": "12d73ac1a53b915bd45ca927f696d6d5171477f2773c3ee3adc52f1e313eabf2",
+        "bytes": 53261
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-38-b3d6db6220d24b6e8523aae756dbf9ae.response.bin",
+        "sha256": "5ec807c198ead06faa2b8d03584276c45dbd1aa1c0d790d4442fa983d91cf4ce",
+        "bytes": 53133
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-39-5bc2094cadf24204b5e6c02d24302efb.response.bin",
+        "sha256": "35c662c81462d34363947dfd0e122e8b33a1966c38b2335e355b1602ccb4ff26",
+        "bytes": 41903
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-40-09cc2ca865724f9ea9549ff7865e47e6.response.bin",
+        "sha256": "fe0e64abc01d02c65edd4d6c8d34ebfb6aad5ee76fdd35579c0259689e1d9722",
+        "bytes": 48080
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-41-793d1f4725014b0b8436b07aac851147.response.bin",
+        "sha256": "39e66f5e66472a19349ee84440c9521691b1e8fa46e4d000dc062c5b19801eee",
+        "bytes": 41899
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-42-3e8bd9ac04924a2ab99ebea7bbe353a6.response.bin",
+        "sha256": "4df6c34dfe91d587e3e2f34948a28a54e44ce9531bf3a07ae9928945314d01ea",
+        "bytes": 43916
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-43-6f4ad05cd35f4013882739f2399432e6.response.bin",
+        "sha256": "ca6c68a561cd3d0790f5c86456f44db8b55b4547af5bbccbaa7ddb085047d652",
+        "bytes": 52175
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-44-f00c2bfc95234c50a10e63b95a6114a2.response.bin",
+        "sha256": "62226ba08246f7f92daaf38ec47d94fc6793d8535620031fb20437b34ebc7939",
+        "bytes": 42643
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-45-88eec209eb304bdd8ead4f549751971f.response.bin",
+        "sha256": "ef94c44b3926097ad2654b1b69eebd886856da5ed0fd3bc7154ccf7c624109cc",
+        "bytes": 54320
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-46-c7193b8abbd6415fbc6d5e10d3bcdab9.response.bin",
+        "sha256": "687e80873f46360a346103c42e8462feb9e0e6fd672995b8de038c4187f70268",
+        "bytes": 48976
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-47-c07673c652654ae3a7fa3b7c54154641.response.bin",
+        "sha256": "000336fb46247b71e459b6eec1e1983d0ed78b81f25727ff0b489ae54bbae2aa",
+        "bytes": 39627
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-48-51253d8143b346a7a31b33d9afeadd34.response.bin",
+        "sha256": "21f03e04bb2c826737c364e4a6c13365b7ca3f93b9c287e554f4b910278f7c43",
+        "bytes": 50095
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-49-1c927cf75ac94baf8420c0c087d36e22.response.bin",
+        "sha256": "560c73c3dc796372207a0d1f2b1b0875061d9f0cf0060f340854e1442f450809",
+        "bytes": 43423
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-50-323c43432e7a4cdca54e46a58ecaa7e8.response.bin",
+        "sha256": "40aba00ab17adb00cb24b28d1625da65541d710d12c5e99654c4ca39bf24c69a",
+        "bytes": 48078
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-51-1d5deb8060e443ad928fad4050a2fde1.response.bin",
+        "sha256": "1cfb090c299eecd7c2991d01691a0eec472a585939c19fba1706d07112c4959c",
+        "bytes": 54188
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-52-377caab0c002431f9e07e53f614e8436.response.bin",
+        "sha256": "e33c9a29043c57d5d658b868234fc9fedf73e5c760e73464c7385c2c20210f48",
+        "bytes": 42286
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-53-c8a188142ab44947a6c255055ed3d052.response.bin",
+        "sha256": "f3997b64074b76f967fe7a9551dc2262ac16e4b663a4a81485bb2bd62f36099c",
+        "bytes": 44103
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-54-ad54fb582c7e4088ba555c541e789ffd.response.bin",
+        "sha256": "3e0d08884d13ba5544c59f0163b6a7bc8e8a290494c08c105240e1bc32de2b80",
+        "bytes": 46627
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-55-7c1f27e321c24af085823afe6331f684.response.bin",
+        "sha256": "4e72478b38edf130bde351f7370791a8464bc52547e85aaedf1757b91011e0d0",
+        "bytes": 49221
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-56-adb852dad9534490a3b441f91c39d3c1.response.bin",
+        "sha256": "8e2282c376f79df4b4654339e39b7ee6293bd2431d53d1b4a4fdea6419882c69",
+        "bytes": 45935
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-57-248749ce2f824fcea824ffaee2129729.response.bin",
+        "sha256": "0ad6f996892ab8bf379d6bf0ec32680a54cc439e65b604df17ad747420a3041a",
+        "bytes": 43663
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-58-b0388ff3e7974b6298ee24ec68638913.response.bin",
+        "sha256": "725e4ce91749418a55e5fe1543429c4ad6151dc3a311877a88b564d44f3ab0ad",
+        "bytes": 43664
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-59-0da12d8ee9f04df6909cc6769201ca11.response.bin",
+        "sha256": "1e8d55e8d22d93a202ab472b73e135f75bf817157dd4ff54769cf2f7275b2084",
+        "bytes": 43852
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-60-61d566dd2d774d528673e6a86f10e6b2.response.bin",
+        "sha256": "c1b0366e1589630281644cfba96e8726a9be5ec1f946ab8e4921b9971f7b2efa",
+        "bytes": 52111
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-61-866cf87974d84b23a6395da6bd13ef11.response.bin",
+        "sha256": "45491c8d12b78255719fafe7fe3cd31664a13ff06c5f6acc03f59df88f39091d",
+        "bytes": 40620
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-62-25809853afc346ec9c2d9df42cb1f79a.response.bin",
+        "sha256": "ecd717035f0aa73c7d456f64db7f92f18b9a19e0c6492c2b2ef92d59898cd60b",
+        "bytes": 56977
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-63-7a7a8b577e5842ce82a3902e43a6eb17.response.bin",
+        "sha256": "db724b1bce8291c39382116a2636b0f87809f8995e96f5ed2fddba34745050b8",
+        "bytes": 59504
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-64-9b22e76eea6d48e58fd408cdd5dc0bc8.response.bin",
+        "sha256": "3bd57fb77ebe9ae6a4a31dc7bc651879ad4f05452bbedfafc141b2f561929585",
+        "bytes": 43917
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-65-901ed3bae3ea4f0da1de21f521a80f88.response.bin",
+        "sha256": "6f765b69f214c8712075e2db19b0d900883f811bf57ec2d8d2dac14a99cea692",
+        "bytes": 43851
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-66-ad3f0877e4f340a5941809bde2caaec1.response.bin",
+        "sha256": "c2c0483ad1a02dfdfea86c8e77176a6460fc430644df05727972a9b6ad663b24",
+        "bytes": 52173
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-67-a0fd8f7d6b5b44b388a590305c02f2eb.response.bin",
+        "sha256": "00d515bef650ec10dc6f4fdbc9edaf02a46818913ce7ede5a60f2df1e911e108",
+        "bytes": 50030
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-68-573f309e93564b8faf0fe875017e333c.response.bin",
+        "sha256": "4de3297ba967992db412f5d451dfbbdc22bdb100379686992774b4a41ee35f1d",
+        "bytes": 43856
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-69-131c5fbeda48464da8408b6761f3bb6f.response.bin",
+        "sha256": "316fad24e70092c1e2a0357bef0853974bb569a23a2b7c1aa80607d729af76ae",
+        "bytes": 43856
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-70-3f728b282ebd4844809c54c66079e998.response.bin",
+        "sha256": "f86393be7e04d484264a41abbd4b470816c7fb597f68ddc3c115ab94692d6ef5",
+        "bytes": 52172
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-71-8e3fa1c882f3438a8a61f72e8ec86fca.response.bin",
+        "sha256": "b1ad069ddeda8916611c6c87fc380d78b101fccf14eefa8bee605886d84428dc",
+        "bytes": 53741
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-72-d762fb4edb604f23ada8ce3fe9d4a530.response.bin",
+        "sha256": "2b50709fe0dc0369849600f456b3f694406301419e52c025681b40d944367726",
+        "bytes": 45805
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-73-93ec7266e94c454194fa63b17cdc150c.response.bin",
+        "sha256": "e78ef670443df7745aa9f33632931c3016e448da07dba040f79ecb61bcc7c422",
+        "bytes": 44170
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-74-59d96b76203347d8baa592b2e5b8034c.response.bin",
+        "sha256": "339f7c56b7ffcacf79697a2fdd6b570afce81d511a7621df2984509970da8775",
+        "bytes": 45994
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-75-14bf041ca0ee427b94e12d798062a1a8.response.bin",
+        "sha256": "ef1805dc162150918e34a328b01f76df85a27098ab0b39c6a9af642aacd65fa8",
+        "bytes": 43357
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-76-8b26841461884045bc034dbb6abe0e0c.response.bin",
+        "sha256": "93b3b6efa4061b19bcd3b14eb890c6938908962de007f934d480de2f54dfc1d1",
+        "bytes": 41838
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-77-e6dad17a06124ab1a0205da5830817cf.response.bin",
+        "sha256": "f480f49200871bf16a96c3fad388a4d9f986084408c24a743541fd79b8d9844e",
+        "bytes": 54722
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-78-276694e761864d99adbd2ff27ee6856b.response.bin",
+        "sha256": "e1a9222976e6f3129cd4191d0545ac45c0a5c90360df4cfb6f1016775d7cffec",
+        "bytes": 43473
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-79-30c49a7d95574733a0ca1bac300b34c1.response.bin",
+        "sha256": "cdacd1711bd2b086995931c7a07926684665b24f565f4e0b993afddad37c9d87",
+        "bytes": 48969
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-80-556e4c52e7b54eeba4aa9abad7ee27e7.response.bin",
+        "sha256": "5c07ae693ac60c57039ed431871a083e7eace6b206ed4ef7f9a7b2ef45f00a5a",
+        "bytes": 41709
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-81-7d884302e4c04787be85e286bb19acd9.response.bin",
+        "sha256": "e5b84c5d86ca48cee915e3369dbf8b0ae5138fd124301495cfc9b5b95fb1f0d8",
+        "bytes": 40747
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-82-740fde355f1a4b2cbcbcbc3f049742c6.response.bin",
+        "sha256": "dfdeedc0e8fe47bf6f997f7663d34ede8f9defdf66f8d393241bdf350d590ec4",
+        "bytes": 51981
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-83-49d5542868354a168fa5396d978760f6.response.bin",
+        "sha256": "8a72389f97221b0cf47872dc5a6343231514880c94540ed910cc087dc3c2f1a2",
+        "bytes": 43983
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-84-97b3c0b50adf4e07b78d439ecbd37599.response.bin",
+        "sha256": "a3a27cad482e33acac6407aedfb76c875851b55849096fc17b08d9ce6d175e85",
+        "bytes": 62124
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-85-b820b67110fe4ac9acc10f35d17a004c.response.bin",
+        "sha256": "6b05a0c9786e94cca5a32088de5ebf2fe6aa467db10c26593c4bce14da8c937f",
+        "bytes": 43854
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-86-03605ad8997d4ff09bab2494b27f71b7.response.bin",
+        "sha256": "206f8bd51e60b2af40b6185479ab935f7a76c098fcdd5aef197b1a3459436a34",
+        "bytes": 45743
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-87-755a43a7ffce48c3be6310d44e142374.response.bin",
+        "sha256": "67fa8ee3c0be1edc668394c821d3d991ce12b6dc172dc7d7789d8334e6bdf7dd",
+        "bytes": 41709
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-88-28e53f1c71d34e11b25e60b79128367d.response.bin",
+        "sha256": "47894d4b5791565a91da24b7f332918481db8792a3536e2dc4e6a156963a7dd1",
+        "bytes": 50016
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-89-8747c65118b54a79ad283d20d4c63e93.response.bin",
+        "sha256": "c7f1471066216a40bf47487f277d25e648c0d2bccdb124e75a5e91b866af61d4",
+        "bytes": 37678
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-90-847e92d4508e491087170cec6c830361.response.bin",
+        "sha256": "42e7c936a396341a919c5298cdcc4ba480c9c9683f8ee8c583503372dbe17ed8",
+        "bytes": 48665
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-91-21f7bd30f2dd43d18dd2d122a6a22a58.response.bin",
+        "sha256": "78339350d2bc3aa97662cf2cffebf7c4c16c1de163f30f15b9db4871235cb98a",
+        "bytes": 54255
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-92-94ae0275987c43f19edaff93a8a44138.response.bin",
+        "sha256": "8d427a65d33523f9c274aaeb6ddfc6b787bba2195207ea6f9c908eb1e66a1d2e",
+        "bytes": 54318
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-93-c903e5905cfb4acfa3de5fdf8dab4606.response.bin",
+        "sha256": "2cfd7c7aa83b8651fa622cb6df0d1d44f86f3e02f97283bc32da045b003e6ec6",
+        "bytes": 45848
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-94-85d8d02e23a64a9e9c2f3b45900b6289.response.bin",
+        "sha256": "96e144054d6518da25ec8e30c1eb9637ca11ecc6292eab6d83c00f8a4a897a68",
+        "bytes": 43918
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-95-e5a6b322f89d403bbf7d20fd0aa6a1d6.response.bin",
+        "sha256": "2afcd95f4409d78e4790610e25c6b1acb1e7f1dc34aa9704c86cf2ef28e5b30d",
+        "bytes": 39788
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-96-0c8e7e6ccc4d4fd5ba61d9f4d4fad45e.response.bin",
+        "sha256": "c6d726173f93c5baf492dc90eda07ce05389e22edb3e6d2d4aac65fb437ded8e",
+        "bytes": 51731
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-97-71fe39b9b9264418b9acca4da074e889.response.bin",
+        "sha256": "41261d08512eee14998c9a6ee8293d5ed306a54b99be9443f68071d9d1593115",
+        "bytes": 47943
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-98-5b600ad34fef4e159b24f873491fcd74.response.bin",
+        "sha256": "858194d6dbc66a28331932715b8b35fbbd4ea2f01132edca9b1d105108e56c38",
+        "bytes": 43855
+      },
+      {
+        "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/raw-http/http-99-cfe8eb5c5ed140f2a7525f4aa43febd2.response.bin",
+        "sha256": "887a0c7a615dd305038b7e3a145ef7c5d349c34b15c01841b538a2c708b59d9c",
+        "bytes": 41708
+      }
+    ]
+  },
+  "profile_stop": {
+    "started_at": "2026-11-09T17:31:38.320038+00:00",
+    "url": "http://127.0.0.1:31341/stop_profile",
+    "timeout_seconds": 30,
+    "payload": null,
+    "status_code": 500,
+    "response_body_path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/profile-stop.response.bin",
+    "headers": [
+      [
+        "date",
+        "Mon, 09 Nov 2026 17:31:38 GMT"
+      ],
+      [
+        "server",
+        "uvicorn"
+      ],
+      [
+        "content-length",
+        "21"
+      ],
+      [
+        "content-type",
+        "text/plain; charset=utf-8"
+      ],
+      [
+        "Connection",
+        "close"
+      ]
+    ],
+    "body": "Internal Server Error",
+    "ended_at": "2026-11-09T17:31:38.323651+00:00",
+    "already_stopped": false
+  },
+  "shutdown": {
+    "status": "SUCCEEDED",
+    "reason": "bf16-c128-torch-final",
+    "started_at": "2026-11-09T17:31:38.323766+00:00",
+    "scope": "server lifecycle outside all benchmark measurement clocks",
+    "gpu_release_required": true,
+    "launched_pid": 717874,
+    "identity": {
+      "pid": 717874,
+      "pgid": 717874,
+      "sid": 717874,
+      "start_ticks": 243206992,
+      "state": "R"
+    },
+    "signals": [
+      15
+    ],
+    "signal_targets": [
+      {
+        "signal": 15,
+        "verified_members": {
+          "717874": {
+            "pid": 717874,
+            "pgid": 717874,
+            "sid": 717874,
+            "start_ticks": 243206992,
+            "state": "S"
+          },
+          "718598": {
+            "pid": 718598,
+            "pgid": 717874,
+            "sid": 717874,
+            "start_ticks": 243207605,
+            "state": "S"
+          },
+          "718599": {
+            "pid": 718599,
+            "pgid": 717874,
+            "sid": 717874,
+            "start_ticks": 243207605,
+            "state": "R"
+          },
+          "718600": {
+            "pid": 718600,
+            "pgid": 717874,
+            "sid": 717874,
+            "start_ticks": 243207605,
+            "state": "S"
+          }
+        }
+      }
+    ],
+    "gpu_observations": [
+      {
+        "at": "2026-11-09T17:31:44.580991+00:00",
+        "processes": []
+      }
+    ],
+    "last_owned_members": {},
+    "group_released": true,
+    "known_pids": {
+      "717874": 243206992,
+      "718598": 243207605,
+      "718599": 243207605,
+      "718600": 243207605
+    },
+    "owned_pids_remaining": [],
+    "gpu_released": true,
+    "ended_at": "2026-11-09T17:31:44.581002+00:00"
+  },
+  "overlay_verified_after_cleanup": true,
+  "trace_validation": {
+    "status": "OBSERVED",
+    "expected_trace": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile/bf16-m-c128-a3b0f3ec142a468abaf2eef396d4f803-TP-0-DECODE.trace.json.gz",
+    "num_steps_requested": 16,
+    "boundary": "Scheduler Torch activities only; step batch labels are host arguments, not device occupancy. No performance or exact-runtime-family closure.",
+    "trace": {
+      "path": "/home/guorun/Projects/TierEngine/runs/jobs/20261109T173034-40f40399a3/attempt-1/bf16-c128/torch-profile/bf16-m-c128-a3b0f3ec142a468abaf2eef396d4f803-TP-0-DECODE.trace.json.gz",
+      "sha256": "09e8dcb9352c1809e05b10b1673420c543a12c5ebccdc57fc864c3ad4372e4b1",
+      "bytes": 410050
+    },
+    "cpu_operator_events": 3686,
+    "cuda_kernel_events": 8560,
+    "actual_bs128_step_labels": 32,
+    "decode_step_batch_histogram": {
+      "128": 32
+    },
+    "reason": "CPU operators, CUDA kernels and actual bs128 decode labels present"
+  },
+  "ended_at": "2026-11-09T17:31:45.153675+00:00",
+  "gpu_release_proven": true,
+  "lifecycle_seconds": 70.1666522026062
+}
