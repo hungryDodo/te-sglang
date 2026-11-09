@@ -1,0 +1,101 @@
+{
+ "trace": {
+  "trace_sha256": "09e8dcb9352c1809e05b10b1673420c543a12c5ebccdc57fc864c3ad4372e4b1",
+  "step_spans": 16,
+  "step_labels": [
+   "step[DECODE bs=128]"
+  ],
+  "cuda_graph_launches": 16,
+  "launches_inside_each_step_span": [
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "attention_launches": 448,
+  "attention_launches_per_forward": 28,
+  "attention_grids": [
+   [
+    159,
+    1,
+    2
+   ]
+  ],
+  "attention_mean_us": 595.66,
+  "attention_ms_per_forward": 16.679,
+  "lm_head_launches": 16,
+  "lm_head_grids": [
+   [
+    8,
+    128,
+    1
+   ]
+  ],
+  "kv_bytes_per_token_per_layer": 2048,
+  "implied_attention_bandwidth": {
+   "M=64": {
+    "gbs_lo": 112.9,
+    "gbs_hi": 126.7,
+    "feasible_under_273": true,
+    "pct_of_peak_lo": 41.3
+   },
+   "M=128": {
+    "gbs_lo": 225.8,
+    "gbs_hi": 253.5,
+    "feasible_under_273": true,
+    "pct_of_peak_lo": 82.7
+   },
+   "M=256": {
+    "gbs_lo": 451.5,
+    "gbs_hi": 507.0,
+    "feasible_under_273": false,
+    "pct_of_peak_lo": 165.4
+   }
+  }
+ },
+ "source": {
+  "capture_list_max_bs_64": [
+   1,
+   2,
+   4,
+   8,
+   12,
+   16,
+   24,
+   32,
+   40,
+   48,
+   56,
+   64
+  ],
+  "capture_list_max_bs_128_head": [
+   1,
+   2,
+   4,
+   8,
+   12,
+   16,
+   24,
+   32
+  ],
+  "capture_list_max_bs_256_contains_128": true,
+  "capture_list_max_bs_64_contains_128": false,
+  "memory_hook_materialization": "decode_cuda_graph_config.bs = generate_decode_cuda_graph_batch_sizes(server_args, decode_cuda_graph_config.max_bs)",
+  "base_runner_capture_source": "capture_bs = list(get_exec().graph.cuda_graph_config.decode.bs)",
+  "decode_runner_max_bs": "self.max_bs = max(self.capture_bs)",
+  "replay_predicate": "cuda_graph_bs <= self.max_bs"
+ },
+ "verdict": "CONTRADICTION_CONFIRMED: real trace replays a 128-row decode graph per step while HEAD's --cuda-graph-max-bs-decode 64 capture list tops out at 64; the profiled tree's resolved decode-graph config is not HEAD's, so the trace cannot be used as HEAD's C128 graph behavior."
+}
