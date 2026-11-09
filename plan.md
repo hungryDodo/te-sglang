@@ -1,129 +1,150 @@
-# G3 Iteration 3 — deepseek-a — NGRAM greedy-exactness fault line
+# G3 / DeepSeek-a trial 4 — plan (NGRAM accept-path CPU oracle)
 
-Campaign `continuous-20261109-01`, trial 3. Base commit `47030d8` (NGRAM-on
-runtime default; G2 measured ~1.22x aggregate but F1/G2-E1 marks greedy
-correctness **BUG_CONFIRMED**).
+## Context (authoritative)
 
-Objective of this iteration: localize the accept-path defect statically, ship
-the smallest defensible change, and leave a decisive, falsifiable probe request
-for the controller. **No throughput claim. No promotion.** A precise negative
-finding is an acceptable iteration.
+- F1 (canonical): NGRAM self-speculation gives real throughput (+21.6%) but is
+  **BUG_CONFIRMED** on greedy correctness. No promotion until fixed and
+  adjudicated ALGORITHM_PRESERVING.
+- DeepSeek-a/i3 qualified finding: "normal fillResult ancestor-copy + diagonal
+  construction is causal, so the sanitize guard is not an established fix."
+  H2–H4, overlap behavior and the original NGRAM bug remain open.
+- Controller instruction for this lane: **bounded fixed CPU
+  topology/accept-index oracle with real raw results**, not another source
+  sweep. Accepted draft rows can be `[0,2,4]` even when `retrieve_index` is
+  identity, requiring compaction to `[0,1,2]`. Do **not** declare the KV mover
+  excluded.
 
-## Evidence carried in (authoritative)
+## Objective of this trial
 
-- F1 / G2-E1: ON committed tokens sit 1.0-3.9 nats behind a replay-stable OFF
-  argmax; ON pass-nondeterministic 6/24 vs OFF 0/24; divergence set == ON
-  nondeterminism set; 12/48 divergent instance-passes, first-diff positions only
-  {4: 9, 6: 3}; only 512-token prompts diverge; one row reports its own
-  committed token as not top-1; no probe instance had `accept_lens == 1`.
-- Trial-2 methodology (binding): cross-run token identity is not a correctness
-  signal. Only a batch-pinned, same-order ON/OFF probe with OFF replay
-  adjudication counts.
+Build and run a small, deterministic CPU oracle that models the NGRAM
+accept path over fixed synthetic tree topologies and checks
+algorithm-preservation invariants between:
 
-## Exactness invariant used to structure the audit
+1. the flat verify layout (`target_predict = argmax(logits).reshape(bs, N)`)
+   and the tree parent/child indexing (`retrieve_index`, BFS order);
+2. the committed token sequence (`predict[accept_index]`) vs the greedy
+   continuation a non-speculative pass would emit on the same prefix;
+3. the KV-cache move (`move_accept_tokens_to_target_kvcache`,
+   `out_cache_loc` compaction) — required source-row set vs moved row set.
 
-The commit rule (`eagle.cuh` `VerifyTreeGreedy`) accepts a child `c` of `p` iff
-`token(c) == target_predict[p]`, then commits `predict[p] = target_predict[p]`
-and finally the bonus `target_predict[last]`. So **every committed token is an
-argmax of a verify logits row**, and NGRAM is greedy-exact iff, for every node
-on the accepted chain, the attention context of that node's row equals
-`prefix + committed chain to that node`. Therefore:
+The oracle is pure Python; no GPU, no network, no evaluator access. Raw JSON
+results are preserved in the candidate repo.
 
-1. A wrong *draft tree* (bad corpus match, bad recency state, duplicated check
-   suffix) cannot move a committed token off the OFF argmax. It only changes
-   accept rates. This rules out the whole corpus/matching side as a root cause.
-2. The fault must be one of: (i) a mask/positions inconsistency inside the
-   verify input, (ii) a KV slot or prefix-length misalignment in the verify
-   window, or (iii) a post-commit KV/bonus move that pollutes the *next*
-   context.
-3. Consequently the root token must be the pending (not-yet-KV'd) bonus; if it
-   were the already-KV'd last token, every verify would see that token twice.
+## Hypotheses to falsify on CPU
 
-## What this session established (static, no GPU)
+- **H-A (verify-row misalignment)**: flat `target_predict` indexing by
+  `last_accepted_retrive_idx` does not identify the tree node whose row was
+  verified against the committed prefix when the accepted node is not a direct
+  child of `retrieve_index` identity order (accepted rows `[0,2,4]`).
+- **H-B (KV compaction)**: `out_cache_loc` / accept-index handling moves KV
+  rows for cache positions of accepted draft tokens without compacting sparse
+  accepted positions; a subsequent decode attends to wrong KV.
+- **H-C (bonus-token slot)**: the bonus token is written from the tree position
+  of the last accepted node rather than the seq position of the next slot,
+  misaligning the next step's context.
 
-### Refuted: upper-triangular / non-causal tree-mask bits (previous H1)
+## Method
 
-`_sanitize_tree_mask` assumed the corpus can emit a bit at column `j > i`, which
-attention would consume while positions/retrieve metadata ignore it. The
-generator is provably causal:
+1. Read the exact accept-path code (`eagle_utils.py`, `eagle.cuh` contract as
+   mirrored in Python, `ngram_worker.py`, `spec_utils.py` KV move,
+   `spec_tree.py`, `ngram_info.py`).
+2. Encode the tree as explicit parent/child arrays in the oracle (no CUDA).
+   Simulate: draft tree → target argmax per row → accept loop → committed
+   tokens → KV row mapping.
+3. Compare against a reference greedy walk on the same toy logits. Report
+   divergences with the exact index that caused them.
+4. Optionally implement the smallest Python-side fix in the overlay if the
+   oracle shows a definite index bug, but only with an oracle test that fails
+   before and passes after.
 
-- `python/sglang/kernels/jit/csrc/ngram_corpus/result.cpp:12-48` (`fillResult`):
-  BFS FIFO, each child records `prev = parent index` at enqueue (`prevs[i] < i`
-  always); row `i` is `memcpy(row_i, row_parent, prevs[i]+1)` then
-  `row_i[i] = 1`. The parent row's set bits are all `<= prevs[i]`, so every bit
-  of row `i` is at column `<= i`. Padding nodes use `prev = 0` (row `{0, i}`),
-  still causal.
-- `result.h`: `mask` is `std::vector<uint8_t>`, so the `prevs[i]+1` **byte**
-  memcpy is exactly a `prevs[i]+1`-element copy; no element-size aliasing.
-- `Result::truncate` (result.cpp:128-138) compacts rows with `i*n` stride from
-  an already-causal matrix; causality preserved.
-- `reconstructIndicesFromTreeMask` (`ngram.cuh:26-91`) and the Triton fallback
-  (`reconstruct_tree.py`) both derive depth/parent/child/sibling from the same
-  strict-lower-triangular bits, so mask, positions and accept links share one
-  contract.
+## Deliverables
 
-Consequence: **`_sanitize_tree_mask` is a no-op on every mask this corpus can
-produce.** It is committed only as an invariant guard + log signal, not as a
-fix, and must not be reported as one.
+- `ngram_oracle/` (or similar) pure-CPU scripts + `results/*.json` raw output.
+- `iteration-proposal.json` with string fields bottleneck, hypothesis, patch,
+  tests, learning, next_proposal, boolean request_fast_gate.
+- Git commit(s) early and at end; plan.md updated with results.
 
-### Refuted: "root token duplicates the last KV token"
+## Request policy
 
-`fillResult` puts `last_token = suffix.back()` (the pending bonus, not yet in
-KV) at index 0. Verify writes draft position 0 at `batch.seq_lens`, i.e. the
-next position, matching EAGLE's `bonus_tokens` root convention
-(`eagle_utils.py` `build_tree_kernel_efficient` prepends `bonus_tokens`).
-Sync and overlap splice agree: in overlap the check tail is
-`output_ids + prev_accept_tokens` (`ngram_worker.py:_prepare_draft_tokens`), so
-`prev_tokens[-1]` is the previous round's bonus either way.
+- `request_fast_gate=false` this trial unless the oracle yields a
+  GPU-verifiable engine fix with CPU proof; a CPU negative finding is a valid
+  iteration and does not need a gate.
+- Never claim EXACT without numeric evidence; undefined quality budgets stay
+  NOT_CLOSED_QUALITY_BUDGET.
 
-### Refuted: prefix-length host/device split (`seq_lens_cpu` vs `seq_lens`)
+## Time/effort bounds
 
-`_prepare_for_speculative_decoding` builds the attention prefix ones-mask from
-`batch.seq_lens_cpu[i]` while positions and the KV read width come from
-`batch.seq_lens`. These are not independent: in overlap mode
-`FutureMap.resolve_seq_lens_cpu` (`overlap_utils.py:587-647`) takes **both** from
-the same `new_seq_lens_buf` filled by the worker's `on_publish(new_seq_lens)`,
-with an explicit private-stream D2H + `synchronize()` for the host mirror. They
-are equal by construction. A mismatch would in any case change the flattened
-mask numel and be absorbed (or not) by the padding in
-`ngram_info.generate_attn_arg_prefill` — a hazard worth an assertion, not the
-observed 1-3.9 nat deviation.
+45 turns / 20 min / USD 3 local nominal. Checkpoint plan.md + oracle skeleton
+early. Reserve final quarter for results JSON, proposal JSON and commit.
 
-### Refuted: accept-path bookkeeping / KV mover
+---
 
-- `accept_index[b][0] = root`, `accept_lens = num_accepted + 1`, and
-  `predict[accept_index[k]]` is the k-th committed token with the bonus last —
-  consistent with `accept_tokens = predict[accept_index]`, scheduler stride
-  slicing, and `filter_batch`/`merge_batch`.
-- For NGRAM `retrieve_index = b*D + tid` is the identity, so
-  `move_accept_tokens_to_target_kvcache` (spec_utils.py:859-910) moves each
-  chain node to the front slot it already occupies (dest = positions
-  `S..S+accept_lens-1`, sources = the chain nodes at the same positions). The
-  bonus stays pending at `S+accept_lens`, which is exactly the next root.
-- `tree_topk = -1` is ignored by the CUDA verify launcher; top-k exonerated.
+## RESULTS (executed, CPU-only)
 
-## Still live (not closed here)
+Artifact: `ngram_oracle/topology_oracle.py`; raw output
+`ngram_oracle/results/topology_oracle.json`. `python3 -I`, stdlib only.
+Exit status 0. No GPU, no provider, no evaluator used.
 
-1. **Verify-window KV alignment** (invariant 2-ii): the only NGRAM-specific
-   input left is the interaction between `assign_extend_cache_locs` (draft
-   slots at `[seq_lens, seq_lens+D)`) and the widened CSR read
-   (`paged_kernel_lens + D`, `generate_attn_arg_prefill`). A slot handed out
-   inside the live prefix, or a plan/indptr disagreement, would corrupt a
-   subset of rows exactly like the observed signature. Not resolvable without
-   a GPU trace.
-2. **Post-commit KV/bonus move** (invariant 2-iii): shared with EAGLE and
-   statically consistent, but unproven for the NGRAM lane.
-3. **accept_lens == 1 discriminator** (G2-E1 proposal #1): still unrun; no
-   probe instance had a single-node chain. Vanish with a 1-node tree -> post-
-   commit class; persist -> verify-row context class.
+Ports validated against repository contracts: `reconstruct_indices_from_tree_mask_cpu`
+(`spec.cpp:689`), `verify_tree_greedy_cpu` (`spec.cpp:249`, same algorithm as the
+repo's `_ref_verify_tree_greedy` unit-test reference), and
+`move_accept_tokens_to_target_kvcache` (`spec_utils.py:859`, i.e.
+`fill_front_out_cache_loc` destinations + `fill_accept_out_cache_loc`
+compaction-by-skipping-`-1` + pairwise move).
 
-## Deliverable of this iteration
+| scenario | accepted rows | committed == greedy | KV mismatches | verdict |
+|---|---|---|---|---|
+| chain | [0,1,2,3] | yes | 0 | PASS |
+| bfs_branch (golden EXPECTED_BFS_MASKS[0]) | [0,2,4,6,7] | yes | 0 | PASS |
+| sparse_accept_0_2_4 | [0,2,4] | yes | 0 | PASS |
+| root_mismatch_NEG (root != pending token) | [0] | **no** | 1 | FAIL (as injected) |
+| no_compaction_NEG (dest = accept_index) | [0,2,4] | yes | 2 | FAIL (as injected) |
 
-- One guarded, provably-no-op-on-current-corpus invariant check
-  (`_sanitize_tree_mask`) that turns a silent cross-component mask-contract
-  violation into a counted WARNING in `server.log`.
-- The refutations above (negative findings), each with a source reference.
-- A controller request: the batch-pinned ALGORITHM_PRESERVING probe on this
-  commit plus the `accept_lens == 1` discriminator and a grep for the guard's
-  WARNING. No throughput claim, no promotion; NGRAM stays non-promotable until
-  the probe is 0/48 on a fixed commit.
+Findings:
+
+1. **The accept-index/KV-move arithmetic is algorithm-preserving for sparse
+   topologies when the tree root is the pending last token.** Accepted rows
+   `[0,2,4]` compact to destinations `[0,1,2]` exactly as the mover does:
+   source slots `ocl[0], ocl[2], ocl[4]` -> front slots `ocl[0], ocl[1],
+   ocl[2]`; every logical position below the new seq_len holds the right KV.
+   This is the controller's open question, answered here on fixed CPU
+   topologies: the mover's compaction is *not* the fault line, conditional on
+   the root convention.
+2. **One wrong root token is sufficient to corrupt the whole context.**
+   Because row 0 is unconditionally accepted (`spec_utils.py:606`), if the
+   corpus tree root differs from the pending token, the kernel still commits
+   `target_predict[root]` and moves the wrong token's KV into the pending
+   slot; the oracle detects the first KV mismatch immediately and the
+   committed stream leaves greedy. This is the exact failure signature
+   reported for NGRAM (off-argmax / behind-greedy commits), so the live
+   question is now whether the NGRAM draft path can ever build a tree whose
+   root is not the pending token.
+3. **Sensitivity controls pass:** the oracle fails when the mover omits
+   compaction (destinations = `accept_index`) and when the root is stale, so
+   the PASS results above are not vacuous.
+
+Not measured / limitations: the CUDA kernels and the tvm_ffi corpus were not
+executed; the target model is a deterministic context->token hash, so this
+tests index/topology/KV bookkeeping, not LM numerics. Whether
+`_prepare_draft_tokens` always satisfies `total_len == seq_len + 1` (and hence
+root == pending) under overlap splicing (`prev_tokens`) and in the
+grammar/no-splice branch is **NOT_TESTED**; the oracle only proves that a
+violation of that invariant has exactly the observed failure signature.
+
+## Learning / next proposal
+
+- Negative (bounded, CPU): the KV mover and accept-index arithmetic are
+  excluded as the F1 root cause *given* a valid root; do not spend further
+  trials re-deriving compaction.
+- The remaining falsifiable question is root/staging consistency:
+  does the NGRAM draft path ever present a corpus tree whose row-0 token is
+  not the pending token at `seq_len`? That can be settled with a cheap
+  host-side counter/assertion (compare `draft_tokens[row0]` against the last
+  committed token at draft prep) rather than another whole-source sweep, and
+  it discriminates the two canonical fault lines:
+  mismatch -> corpus/overlap staging (B-class), no mismatch -> verify-row
+  context (A-class).
+- `request_fast_gate=false`: no engine change this trial; a CPU negative
+  finding does not need a gate, and gating the unchanged HEAD would not
+  advance the NGRAM fault line.
+
