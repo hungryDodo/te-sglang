@@ -39,21 +39,21 @@ would be needed for the actual number.
 
 ## 2. Prefill FLOP accounting (executed)
 
-Dense FLOPs `2 * 1.711e9 * S`; attention `4*S*eff_len*2048` per layer
+Dense FLOPs `2 * (1.711e9 - 272.6e6) * S` (embedding is a gather, lm_head last-token only); attention `4*S*eff_len*2048` per layer
 (QK^T + AV). Reference path = full attention in all 28 layers (see §3);
 windowed-ceiling applies the source's exclusive window (511) to the 21 sliding
 layers only.
 
 | S | attention share of prefill FLOPs | windowed speedup ceiling |
 |---|---|---|
-| 512 | 3.3% | 1.000x (window does not bind) |
-| 1024 | 6.4% | 1.025x |
-| 2048 | 12.1% | 1.073x |
-| 4096 | 21.5% | 1.165x |
-| 8192 | 35.4% | 1.332x |
+| 512 | 3.9% | 1.000x (window does not bind) |
+| 1024 | 7.5% | 1.029x |
+| 2048 | 14.0% | 1.086x |
+| 4096 | 24.6% | 1.193x |
+| 8192 | 39.5% | 1.385x |
 
 So even if the missing window were free to apply, the frozen PrefillHeavy
-point (16 x 8192) could improve by at most ~1.33x on compute, i.e. ~+2.1% on
+point (16 x 8192) could improve by at most ~1.39x on compute, i.e. ~+2.5% on
 the aggregate score through a 0.15-weight category — and that is a ceiling
 that ignores all kernel inefficiency.
 
@@ -96,5 +96,5 @@ evidence"; it is **incompatible with the frozen acceptance contract**.
 Arithmetic model, not a measurement. FLOP counts ignore kernel efficiency and
 the attention-output projection is counted once via params. Controller-side
 launch/model pins are not visible in this sandbox; applicability-001 is cited,
-not re-executed. The 1.332x figure is an upper bound for a change that must
+not re-executed. The 1.385x figure is an upper bound for a change that must
 not be made, not a candidate.

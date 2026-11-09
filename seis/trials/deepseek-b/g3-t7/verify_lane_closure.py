@@ -166,7 +166,7 @@ def main():
 
     # ---- prefill FLOP accounting ------------------------------------------
     W = cfg["sliding_window"] - 1  # source: _get_attention_sliding_window_size
-    dense_flops_per_token = 2 * total_tied  # forward, all params, tied emb
+    dense_flops_per_token = 2 * (total_tied - embed)  # per-token GEMMs; emb is a gather, lm_head last-token only
     prefill = []
     for S in (512, 1024, 2048, 4096, 8192, 8191, 8192):
         if any(r["seq"] == S for r in prefill):
@@ -252,7 +252,8 @@ def main():
             "bytes_per_weight": BYTES_PER_WEIGHT,
             "tied_embeddings": "model name 1.7B matches model_tied; both "
                                "tied and untied totals are emitted",
-            "flops": "dense 2*params*tokens; attention 4*S*eff_len*H per "
+            "flops": "dense 2*(params-embedding)*tokens (embedding is a gather and "
+                     "lm_head is last-token only); attention 4*S*eff_len*H per "
                      "layer (QK^T+AV), no MLP/attention double count of the "
                      "output projection beyond params",
             "not_a_measurement": True,

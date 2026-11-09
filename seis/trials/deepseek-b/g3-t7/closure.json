@@ -5,7 +5,7 @@
    "q4_k": 0.5625,
    "q8_0": 1.0625
   },
-  "flops": "dense 2*params*tokens; attention 4*S*eff_len*H per layer (QK^T+AV), no MLP/attention double count of the output projection beyond params",
+  "flops": "dense 2*(params-embedding)*tokens (embedding is a gather and lm_head is last-token only); attention 4*S*eff_len*H per layer (QK^T+AV), no MLP/attention double count of the output projection beyond params",
   "l2_bytes": 26214400,
   "not_a_measurement": true,
   "tied_embeddings": "model name 1.7B matches model_tied; both tied and untied totals are emitted"
@@ -125,57 +125,57 @@
  "prefill_flops": [
   {
    "attn_full_tflop": 0.060129542144,
-   "attn_share_full": 0.03316675920784749,
+   "attn_share_full": 0.03920367534456355,
    "attn_windowed_tflop": 0.060129542144,
-   "dense_tflop": 1.752816418816,
+   "dense_tflop": 1.473643544576,
    "seq": 512,
    "window_binds": false,
    "window_speedup_ceiling": 1.0
   },
   {
    "attn_full_tflop": 0.240518168576,
-   "attn_share_full": 0.06420407724553044,
+   "attn_share_full": 0.07544945475979958,
    "attn_windowed_tflop": 0.15032385536,
-   "dense_tflop": 3.505632837632,
+   "dense_tflop": 2.947287089152,
    "seq": 1024,
    "window_binds": true,
-   "window_speedup_ceiling": 1.0246705091963728
+   "window_speedup_ceiling": 1.0291173794358508
   },
   {
    "attn_full_tflop": 0.962072674304,
-   "attn_share_full": 0.12066121267212065,
+   "attn_share_full": 0.14031241436009867,
    "attn_windowed_tflop": 0.420906795008,
-   "dense_tflop": 7.011265675264,
+   "dense_tflop": 5.894574178304,
    "seq": 2048,
    "window_binds": true,
-   "window_speedup_ceiling": 1.0728139560082348
+   "window_speedup_ceiling": 1.0856887831002677
   },
   {
    "attn_full_tflop": 3.848290697216,
-   "attn_share_full": 0.21533932165710337,
+   "attn_share_full": 0.24609468877673635,
    "attn_windowed_tflop": 1.322849927168,
-   "dense_tflop": 14.022531350528,
+   "dense_tflop": 11.789148356608,
    "seq": 4096,
    "window_binds": true,
-   "window_speedup_ceiling": 1.1645733477941433
+   "window_speedup_ceiling": 1.1926053310404128
   },
   {
    "attn_full_tflop": 15.393162788864,
-   "attn_share_full": 0.35436905203312324,
+   "attn_share_full": 0.39498553519768564,
    "attn_windowed_tflop": 4.569845202944,
-   "dense_tflop": 28.045062701056,
+   "dense_tflop": 23.578296713216,
    "seq": 8192,
    "window_binds": true,
-   "window_speedup_ceiling": 1.3318518518518518
+   "window_speedup_ceiling": 1.384512683578104
   },
   {
    "attn_full_tflop": 15.389404921856,
-   "attn_share_full": 0.35434112215952984,
+   "attn_share_full": 0.3949563624089879,
    "attn_windowed_tflop": 4.568817655808,
-   "dense_tflop": 28.041639231488,
+   "dense_tflop": 23.575418503168,
    "seq": 8191,
    "window_binds": true,
-   "window_speedup_ceiling": 1.3318134211809636
+   "window_speedup_ceiling": 1.384469033194813
   }
  ],
  "sliding_window_exclusive": 511,
@@ -208,9 +208,9 @@
   "gguf_route_note": "The frozen formal Gate loads BF16 safetensors revision e6406af... with no GGUF artifact and no --quantization gguf (controller applicability-001). Therefore neither f263262 nor any load-time-dequant GGUF change can move aggregate output tokens/s under the frozen contract, independent of its speed.",
   "sliding_window_prefill_lever": {
    "acceptance": "IMPOSSIBLE_UNDER_FROZEN_EXACT_TOKEN_BASELINE",
-   "mechanism_share_at_8192": 0.35436905203312324,
+   "mechanism_share_at_8192": 0.39498553519768564,
    "why": "The pinned reference wheel executes the same extend_no_prefix path without window_left (branch trial-2, source-anchored). Applying the 511 window changes the attention output of every position >511 in 21/28 layers, so greedy tokens are not preserved; valid_exact_token_baseline compares against the reference output. A >512-token parity harness cannot rescue this: parity is defined against the same full-attention reference.",
-   "window_speedup_ceiling_at_8192": 1.3318518518518518
+   "window_speedup_ceiling_at_8192": 1.384512683578104
   }
  },
  "weight_bytes": {
