@@ -1,0 +1,220 @@
+{
+  "assumptions": {
+    "A1_reservation": "ignore_eos reserves origin_input+max_new_tokens at admission, anchored at schedule_policy.py:1263-1266 and 1204-1216; NOT executed.",
+    "A2_prefill_budget": "per-batch prefill token budget = max_prefill_tokens (16384 default); the field help says the real bound is max(this, model max context length), and 9216 < 16384 so the default governs.",
+    "A3_chunking": "each request's prompt is chunked at chunked_prefill_size=8192; an 8192-token prompt is exactly one chunk.",
+    "A4_not_modelled": "hybrid_swa pool accounting, page-size rounding, request-slot overhead, mixed-decode tokens, prefix hits (radix disabled)."
+  },
+  "controls": {
+    "halved_budget_halves_prefill_width": true,
+    "halved_budget_prefill_heavy": {
+      "reqs_per_batch": 1,
+      "waves": 16
+    }
+  },
+  "derived": {
+    "chunked_prefill_size": 8192,
+    "points_over_pool_input_only": [],
+    "points_over_pool_reserved_A1": [
+      "prefill_heavy_c16",
+      "decode_ceiling_c256"
+    ],
+    "pool_equals_16_x_8192": true,
+    "prefill_batch_token_budget": 16384,
+    "prefill_heavy_reqs_per_batch": 2,
+    "prefill_heavy_waves": 8
+  },
+  "frozen_contract": {
+    "attention_backend": "flashinfer",
+    "chunked_prefill_size": 8192,
+    "context_length": 9216,
+    "cuda_graph_backend_prefill": "disabled",
+    "cuda_graph_max_bs_decode": 64,
+    "disable_radix_cache": true,
+    "dtype": "bfloat16",
+    "kv_cache_dtype": "bfloat16",
+    "max_prefill_tokens": "ABSENT (source default applies)",
+    "max_queued_requests": 256,
+    "max_running_requests": 256,
+    "max_total_tokens": 131072,
+    "mem_fraction_static": 0.6,
+    "tp": 1
+  },
+  "kind": "CPU arithmetic over extracted source defaults + frozen brief",
+  "rows": [
+    {
+      "admissible_requests_input_only": 32,
+      "admissible_requests_reserved_A1": 32,
+      "chunk_tokens_per_request": 128,
+      "concurrency": 32,
+      "demand_input_only_tokens": 4096,
+      "demand_reserved_tokens_A1": 5120,
+      "input_tokens": 128,
+      "output_tokens": 32,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "short_c32",
+      "prefill_waves_if_input_is_one_chunk": 1,
+      "reqs_per_prefill_batch_by_token_budget": 128
+    },
+    {
+      "admissible_requests_input_only": 128,
+      "admissible_requests_reserved_A1": 128,
+      "chunk_tokens_per_request": 128,
+      "concurrency": 128,
+      "demand_input_only_tokens": 16384,
+      "demand_reserved_tokens_A1": 20480,
+      "input_tokens": 128,
+      "output_tokens": 32,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "short_c128",
+      "prefill_waves_if_input_is_one_chunk": 1,
+      "reqs_per_prefill_batch_by_token_budget": 128
+    },
+    {
+      "admissible_requests_input_only": 32,
+      "admissible_requests_reserved_A1": 32,
+      "chunk_tokens_per_request": 512,
+      "concurrency": 32,
+      "demand_input_only_tokens": 16384,
+      "demand_reserved_tokens_A1": 18432,
+      "input_tokens": 512,
+      "output_tokens": 64,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "medium_c32",
+      "prefill_waves_if_input_is_one_chunk": 1,
+      "reqs_per_prefill_batch_by_token_budget": 32
+    },
+    {
+      "admissible_requests_input_only": 128,
+      "admissible_requests_reserved_A1": 128,
+      "chunk_tokens_per_request": 512,
+      "concurrency": 128,
+      "demand_input_only_tokens": 65536,
+      "demand_reserved_tokens_A1": 73728,
+      "input_tokens": 512,
+      "output_tokens": 64,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "medium_c128",
+      "prefill_waves_if_input_is_one_chunk": 4,
+      "reqs_per_prefill_batch_by_token_budget": 32
+    },
+    {
+      "admissible_requests_input_only": 32,
+      "admissible_requests_reserved_A1": 32,
+      "chunk_tokens_per_request": 1024,
+      "concurrency": 32,
+      "demand_input_only_tokens": 32768,
+      "demand_reserved_tokens_A1": 36864,
+      "input_tokens": 1024,
+      "output_tokens": 128,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "standard_c32",
+      "prefill_waves_if_input_is_one_chunk": 2,
+      "reqs_per_prefill_batch_by_token_budget": 16
+    },
+    {
+      "admissible_requests_input_only": 64,
+      "admissible_requests_reserved_A1": 64,
+      "chunk_tokens_per_request": 1024,
+      "concurrency": 64,
+      "demand_input_only_tokens": 65536,
+      "demand_reserved_tokens_A1": 73728,
+      "input_tokens": 1024,
+      "output_tokens": 128,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "standard_c64",
+      "prefill_waves_if_input_is_one_chunk": 4,
+      "reqs_per_prefill_batch_by_token_budget": 16
+    },
+    {
+      "admissible_requests_input_only": 64,
+      "admissible_requests_reserved_A1": 64,
+      "chunk_tokens_per_request": 256,
+      "concurrency": 64,
+      "demand_input_only_tokens": 16384,
+      "demand_reserved_tokens_A1": 49152,
+      "input_tokens": 256,
+      "output_tokens": 512,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "decode_heavy_c64",
+      "prefill_waves_if_input_is_one_chunk": 1,
+      "reqs_per_prefill_batch_by_token_budget": 64
+    },
+    {
+      "admissible_requests_input_only": 128,
+      "admissible_requests_reserved_A1": 128,
+      "chunk_tokens_per_request": 256,
+      "concurrency": 128,
+      "demand_input_only_tokens": 32768,
+      "demand_reserved_tokens_A1": 98304,
+      "input_tokens": 256,
+      "output_tokens": 512,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": false,
+      "point": "decode_heavy_c128",
+      "prefill_waves_if_input_is_one_chunk": 2,
+      "reqs_per_prefill_batch_by_token_budget": 64
+    },
+    {
+      "admissible_requests_input_only": 16,
+      "admissible_requests_reserved_A1": 15,
+      "chunk_tokens_per_request": 8192,
+      "concurrency": 16,
+      "demand_input_only_tokens": 131072,
+      "demand_reserved_tokens_A1": 131584,
+      "input_tokens": 8192,
+      "output_tokens": 32,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": true,
+      "point": "prefill_heavy_c16",
+      "prefill_waves_if_input_is_one_chunk": 8,
+      "reqs_per_prefill_batch_by_token_budget": 2
+    },
+    {
+      "admissible_requests_input_only": 256,
+      "admissible_requests_reserved_A1": 240,
+      "chunk_tokens_per_request": 32,
+      "concurrency": 256,
+      "demand_input_only_tokens": 8192,
+      "demand_reserved_tokens_A1": 139264,
+      "input_tokens": 32,
+      "output_tokens": 512,
+      "over_pool_input_only": false,
+      "over_pool_reserved_A1": true,
+      "point": "decode_ceiling_c256",
+      "prefill_waves_if_input_is_one_chunk": 1,
+      "reqs_per_prefill_batch_by_token_budget": 512
+    }
+  ],
+  "source_extracted": {
+    "chunked_prefill_size": {
+      "expr": "None",
+      "file": "python/sglang/srt/arg_groups/fields/schedule.py",
+      "line": 52,
+      "value": null
+    },
+    "max_prefill_tokens": {
+      "expr": "16384",
+      "file": "python/sglang/srt/arg_groups/fields/schedule.py",
+      "line": 71,
+      "value": 16384
+    }
+  },
+  "trial": "g3-t9",
+  "verdict": {
+    "certain_from_source_and_frozen_flags": "With chunked_prefill_size=8192 and the unset max_prefill_tokens defaulting to 16384, a prefill batch can contain at most 2 full 8192-token chunks; the PrefillHeavy point (16 x 8192) therefore runs in at least 8 prefill batches. This is a token-budget fact independent of KV memory.",
+    "conditional_A1": "If admission reserves input+max_new_tokens (ignore_eos path), the 131072-token pool admits at most 15 of 16 PrefillHeavy requests (131584 needed) and at most 240 of 256 DecodeCeiling requests (139264 needed); peak nominal concurrency is not simultaneously admissible at exactly the two largest frozen points.",
+    "f3_status": "UNGATED; the frozen BF16 Fast screen carries no GGUF artifact, so no number here is F3 evidence.",
+    "legal_lever": "None identified. max_total_tokens, kv_cache_dtype, chunked_prefill_size and mem_fraction_static are frozen; a source change that widens the prefill batch would change GEMM shape/kernel selection (ALGORITHM_PRESERVING at best) and cannot reduce prefill FLOPs. The only FLOP-reducing lever (sliding window) is acceptance-incompatible per g3-t7.",
+    "measurement": "NOT_A_MEASUREMENT",
+    "uncertainty": "The A1 table is arithmetic, not scheduler execution. hybrid_swa memory accounting, request-slot reserves and mixed-decode accounting are unmodelled; any of them can change the admissible count. The 2-chunk / 8-wave prefill statement does not depend on A1."
+  },
+  "worker": "deepseek-b"
+}
