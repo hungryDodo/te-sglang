@@ -1,82 +1,55 @@
-# G3 trial 4 (glm-b) — plan
+# G3 trial 5 — glm-b: response-field map for the numeric-coverage blocker
 
-Campaign `continuous-20261109-01`, iteration 4, worker glm-b. Session HEAD starts
-at `b46e13a` (engine bit-identical to `2c854e0`, verified: `git diff 2c854e0 HEAD
--- python/` empty).
+## Bottleneck (evidence coverage, not throughput)
+Campaign promotion pipeline (canonical F6/F4) is blocked on trusted numeric
+evidence: numeric-coverage-001 probes returned `top_logprobs = null` on both
+servers. Trial-4 (i4) closed the REQUEST half: `top_logprobs_num` defaults 0
+and all builders guard `k<=0`, so the then-used shapes honestly returned no
+top arrays. raw-numeric-observation-002 flags the RESPONSE half as
+source-supported-but-unexecuted: "frozen probe reads top_logprobs /
+top_output_logprobs while pinned tokenizer_manager emits output_top_logprobs".
 
-## Why not the trial-3 carry-over request
+If that mismatch is real, i4's corrected request shape alone is NOT sufficient:
+a re-run probe that still reads `top_logprobs`/`top_output_logprobs` on the
+native endpoint returns null AGAIN even with k=20 populated, burning another
+controller round and possibly misdiagnosed as an engine drop.
 
-Trial-3 requested a FULL gate slot in prose with `request_fast_gate=false`. Per
-the controller capability notes that launches nothing, and the brief explicitly
-says not to repeat an unexecuted request and count it as progress. Candidate-x3
-prerequisites are also unmet: **numeric verification is blocked because both
-numeric probes returned `top_logprobs: null`** (numeric-coverage-001), so the
-promotion pipeline (canonical F6) is gated on *evidence coverage*, not on
-throughput. Meanwhile glm-b's engine lane is measurement-saturated (decode
-roofline-closed at 99.2% GPU busy; prefill syncs bounded ~0 by the 1.0933 fast
-screen; engine-wide blocking-read sweep closed statically in i2).
+## Hypothesis
+- H1 (field-name mismatch, response side): with k>0 requested, the engine
+  populates top arrays under `meta_info["output_top_logprobs"]` (nested) or
+  `output_top_logprobs_val_flat/idx_flat/shape/null_prefix` (flat variant) on
+  native /generate; under standard OpenAI `choices[].logprobs…top_logprobs`
+  after mapping on the OpenAI endpoints. NO response field named `top_logprobs`
+  or `top_output_logprobs` exists at the native top level — probe reads of
+  those names are structurally null there, independent of k.
+- H0: engine emits a field the probe does read (mismatch inference wrong);
+  then i4's corrected shape alone unblocks and this trial's table still tells
+  the controller exactly which read path is guaranteed non-null.
 
-## Hypothesis (new, CPU-testable in this sandbox)
+## Method (bounded CPU falsifier, extends i4's ast-execution pattern)
+Extract and execute the REAL source expressions — no reimplementation:
+1. tokenizer_manager.py response assembly (guard `top_logprobs_num > 0`,
+   nested assignment `meta_info["output_top_logprobs"]`, flat builder
+   `_build_flat_top_logprobs_fields`) against a faithful finished-request
+   state with k=20.
+2. OpenAI mappings: serving_chat `_process_response_logprobs` /
+   `_build_token_logprobs_from_raw` and serving_completions
+   `to_openai_style_logprobs` — execute with populated raw triples, record the
+   exact response field names produced.
+3. Apply the probe's documented read names (`top_logprobs`,
+   `top_output_logprobs`) plus candidate corrected reads to each assembled
+   response object -> null/non-null table per endpoint per shape.
+Raw output preserved under g3-t5/raw/.
 
-**H1:** `top_logprobs` is null because the request → sampling-params mapping in
-this tree requires an explicit top-k field that the numeric probe omitted
-(native `/generate`: `return_logprob=true` alone yields chosen logprobs but
-`top_logprobs_num` defaults to 0 → no per-token top-k; OpenAI-compat:
-`logprobs=true` without `top_logprobs=k`, or an endpoint that never maps it).
-The serving path itself can produce per-token top-k once asked correctly.
-**H0 (fix-worthy variant):** this fork has a real drop-bug in the mapping
-(e.g. chat adapter ignores `top_logprobs`) — then the fix is an engine change
-in my own tree and the fast screen doubles as boot verification.
+## Deliverable / request
+A precise re-run recipe for the controller numeric probe: (endpoint, request
+shape, exact response field to read) triplets that are guaranteed non-null for
+both reference and candidate servers. This is controller-side evidence
+gathering only — evaluator, corpus, seed, reference unchanged.
 
-Falsifier: exact source trace of the field plumbing (io_struct →
-tokenizer_manager → openai adapters → sampler gating), plus a self-contained
-CPU script that executes the request-construction logic with stubbed heavy
-imports and records raw JSON output showing which request shapes yield null
-vs populated top-k slots.
-
-## Steps
-
-1. This file + early commit (recoverable checkpoint).
-2. Source trace of logprob fields across the serving path; identify the null
-   root cause; distinguish probe-parameter gap vs server bug.
-3. `g3-t4/probe_top_logprobs_recipe.py` — CPU falsifier, raw output preserved
-   to `g3-t4/raw/`.
-4. Engine change ONLY if a genuine in-tree bug is found; `py_compile`; commit.
-5. `iteration-proposal.json` (request_fast_gate per outcome) + final commit.
-
-## Budget
-
-45 turns / 1200 s hard / USD 3. Reserve final quarter for proposal + commits.
-No GPU here: everything measured stays a controller-side request; nothing is
-claimed without controller raw evidence.
-
-## Outcome (executed this session)
-
-H1 **CONFIRMED CPU-side**, H0 (engine drop-bug on chat/native) **falsified**.
-`g3-t4/probe_top_logprobs_recipe.py` extracts the real assignment/guard
-expressions via `ast` from `io_struct.py` / `serving_chat.py` /
-`serving_completions.py` / `logprob_result_processor.py` and executes them
-against 7 request shapes (raw JSON in `g3-t4/raw/falsifier_output.json`):
-
-- native `{"return_logprob": true}` → `top_logprobs_num` None→0 → guard skips
-  → **null top_logprobs with chosen present** (io_struct.py:569-570,
-  logprob_result_processor.py:60/92/256/268). Reproduces numeric-coverage-001.
-- chat `{"logprobs": true}` → `request.top_logprobs or 0` → 0 → same null
-  (serving_chat.py:1372-1374). Also reproduces.
-- Fix shapes `{"return_logprob": true, "top_logprobs_num": 20}` (native) /
-  `{"logprobs": true, "top_logprobs": 20}` (chat) → populated(k=20). The
-  engine fully supports top-k once asked; no engine change needed.
-- Documented quirk, NOT fixed (off the frozen measurement path, and cannot
-  produce null): `/v1/completions` ignores standard OpenAI `top_logprobs`;
-  its `logprobs` is typed `Optional[int]` and doubles as k
-  (protocol.py:377, serving_completions.py:119-120) → standard shape yields
-  k=1 silently.
-
-`git diff 2c854e0 HEAD -- python/` stays EMPTY by design: the promotion
-candidate remains bit-identical to the twice-proven engine tree. Ask of the
-controller: re-run the numeric coverage probe with the corrected shape on
-reference AND candidate (lossless raw variant available:
-`return_flat_raw_output_top_logprobs`, single-item, non-stream,
-io_struct.py:250-254/457-476). request_fast_gate=false — there is no engine
-change to screen and screens claim no slots.
-
+## Bounds
+- NO engine change: python/ stays bit-identical to 2c854e0 (verified empty
+  diff) so the promotion candidate remains clean. Artifacts live in g3-t5/.
+- No GPU/SSH; no measurements claimed; static/CPU execution only.
+- Not requesting fast screen: i2's G3 fast screen (1.0933) already covers this
+  engine; a repeat adds noise, not information. request_fast_gate=false.
