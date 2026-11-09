@@ -1,0 +1,61 @@
+{
+ "per_role": {
+  "ON": {
+   "positions": 480,
+   "mismatch": 1,
+   "chosen_top_inconsistent": 0
+  },
+  "OFF": {
+   "positions": 480,
+   "mismatch": 0,
+   "chosen_top_inconsistent": 0
+  }
+ },
+ "all_on_mismatch_positions": [
+  [
+   "A/repeat-512/c4same|3|ON",
+   [
+    {
+     "pos": 6,
+     "committed": 1271,
+     "row_top1": 48977,
+     "row_top1_lp": -1.556087613105774,
+     "committed_rank": 1,
+     "committed_row_lp": -1.556087613105774,
+     "chosen_lp": -1.556087613105774,
+     "chosen_tok": 1271,
+     "gap_top1_minus_committed": 0.0
+    }
+   ]
+  ]
+ ],
+ "all_off_mismatch_positions": [],
+ "pairs_diverging": 10,
+ "pairs_total": 10,
+ "on_self_consistent_at_first_divergence": 10,
+ "off_self_consistent_at_first_divergence": 10,
+ "first_divergence_positions": [
+  4,
+  4,
+  4,
+  4,
+  4,
+  4,
+  4,
+  4,
+  6,
+  15
+ ]
+}
+--- pairs at first divergence ---
+A/repeat-512/c1same 0 div@ 15 ONtok 3642 ON_selfok True ONrank_OFFrow None OFFrank_ONrow 1 ONlp -1.7843565940856934 OFFlp -0.0022518294863402843
+A/repeat-512/c4same 0 div@ 4 ONtok 86 ON_selfok True ONrank_OFFrow 1 OFFrank_ONrow 1 ONlp -1.659959316253662 OFFlp -1.7860312461853027
+A/repeat-512/c4same 1 div@ 4 ONtok 86 ON_selfok True ONrank_OFFrow 1 OFFrank_ONrow 1 ONlp -1.5359857082366943 OFFlp -1.7494007349014282
+A/repeat-512/c4same 2 div@ 4 ONtok 86 ON_selfok True ONrank_OFFrow 1 OFFrank_ONrow 1 ONlp -1.5030511617660522 OFFlp -1.7494007349014282
+A/repeat-512/c4same 3 div@ 4 ONtok 86 ON_selfok True ONrank_OFFrow 1 OFFrank_ONrow 1 ONlp -1.5053271055221558 OFFlp -1.7494007349014282
+B/repeat-512/c1same 0 div@ 4 ONtok 86 ON_selfok True ONrank_OFFrow 1 OFFrank_ONrow 1 ONlp -1.3132048845291138 OFFlp -1.7413829565048218
+B/repeat-512/c4same 0 div@ 4 ONtok 86 ON_selfok True ONrank_OFFrow 1 OFFrank_ONrow 1 ONlp -2.451540231704712 OFFlp -1.7559033632278442
+B/repeat-512/c4same 1 div@ 4 ONtok 267 ON_selfok True ONrank_OFFrow None OFFrank_ONrow 1 ONlp -2.6465282440185547 OFFlp -1.7494007349014282
+B/repeat-512/c4same 2 div@ 6 ONtok 1271 ON_selfok True ONrank_OFFrow 1 OFFrank_ONrow 1 ONlp -1.4466896057128906 OFFlp -0.582139790058136
+B/repeat-512/c4same 3 div@ 4 ONtok 267 ON_selfok True ONrank_OFFrow None OFFrank_ONrow 1 ONlp -2.522754192352295 OFFlp -1.7494007349014282
+wrote /workspace/g3-t12/raw/self_consistency.json
