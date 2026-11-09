@@ -268,7 +268,16 @@ if _TRACE_ENV.lower() not in ("", "0", "false", "off"):
 _dispatch_counts: Counter = Counter()
 _dispatch_calls = 0
 _dispatch_lock = threading.Lock()
-_DISPATCH_DUMP_EVERY = 1024
+# Dump cadence while tracing: every N recorded calls (default 64) plus atexit.
+# One decode step at bs 3..6 records O(layers x linears) ~= 100+ calls, so a
+# short dispatch probe still leaves a durable trace if the server is killed
+# instead of exiting gracefully. Inert unless tracing is enabled.
+try:
+    _DISPATCH_DUMP_EVERY = max(
+        1, int(os.environ.get("SGLANG_GGUF_DISPATCH_TRACE_EVERY", "64"))
+    )
+except ValueError:
+    _DISPATCH_DUMP_EVERY = 64
 
 
 def _dispatch_type_name(qweight_type: int) -> str:

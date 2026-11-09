@@ -1,0 +1,461 @@
+{
+ "branch_rule_identical_parent_vs_shipped": true,
+ "branch_tests_shipped": [
+  "Compare(left=Name(id='qweight_type', ctx=Load()), ops=[In()], comparators=[Name(id='UNQUANTIZED_TYPES', ctx=Load())])",
+  "BoolOp(op=And(), values=[Compare(left=Subscript(value=Attribute(value=Name(id='x', ctx=Load()), attr='shape', ctx=Load()), slice=Constant(value=0), ctx=Load()), ops=[LtE()], comparators=[Name(id='mmvq_safe', ctx=Load())]), Compare(left=Name(id='qweight_type', ctx=Load()), ops=[In()], comparators=[Name(id='MMVQ_QUANT_TYPES', ctx=Load())])])"
+ ],
+ "changed_bands": [
+  "rows<=5120"
+ ],
+ "changed_batches": [
+  3,
+  4,
+  5,
+  6
+ ],
+ "changed_cell_count": 32,
+ "changed_cells": [
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q4_K"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 1024,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 4096,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 3,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 4,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 5,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q8_0"
+  },
+  {
+   "band": "rows<=5120",
+   "batch": 6,
+   "new_kernel": "mmq",
+   "new_mmvq_safe": 2,
+   "old_kernel": "mmvq",
+   "old_mmvq_safe": 6,
+   "rows": 5120,
+   "type": "Q8_0"
+  }
+ ],
+ "changed_cells_at_batch_ge_16": 0,
+ "changed_cells_at_gate_batches": 0,
+ "changed_types": [
+  "Q4_K",
+  "Q8_0"
+ ],
+ "grid": {
+  "batches": "0..257",
+  "rows": [
+   1,
+   1024,
+   4096,
+   5120,
+   5121,
+   8192,
+   16384
+  ],
+  "types": 23
+ },
+ "label": "pre_patch",
+ "limits": [
+  "CPU-only: executes shipped Python expressions, no torch/gguf/GPU; does not prove which kernel a live engine runs.",
+  "WeightType is a shim built from the names this module references; the real enum's unused names fall through to the same default rule.",
+  "No performance number is produced or implied."
+ ],
+ "measured_table": {
+  "Q4_K": [
+   2,
+   2
+  ],
+  "Q6_K": [
+   6,
+   2
+  ],
+  "Q8_0": [
+   2,
+   2
+  ]
+ },
+ "provenance": {
+  "g2_raw_artifacts_present_in_this_snapshot": {
+   "seis/trials/deepseek-b/g2-t1/crossover.json": false,
+   "seis/trials/deepseek-b/g2-t2/verify_selection.py": false
+  },
+  "note": "the measured table's supporting crossover artifacts are not in this candidate tree or in any ref of this snapshot; the values are taken as branch-learning/controller evidence, not re-verified here"
+ },
+ "source": {
+  "compile_ok": true,
+  "parent_rev": "f263262^",
+  "parent_sha256": "5e94c0e19cf7361dc356310240e69ab77961aa01088946c5f5213264adc2ede8",
+  "path": "/workspace/python/sglang/srt/layers/quantization/gguf.py",
+  "sha256": "02c64df536b3d9defe13539eb89cd0a198c76b335607550a57b8600cd5032f3a"
+ },
+ "threshold_only_cell_count": 2032,
+ "threshold_only_types": [
+  "Q4_K",
+  "Q8_0"
+ ],
+ "tracer_audit": {
+  "lifecycle": "dump every _DISPATCH_DUMP_EVERY calls + atexit; an abrupt SIGKILL/SIGTERM end loses the tail since the last dump",
+  "module_imported_unconditionally_by_quantization_init": true,
+  "records_per_call_site": "3 (empty, unquantized, post-branch)",
+  "simulation": {
+   "calls": 100,
+   "cells_recorded": null,
+   "post_patch_trace_survives_abrupt_end": false,
+   "pre_patch_expectation": "with dump_every=1024 a 100-call probe writes nothing without atexit",
+   "residual_loss_bound_calls": 1023,
+   "source_dump_every": 1024,
+   "trace_calls": null,
+   "trace_file_exists_without_atexit": false
+  },
+  "traced_entry_point": "fused_mul_mat_gguf",
+  "untraced_entry_point": "fused_moe_gguf (MoE only; Spark2_5 uses a dense MLP, so N/A for the Spark GGUF probe)"
+ },
+ "type_set_sizes": {
+  "DEQUANT_TYPES": 20,
+  "IMATRIX_QUANT_TYPES": 9,
+  "KQUANT_TYPES": 5,
+  "MMQ_QUANT_TYPES": 11,
+  "MMVQ_QUANT_TYPES": 20,
+  "STANDARD_QUANT_TYPES": 6,
+  "UNQUANTIZED_TYPES": 3
+ },
+ "unknown_int_rows": [
+  {
+   "new_mmvq_safe": 6,
+   "old_mmvq_safe": 6,
+   "rows": 1
+  },
+  {
+   "new_mmvq_safe": 6,
+   "old_mmvq_safe": 6,
+   "rows": 1024
+  },
+  {
+   "new_mmvq_safe": 6,
+   "old_mmvq_safe": 6,
+   "rows": 4096
+  },
+  {
+   "new_mmvq_safe": 6,
+   "old_mmvq_safe": 6,
+   "rows": 5120
+  },
+  {
+   "new_mmvq_safe": 2,
+   "old_mmvq_safe": 2,
+   "rows": 5121
+  },
+  {
+   "new_mmvq_safe": 2,
+   "old_mmvq_safe": 2,
+   "rows": 8192
+  },
+  {
+   "new_mmvq_safe": 2,
+   "old_mmvq_safe": 2,
+   "rows": 16384
+  }
+ ],
+ "unknown_int_type_unchanged": true
+}
