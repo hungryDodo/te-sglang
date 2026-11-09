@@ -73,6 +73,35 @@ def _derive_tree_links(
     return torch.from_numpy(next_token), torch.from_numpy(next_sibling)
 
 
+def _sanitize_tree_mask(
+    mask: np.ndarray, bs: int, draft_token_num: int
+) -> np.ndarray:
+    """Normalize the corpus tree mask to the documented ancestor contract.
+
+    The mask is consumed under two conventions. The verify attention path uses
+    *every* set bit of a row (the row is concatenated with the prefix ones
+    mask), while positions / retrieve_index / retrieve_next_token /
+    retrieve_next_sibling are derived from strict-lower-triangular ancestors
+    only (``j < i``). A set bit at ``j > i`` therefore lets a verify row attend
+    to a node that the position/retrieve derivation does not account for:
+    logits under a context the accept kernel never walks, which is
+    self-consistent inside the verify step and so can commit an off-argmax
+    token. A causal tree bitmap can never need those bits, so dropping them is
+    a no-op for a well-formed corpus and removes the cross-component
+    inconsistency otherwise.
+    """
+    tree = np.asarray(mask).reshape(bs, draft_token_num, draft_token_num)
+    upper = np.triu(tree, k=1)
+    if not upper.any():
+        return mask
+    logger.warning(
+        "NGRAM tree mask carried %d non-causal (upper-triangular) bits; "
+        "dropping them to keep attention and retrieve metadata on one contract",
+        int(upper.sum()),
+    )
+    return np.tril(tree, k=0).reshape(-1)
+
+
 class NGRAMWorker(BaseSpecWorker):
     def alloc_memory_pool(self, **kwargs):
         # The target memory pool does not exist yet when __init__ runs.
@@ -332,6 +361,7 @@ class NGRAMWorker(BaseSpecWorker):
             ]
 
         req_drafts, mask = self._prepare_draft_tokens(batch)
+        mask = _sanitize_tree_mask(mask, bs, self.draft_token_num)
         tree_mask.copy_(torch.from_numpy(mask), non_blocking=True)
         draft_tokens.copy_(torch.from_numpy(req_drafts), non_blocking=True)
 
