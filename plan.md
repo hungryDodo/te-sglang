@@ -62,3 +62,18 @@
 ## Budget
 - Checkpoint commit after plan+probes scaffold; final quarter reserved for
   iteration-proposal.json + clean-tree commit.
+
+## Outcome (see g3-t12/RESULTS.md)
+- EXECUTED 1 (real trace, gated): exactly 1 DtoH/step (1024 B, in-gap,
+  ~6 us before next span); post-sync 200us idle 75.8 us vs 18.8 us seeded
+  control → ~57 us/step excess on glm-a's unfixed tree (0.16% of step →
+  confirms it11's C128 closure; cross-worker: aa45af5 lineage is the remedy
+  glm-a's 15fd7f4 demonstrably lacks). Controls PASS (detector-negative,
+  injected self-test, 1 tail artifact excluded).
+- EXECUTED 2 (real source): SITE-P does TWO blocking reads per extend
+  forward (read-view + write-target coercions) — mocks that log at
+  __index__ time, not source reading, found this. All 5 verdicts PASS
+  incl. value-preserving mirror control and branch-dead control.
+- PENDING: prefill trace (prefill_trace_request.json) decides D1 live /
+  D2 lever / D3 cost. No patch written (mirror candidate identified,
+  equality unverified). python/ untouched (diff vs 2c854e0 = 0 lines).
