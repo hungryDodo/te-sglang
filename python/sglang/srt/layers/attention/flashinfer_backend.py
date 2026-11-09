@@ -2031,6 +2031,29 @@ class FlashInferIndicesUpdaterPrefill:
             prefix_is_full_seq = False
         sliding_window_size = self.sliding_window_size
         assert sliding_window_size is not None
+        # Host mirrors for the exact-metadata fast paths below. The extend
+        # dispatcher passes extend_prefix_lens_cpu and seq_lens_cpu from the
+        # same host lists that H2D-built prefix_lens/seq_lens
+        # (forward_batch_info.py), so lane-for-lane they are equal by
+        # construction; the gpu_only init path leaves the *_cpu mirrors unset
+        # and every guard falls back to the device reads.
+        host_lens_mirror = (
+            extend_prefix_lens_cpu is not None
+            and seq_lens_cpu is not None
+            and len(extend_prefix_lens_cpu) == len(prefix_lens)
+            and len(extend_prefix_lens_cpu) == seq_lens_cpu.numel()
+        )
+        if host_lens_mirror:
+            prefix_lens_cpu = extend_prefix_lens_cpu
+            extend_lens_cpu = [
+                int(s) - p
+                for s, p in zip(seq_lens_cpu.tolist(), extend_prefix_lens_cpu)
+            ]
+            kv_start_cpu = [
+                max(0, p - sliding_window_size) for p in extend_prefix_lens_cpu
+            ]
+        else:
+            prefix_lens_cpu = extend_lens_cpu = kv_start_cpu = None
         for wrapper_id in range(2):
             swa_paged_custom_mask = None
             if wrapper_id == 0:
@@ -2042,7 +2065,10 @@ class FlashInferIndicesUpdaterPrefill:
                         prefix_lens - sliding_window_size, min=0
                     )
                     paged_kernel_lens = prefix_lens - effective_start
-                    if extend_prefix_lens_cpu is not None:
+                    if (
+                        extend_prefix_lens_cpu is not None
+                        and len(extend_prefix_lens_cpu) == len(prefix_lens)
+                    ):
                         # paged_kernel_lens is elementwise min(prefix_len,
                         # window) over the same lanes the non-SWA ragged
                         # branch sums host-side, so the host mirror gives the
@@ -2056,7 +2082,12 @@ class FlashInferIndicesUpdaterPrefill:
                         paged_kernel_lens_sum = paged_kernel_lens.sum().item()
                     kv_start_idx = effective_start
                     swa_paged_custom_mask = self._build_swa_prefix_custom_mask(
-                        prefix_lens, seq_lens, effective_start
+                        prefix_lens,
+                        seq_lens,
+                        effective_start,
+                        prefix_lens_cpu=prefix_lens_cpu,
+                        extend_lens_cpu=extend_lens_cpu,
+                        kv_start_cpu=kv_start_cpu,
                     )
                 else:
                     # window attention use paged only; the trim below is
@@ -2065,7 +2096,17 @@ class FlashInferIndicesUpdaterPrefill:
                         seq_lens,
                         sliding_window_size + seq_lens - prefix_lens,
                     )
-                    if prefix_is_full_seq and seq_lens_cpu is not None:
+                    if host_lens_mirror:
+                        # paged_kernel_lens is min(seq_lens, window + extend_len);
+                        # summing the host mirrors avoids draining the stream.
+                        # prefix_is_full_seq (prefix == seq, extend == 0)
+                        # collapses to the same min(seq_lens, window) the
+                        # clamp branch below computed, so the mirror covers it.
+                        paged_kernel_lens_sum = sum(
+                            min(s, sliding_window_size + e)
+                            for s, e in zip(seq_lens_cpu.tolist(), extend_lens_cpu)
+                        )
+                    elif prefix_is_full_seq and seq_lens_cpu is not None:
                         # prefix_lens is seq_lens, so the trim is min(seq_lens, window);
                         # summing the host mirror avoids draining the stream.
                         paged_kernel_lens_sum = int(
@@ -2123,6 +2164,10 @@ class FlashInferIndicesUpdaterPrefill:
         prefix_lens: torch.Tensor,
         seq_lens: torch.Tensor,
         kv_start_idx: torch.Tensor,
+        *,
+        prefix_lens_cpu: Optional[List[int]] = None,
+        extend_lens_cpu: Optional[List[int]] = None,
+        kv_start_cpu: Optional[List[int]] = None,
     ) -> Optional[torch.Tensor]:
         """Custom SWA mask for the paged wrapper in the ragged merge_state EXTEND path.
 
@@ -2133,9 +2178,14 @@ class FlashInferIndicesUpdaterPrefill:
         if window is None or window < 0:
             return None
 
-        prefix_lens_cpu = prefix_lens.detach().cpu().tolist()
-        extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()
-        kv_start_cpu = kv_start_idx.detach().cpu().tolist()
+        if (
+            prefix_lens_cpu is None
+            or extend_lens_cpu is None
+            or kv_start_cpu is None
+        ):
+            prefix_lens_cpu = prefix_lens.detach().cpu().tolist()
+            extend_lens_cpu = (seq_lens - prefix_lens).detach().cpu().tolist()
+            kv_start_cpu = kv_start_idx.detach().cpu().tolist()
         if all(p == 0 for p in prefix_lens_cpu):
             return None
 
@@ -2148,11 +2198,17 @@ class FlashInferIndicesUpdaterPrefill:
             paged_len = int(prefix_len - kv_start)  # = min(prefix_len, window)
             if paged_len == 0 or extend_len == 0:
                 continue
+            # block[q, k] is 0 exactly when some paged key is out of window
+            # for some extend query. k_abs is minimized at k=0 (abs kv_start)
+            # and q_abs maximized at q=extend_len-1 (abs prefix_len +
+            # extend_len - 1), and the extremes pair up, so `not block.all()`
+            # is equivalent to the host comparison below -- no per-lane device
+            # .all() bool conversion (a D2H sync each) is needed.
+            if kv_start < prefix_len + extend_len - 1 - window:
+                need_mask = True
             q_abs = torch.arange(extend_len, device=device).view(-1, 1) + prefix_len
             k_abs = torch.arange(paged_len, device=device).view(1, -1) + kv_start
             block = (k_abs >= (q_abs - window)).to(torch.uint8)
-            if not bool(block.all()):
-                need_mask = True
             mask_parts.append(block.view(-1))
 
         if not need_mask or not mask_parts:
@@ -2323,7 +2379,17 @@ class FlashInferIndicesUpdaterPrefill:
 
         if use_sliding_window_kv_pool and not use_swa_source:
             assert self._swa_kv_pool is not None
-            kv_last_index = kv_indptr[-1]
+            # kv_indptr[-1] is a device scalar: slicing kv_indices with it
+            # forces a blocking D2H on every SWA extend batch. In the non-spec
+            # branch above kv_indptr[1:bs+1] = cumsum(paged_kernel_lens), so
+            # its last entry is exactly the host-computed paged_kernel_lens_sum
+            # (the SWA prefill updater rejects custom_kv_indices up front).
+            # The spec branch rebuilds kv_indptr inside
+            # generate_attn_arg_prefill, so keep the device read there.
+            if spec_info is None and custom_kv_indices is None:
+                kv_last_index = paged_kernel_lens_sum
+            else:
+                kv_last_index = kv_indptr[-1]
             kv_indices[:kv_last_index] = (
                 self._swa_kv_pool.translate_loc_from_full_to_swa(
                     kv_indices[:kv_last_index]
