@@ -1,0 +1,550 @@
+{
+ "anchors": {
+  "python/sglang/srt/managers/tokenizer_manager.py:2520": {
+   "expected": "if getattr(state.obj, \"return_logprob\", False):",
+   "ok": true
+  },
+  "python/sglang/srt/managers/tokenizer_manager.py:2873": {
+   "expected": "if top_logprobs_num > 0:",
+   "ok": true
+  },
+  "python/sglang/srt/managers/tokenizer_manager.py:2973": {
+   "expected": "meta_info[\"output_top_logprobs\"] = state.output_top_logprobs",
+   "ok": true
+  },
+  "python/sglang/srt/managers/tokenizer_manager.py:2945": {
+   "expected": "_build_flat_top_logprobs_fields(",
+   "ok": true
+  },
+  "python/sglang/srt/managers/io_struct.py:465": {
+   "expected": "if self.return_flat_raw_output_top_logprobs and self.stream:",
+   "ok": true
+  },
+  "python/sglang/srt/entrypoints/openai/serving_completions.py:317": {
+   "expected": "output_top_logprobs = content[\"meta_info\"].get(",
+   "ok": true
+  },
+  "python/sglang/srt/entrypoints/openai/serving_chat.py:3056": {
+   "expected": "output_top_logprobs = ret_item[\"meta_info\"].get(\"output_top_logprobs\", None)",
+   "ok": true
+  }
+ },
+ "executed": {
+  "flat_top_logprobs_layout": "io_struct.py real source",
+  "_build_flat_top_logprobs_fields(return_b64=False)": "tokenizer_manager.py real source",
+  "to_openai_style_logprobs": "openai/utils.py real source",
+  "LogProbs container": "protocol.py class body, shimmed base"
+ },
+ "responses": {
+  "native_k0_nested": {
+   "text": "x",
+   "output_ids": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "meta_info": {
+    "id": "rid-fixture",
+    "finish_reason": {
+     "type": "stop",
+     "matched": null
+    },
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "num_retractions": 0,
+    "output_token_logprobs": [
+     [
+      -0.5,
+      100
+     ],
+     [
+      -1.5,
+      101
+     ],
+     [
+      -2.5,
+      102
+     ],
+     [
+      -3.5,
+      103
+     ],
+     [
+      -4.5,
+      104
+     ],
+     [
+      -5.5,
+      105
+     ],
+     [
+      -6.5,
+      106
+     ],
+     [
+      -7.5,
+      107
+     ]
+    ]
+   }
+  },
+  "native_k20_nested": {
+   "text": "x",
+   "output_ids": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "meta_info": {
+    "id": "rid-fixture",
+    "finish_reason": {
+     "type": "stop",
+     "matched": null
+    },
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "num_retractions": 0,
+    "output_token_logprobs": [
+     [
+      -0.5,
+      100
+     ],
+     [
+      -1.5,
+      101
+     ],
+     [
+      -2.5,
+      102
+     ],
+     [
+      -3.5,
+      103
+     ],
+     [
+      -4.5,
+      104
+     ],
+     [
+      -5.5,
+      105
+     ],
+     [
+      -6.5,
+      106
+     ],
+     [
+      -7.5,
+      107
+     ]
+    ],
+    "output_top_logprobs": [
+     [
+      [
+       -1.0,
+       0,
+       "tok00"
+      ],
+      [
+       -1.5,
+       1,
+       "tok01"
+      ],
+      [
+       -2.0,
+       2,
+       "tok02"
+      ]
+     ],
+     [
+      [
+       -2.0,
+       3,
+       "tok10"
+      ],
+      [
+       -2.5,
+       4,
+       "tok11"
+      ],
+      [
+       -3.0,
+       5,
+       "tok12"
+      ]
+     ],
+     [
+      [
+       -3.0,
+       6,
+       "tok20"
+      ],
+      [
+       -3.5,
+       7,
+       "tok21"
+      ],
+      [
+       -4.0,
+       8,
+       "tok22"
+      ]
+     ],
+     [
+      [
+       -4.0,
+       9,
+       "tok30"
+      ],
+      [
+       -4.5,
+       10,
+       "tok31"
+      ],
+      [
+       -5.0,
+       11,
+       "tok32"
+      ]
+     ],
+     [
+      [
+       -5.0,
+       12,
+       "tok40"
+      ],
+      [
+       -5.5,
+       13,
+       "tok41"
+      ],
+      [
+       -6.0,
+       14,
+       "tok42"
+      ]
+     ],
+     [
+      [
+       -6.0,
+       15,
+       "tok50"
+      ],
+      [
+       -6.5,
+       16,
+       "tok51"
+      ],
+      [
+       -7.0,
+       17,
+       "tok52"
+      ]
+     ]
+    ]
+   }
+  },
+  "native_k20_flat": {
+   "text": "x",
+   "output_ids": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "meta_info": {
+    "id": "rid-fixture",
+    "finish_reason": {
+     "type": "stop",
+     "matched": null
+    },
+    "prompt_tokens": 32,
+    "completion_tokens": 8,
+    "num_retractions": 0,
+    "output_token_logprobs": [
+     [
+      -0.5,
+      100
+     ],
+     [
+      -1.5,
+      101
+     ],
+     [
+      -2.5,
+      102
+     ],
+     [
+      -3.5,
+      103
+     ],
+     [
+      -4.5,
+      104
+     ],
+     [
+      -5.5,
+      105
+     ],
+     [
+      -6.5,
+      106
+     ],
+     [
+      -7.5,
+      107
+     ]
+    ],
+    "output_top_logprobs_val_flat": [
+     -1.0,
+     -1.5,
+     -2.0,
+     -2.0,
+     -2.5,
+     -3.0,
+     -3.0,
+     -3.5,
+     -4.0,
+     -4.0,
+     -4.5,
+     -5.0,
+     -5.0,
+     -5.5,
+     -6.0,
+     -6.0,
+     -6.5,
+     -7.0
+    ],
+    "output_top_logprobs_idx_flat": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17
+    ],
+    "output_top_logprobs_shape": [
+     6,
+     3
+    ],
+    "output_top_logprobs_null_prefix": 2
+   }
+  },
+  "completions_k0": {
+   "choices": [
+    {
+     "logprobs": "<LogProbs object at 0xe8f4a90db7a0>"
+    }
+   ]
+  },
+  "completions_k20": {
+   "choices": [
+    {
+     "logprobs": "<LogProbs object at 0xe8f4a9073290>"
+    }
+   ]
+  }
+ },
+ "verdict_table": [
+  {
+   "response": "native_k0_nested",
+   "read": "top_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "native_k0_nested",
+   "read": "top_output_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "native_k0_nested",
+   "read": "meta_info.output_top_logprobs",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k0_nested",
+   "read": "meta_info.output_top_logprobs_val_flat",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k0_nested",
+   "read": "meta_info.output_top_logprobs_idx_flat",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k0_nested",
+   "read": "meta_info.output_top_logprobs_shape",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k0_nested",
+   "read": "meta_info.output_top_logprobs_null_prefix",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_nested",
+   "read": "top_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "native_k20_nested",
+   "read": "top_output_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "native_k20_nested",
+   "read": "meta_info.output_top_logprobs",
+   "result": "POPULATED",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_nested",
+   "read": "meta_info.output_top_logprobs_val_flat",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_nested",
+   "read": "meta_info.output_top_logprobs_idx_flat",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_nested",
+   "read": "meta_info.output_top_logprobs_shape",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_nested",
+   "read": "meta_info.output_top_logprobs_null_prefix",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_flat",
+   "read": "top_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "native_k20_flat",
+   "read": "top_output_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "native_k20_flat",
+   "read": "meta_info.output_top_logprobs",
+   "result": "NULL",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_flat",
+   "read": "meta_info.output_top_logprobs_val_flat",
+   "result": "POPULATED",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_flat",
+   "read": "meta_info.output_top_logprobs_idx_flat",
+   "result": "POPULATED",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_flat",
+   "read": "meta_info.output_top_logprobs_shape",
+   "result": "POPULATED",
+   "probe_documented_name": false
+  },
+  {
+   "response": "native_k20_flat",
+   "read": "meta_info.output_top_logprobs_null_prefix",
+   "result": "POPULATED",
+   "probe_documented_name": false
+  },
+  {
+   "response": "completions_k0",
+   "read": "top_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "completions_k0",
+   "read": "top_output_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "completions_k0",
+   "read": "choices[0].logprobs.top_logprobs",
+   "result": "EMPTY",
+   "probe_documented_name": false
+  },
+  {
+   "response": "completions_k20",
+   "read": "top_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "completions_k20",
+   "read": "top_output_logprobs",
+   "result": "NULL",
+   "probe_documented_name": true
+  },
+  {
+   "response": "completions_k20",
+   "read": "choices[0].logprobs.top_logprobs",
+   "result": "POPULATED",
+   "probe_documented_name": false
+  }
+ ],
+ "errors": [],
+ "shims": [
+  "LogProbs executed with minimal BaseModel/Field shim (pydantic absent); wire field names are attribute names",
+  "flat builder executed on return_b64=False path only (numpy/pybase64 absent)",
+  "fixtures use clean display texts (no U+FFFD) so tokenizer=None paths in to_openai_style_logprobs are taken, matching a tokenizer-bearing server for non-fragment tokens"
+ ],
+ "chat_field_evidence": {
+  "serving_chat_3056_read_on_k0_meta": false,
+  "serving_chat_3056_read_on_k20_meta": true,
+  "protocol_fields": "ChatCompletionTokenLogprob.top_logprobs (protocol.py:167); ChoiceLogprobs.content; LogProbs.top_logprobs (protocol.py:154)",
+  "note": "chat per-token builder needs a live tokenizer; field names are ast/class-declaration evidence; read-expression executed above"
+ }
+}
