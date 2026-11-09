@@ -1,0 +1,596 @@
+{
+  "campaign": "continuous-20261109-01",
+  "kind": "controller-supplied runtime evidence for next independent Iterations",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "f99b92db00610cccda19e5d0d08a7489af5341528e133165383c816ab52960a9",
+      "bytes": 3009
+    },
+    {
+      "path": "gguf-diagnostic-summary.json",
+      "sha256": "609d981cc3241f03eee13bc69355c0b27bb0484fdfdc1ffe9f58a5ff8075f893",
+      "bytes": 8259
+    },
+    {
+      "path": "gguf-dispatch.json",
+      "sha256": "85679db7ab11fb632a450f1cf8bc972e22d4a4601531071757f27d5f39abd13d",
+      "bytes": 1531
+    },
+    {
+      "path": "gguf-instrumented-run-summary.json",
+      "sha256": "34cf5d1c26202a2e197cd31658d7dd2439dd7284caac6df8e15c42690f01e30d",
+      "bytes": 3597
+    },
+    {
+      "path": "gguf-requests.jsonl",
+      "sha256": "e7e98b57f7caf5e710d2f2f026a1ce34c3aa6be2565fb25a6e3bff782b30299e",
+      "bytes": 458649
+    },
+    {
+      "path": "gguf-warmup.jsonl",
+      "sha256": "a52e475582034193d0f856956563b9c602eb771418c8d574cc16e9e4d3fd1f53",
+      "bytes": 217379
+    },
+    {
+      "path": "gguf_c4_diagnostic.py.txt",
+      "sha256": "c661e091bea2b2fc169343e0cf047996556ef89432c6189a89866493fdf0d88a",
+      "bytes": 20428
+    },
+    {
+      "path": "ngram-analysis.json",
+      "sha256": "3850b3b045f262313174811066852854dcba2368e2ba08014d3717240cf22fc9",
+      "bytes": 26000
+    },
+    {
+      "path": "ngram-full-observations.json",
+      "sha256": "f3c759a67c10c59cc73cc546170570bb53ed5c4d61ebd10c0a854ef24f74bea6",
+      "bytes": 2064160
+    },
+    {
+      "path": "ngram-raw-http/off/1709fa5da3a04f90bbababfdc58d6cc0.json",
+      "sha256": "6a1d10a4a4cbc4fc2c6b26ae59ac90455fb26f8111b5eb92abe772054dd77f69",
+      "bytes": 76810
+    },
+    {
+      "path": "ngram-raw-http/off/1709fa5da3a04f90bbababfdc58d6cc0.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/1709fa5da3a04f90bbababfdc58d6cc0.response.bin",
+      "sha256": "aa882373ce1980b7862e1aec527da5cf87e9458090ee0ebd782158e372516579",
+      "bytes": 15511
+    },
+    {
+      "path": "ngram-raw-http/off/1d40eaee66814945a3322dcbf21f13c9.json",
+      "sha256": "ef180a63122dd3034dd6ba05690e25122843450e6dd787315d798f2bea4616e3",
+      "bytes": 4398
+    },
+    {
+      "path": "ngram-raw-http/off/1d40eaee66814945a3322dcbf21f13c9.request.json",
+      "sha256": "a6c55add47e712686c7d43be809f78adacd8ad8229eb3e65d6f5131d1b8b7185",
+      "bytes": 4024
+    },
+    {
+      "path": "ngram-raw-http/off/1d40eaee66814945a3322dcbf21f13c9.response.bin",
+      "sha256": "3ceb0cab57c8f11be44a2fac684eee20ba6ba1571161e8a89dde7e03eb2df5af",
+      "bytes": 1219
+    },
+    {
+      "path": "ngram-raw-http/off/2db25f21236245beae6727205a41e4cd.json",
+      "sha256": "39f9a39af51e2f63b3f7ca039a2c9ffe4524b6074bdbfd63146ce323075ff35d",
+      "bytes": 76809
+    },
+    {
+      "path": "ngram-raw-http/off/2db25f21236245beae6727205a41e4cd.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/2db25f21236245beae6727205a41e4cd.response.bin",
+      "sha256": "9227b8a417a94038cdedf7e9250b17944a1c9a43b0876bd756b5c3f86a3880b6",
+      "bytes": 15510
+    },
+    {
+      "path": "ngram-raw-http/off/3c955145233442d4a76cd95df3ba16fb.json",
+      "sha256": "266140c0d50c782e1ff7859c20b77a2a22fa97473083ec7e20576fd7ff22eb64",
+      "bytes": 4430
+    },
+    {
+      "path": "ngram-raw-http/off/3c955145233442d4a76cd95df3ba16fb.request.json",
+      "sha256": "ec5e87d759b708f5dc2e8cc0cea3a5169e6990243041fb4633b20b21a08762c7",
+      "bytes": 4088
+    },
+    {
+      "path": "ngram-raw-http/off/3c955145233442d4a76cd95df3ba16fb.response.bin",
+      "sha256": "bd3d64657fec5ee6492472e0b8e46f296b0891ab775798fadad8a091e7c73a4d",
+      "bytes": 1235
+    },
+    {
+      "path": "ngram-raw-http/off/40d2193da8204ad6bc357b49e8319f12.json",
+      "sha256": "f2fa068b66dac6854195623f23c1d6b3e5bb56f3c2dcbf0129752b256a9fb30b",
+      "bytes": 4430
+    },
+    {
+      "path": "ngram-raw-http/off/40d2193da8204ad6bc357b49e8319f12.request.json",
+      "sha256": "ec5e87d759b708f5dc2e8cc0cea3a5169e6990243041fb4633b20b21a08762c7",
+      "bytes": 4088
+    },
+    {
+      "path": "ngram-raw-http/off/40d2193da8204ad6bc357b49e8319f12.response.bin",
+      "sha256": "996f5744976fa5315d90ba507550c9b08d2b50772f632b07b0c6961cd297239a",
+      "bytes": 1234
+    },
+    {
+      "path": "ngram-raw-http/off/59db8e9c7d3f47a080e8644937e3a75d.json",
+      "sha256": "821f0ebab265f3d20196665dd349b8c94209e0fb422c53fdbccd8c0993c236ad",
+      "bytes": 76774
+    },
+    {
+      "path": "ngram-raw-http/off/59db8e9c7d3f47a080e8644937e3a75d.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/59db8e9c7d3f47a080e8644937e3a75d.response.bin",
+      "sha256": "4b10fabc59c5d9b7e13f15292b72327f840240b1326b1173f5764650e3e2df43",
+      "bytes": 15494
+    },
+    {
+      "path": "ngram-raw-http/off/6963738f7c42434ea5f4bf150dcefd8f.json",
+      "sha256": "777c97e6bccb7c3eb7dc8814b38ab6655fc0584af5cc90f5f38169871e90a10f",
+      "bytes": 76814
+    },
+    {
+      "path": "ngram-raw-http/off/6963738f7c42434ea5f4bf150dcefd8f.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/6963738f7c42434ea5f4bf150dcefd8f.response.bin",
+      "sha256": "3e52bef8946ce05be4f08dfb281ca955b71315908f5bb5d7e9dd3fe3f2b239f0",
+      "bytes": 15512
+    },
+    {
+      "path": "ngram-raw-http/off/71f669022b084cc3bb2fb90331afc8f6.json",
+      "sha256": "ba7a7e027e26430bae84a2dc25a8943c57fd85074678789503d1ae8d779de1d9",
+      "bytes": 4370
+    },
+    {
+      "path": "ngram-raw-http/off/71f669022b084cc3bb2fb90331afc8f6.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/71f669022b084cc3bb2fb90331afc8f6.response.bin",
+      "sha256": "88a6b3935e64517d65308908337b912fb7ec947ff2ba6e74dabd66c7dffe9933",
+      "bytes": 1203
+    },
+    {
+      "path": "ngram-raw-http/off/73f2d959d4514ef781cb1ee332501a72.json",
+      "sha256": "ac633bc923f8870b9aae3ef1580755168e338a7290f8b947c30f833e6e2964ad",
+      "bytes": 4371
+    },
+    {
+      "path": "ngram-raw-http/off/73f2d959d4514ef781cb1ee332501a72.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/73f2d959d4514ef781cb1ee332501a72.response.bin",
+      "sha256": "559b4c29191712a46fada92dc4ebcad7313101ed4d39e109a086817331505f3a",
+      "bytes": 1204
+    },
+    {
+      "path": "ngram-raw-http/off/79d46650db5649c39ae3fd4aadfb196f.json",
+      "sha256": "cc41c2373d9d35af825ce39e6984bff02764f5dbb0dfe386fb33bfbc4a5eea8f",
+      "bytes": 76816
+    },
+    {
+      "path": "ngram-raw-http/off/79d46650db5649c39ae3fd4aadfb196f.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/79d46650db5649c39ae3fd4aadfb196f.response.bin",
+      "sha256": "a15b61fe4f3dc31070e00c577b8a53388ade2ab4b6daf7e2ca1b6a3660aa09c6",
+      "bytes": 15514
+    },
+    {
+      "path": "ngram-raw-http/off/80e86845df39448a9548e0139fca38f8.json",
+      "sha256": "3989b7891bf3d462f141667f3e21a03a6ca0f130b805dc2e32fe0cc22f5dfc21",
+      "bytes": 4369
+    },
+    {
+      "path": "ngram-raw-http/off/80e86845df39448a9548e0139fca38f8.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/80e86845df39448a9548e0139fca38f8.response.bin",
+      "sha256": "fe3c788f4c27862f8431066b3b57d874ee334edda65cd01b3cc0676160026d61",
+      "bytes": 1202
+    },
+    {
+      "path": "ngram-raw-http/off/8d2c2211e2a04b1882b11aa72604b75d.json",
+      "sha256": "e5668b900c62fac7b248a32a13e163ec519f28157eee285755477ead61973049",
+      "bytes": 4427
+    },
+    {
+      "path": "ngram-raw-http/off/8d2c2211e2a04b1882b11aa72604b75d.request.json",
+      "sha256": "ec5e87d759b708f5dc2e8cc0cea3a5169e6990243041fb4633b20b21a08762c7",
+      "bytes": 4088
+    },
+    {
+      "path": "ngram-raw-http/off/8d2c2211e2a04b1882b11aa72604b75d.response.bin",
+      "sha256": "101a014dbbafe4fe01f6080f4805389c162d29ca3fb779a2f0ec2c87d19c411d",
+      "bytes": 1232
+    },
+    {
+      "path": "ngram-raw-http/off/8ddba7cf249f40ebbd4e0549b806c7cd.json",
+      "sha256": "c09f80064a71a435e3c687617323ab686dcec3ea2b03d45407ef98cb266ae1ef",
+      "bytes": 4398
+    },
+    {
+      "path": "ngram-raw-http/off/8ddba7cf249f40ebbd4e0549b806c7cd.request.json",
+      "sha256": "a6c55add47e712686c7d43be809f78adacd8ad8229eb3e65d6f5131d1b8b7185",
+      "bytes": 4024
+    },
+    {
+      "path": "ngram-raw-http/off/8ddba7cf249f40ebbd4e0549b806c7cd.response.bin",
+      "sha256": "c20c8b43144822a6675cfc3aa6fe881cedcac68735a2bd10898c81c429caff47",
+      "bytes": 1219
+    },
+    {
+      "path": "ngram-raw-http/off/9fce67a854bc425ebc54feddfdf4bb54.json",
+      "sha256": "956d136e996127d5271aeeba0683d8eac5c13359cac5b0e859a0b3d4f22631ed",
+      "bytes": 4366
+    },
+    {
+      "path": "ngram-raw-http/off/9fce67a854bc425ebc54feddfdf4bb54.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/9fce67a854bc425ebc54feddfdf4bb54.response.bin",
+      "sha256": "9d30a70d3a60ada2011415ae88f943802aa87857c2fcad7f3933aff413437529",
+      "bytes": 1199
+    },
+    {
+      "path": "ngram-raw-http/off/abe19dc7dd5041b681cc28c8b4549ac1.json",
+      "sha256": "a0502d5277ebf4b76f39be30df66e2f073ce61e636dad6a91e01d4fa2c7c8750",
+      "bytes": 4398
+    },
+    {
+      "path": "ngram-raw-http/off/abe19dc7dd5041b681cc28c8b4549ac1.request.json",
+      "sha256": "a6c55add47e712686c7d43be809f78adacd8ad8229eb3e65d6f5131d1b8b7185",
+      "bytes": 4024
+    },
+    {
+      "path": "ngram-raw-http/off/abe19dc7dd5041b681cc28c8b4549ac1.response.bin",
+      "sha256": "d40f4811b03946038e0e4213bbe00081aecc5283781abf762ff1c39f11b4dcdb",
+      "bytes": 1218
+    },
+    {
+      "path": "ngram-raw-http/off/aca08da88d554f9bbeafc3dc4268898b.json",
+      "sha256": "2ba7e63071229516187af8d56fade15c4e722d04bc30cc573e048625ecec97ea",
+      "bytes": 76814
+    },
+    {
+      "path": "ngram-raw-http/off/aca08da88d554f9bbeafc3dc4268898b.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/aca08da88d554f9bbeafc3dc4268898b.response.bin",
+      "sha256": "cb2616543b1be9f4a3beb80932327b5bc5a7624686a28f2e25d203dd5f5cbf9d",
+      "bytes": 15512
+    },
+    {
+      "path": "ngram-raw-http/off/c2641bf08da94cbcb9e5c9aaf8d50885.json",
+      "sha256": "37a27761d24bfc98fa7cf55556d66b692723214ab7e91e5a634a92c58f8d3d0b",
+      "bytes": 4371
+    },
+    {
+      "path": "ngram-raw-http/off/c2641bf08da94cbcb9e5c9aaf8d50885.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/c2641bf08da94cbcb9e5c9aaf8d50885.response.bin",
+      "sha256": "bced275a2ef3d3468e8b5def94ff4f61a537eabe024a299b1b30b4a88f246afe",
+      "bytes": 1204
+    },
+    {
+      "path": "ngram-raw-http/off/c4fb7606d05a4d35bf760d6cd32c4aa3.json",
+      "sha256": "6ac561f3bd709390cc86207626e88afa3e3b57383e6e1d0fa69c7d98e2b52f60",
+      "bytes": 4370
+    },
+    {
+      "path": "ngram-raw-http/off/c4fb7606d05a4d35bf760d6cd32c4aa3.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/c4fb7606d05a4d35bf760d6cd32c4aa3.response.bin",
+      "sha256": "3157897289f0a4c5e4824141b527de9a9b6d437ed6fdae6980e348a17169cef9",
+      "bytes": 1203
+    },
+    {
+      "path": "ngram-raw-http/off/d408dfd99b774b82b7569bf376e55eb2.json",
+      "sha256": "34fb6a105e6523ce22f75902fdedec620321608266f8d7fa994aeef6a4773f46",
+      "bytes": 4370
+    },
+    {
+      "path": "ngram-raw-http/off/d408dfd99b774b82b7569bf376e55eb2.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/d408dfd99b774b82b7569bf376e55eb2.response.bin",
+      "sha256": "4b6ded1b1611dcbdbb6659a2598148997ed1474a892f36ba941ea664c4208ef3",
+      "bytes": 1202
+    },
+    {
+      "path": "ngram-raw-http/off/d54ed24ddcfd45f38812610aa923f216.json",
+      "sha256": "b0dcb42249314569a48d25dd666cfc5b3256ee28271f7f7c6042f72953d42988",
+      "bytes": 76816
+    },
+    {
+      "path": "ngram-raw-http/off/d54ed24ddcfd45f38812610aa923f216.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/d54ed24ddcfd45f38812610aa923f216.response.bin",
+      "sha256": "0522270adc2e5037fc7ee40c424bdee329fb7063ec56905ba216dc5a9c9fd5c0",
+      "bytes": 15514
+    },
+    {
+      "path": "ngram-raw-http/off/d8b7695dd3bb48dfb978d0fb63d2f318.json",
+      "sha256": "4c6cb749866a2ba67ebcdaa11e6b5f3475266201155c7bdcdccfbdb0f2b0b069",
+      "bytes": 4430
+    },
+    {
+      "path": "ngram-raw-http/off/d8b7695dd3bb48dfb978d0fb63d2f318.request.json",
+      "sha256": "ec5e87d759b708f5dc2e8cc0cea3a5169e6990243041fb4633b20b21a08762c7",
+      "bytes": 4088
+    },
+    {
+      "path": "ngram-raw-http/off/d8b7695dd3bb48dfb978d0fb63d2f318.response.bin",
+      "sha256": "952fa278dcce56382d7e1f5f02e3bd81c9b3c24428cf9da0b31e3a7ab1090ac4",
+      "bytes": 1234
+    },
+    {
+      "path": "ngram-raw-http/off/ebf1c2d8af2b48e8b64e629aa5e615ef.json",
+      "sha256": "b70345afc81e544a3d433df54833098aea2c88c1587cefa3a871a354132c643b",
+      "bytes": 76814
+    },
+    {
+      "path": "ngram-raw-http/off/ebf1c2d8af2b48e8b64e629aa5e615ef.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/ebf1c2d8af2b48e8b64e629aa5e615ef.response.bin",
+      "sha256": "fbf947580ae5f6ab0cdbb66e2da450b8842c327f930120b9b1082fd247c9804b",
+      "bytes": 15512
+    },
+    {
+      "path": "ngram-raw-http/off/f2b3d163c0d44296890acb340eadf315.json",
+      "sha256": "6d912234a311ee65da6c690f32b499106fdaba9ea93759f8d5e41ab4aea6d16f",
+      "bytes": 4371
+    },
+    {
+      "path": "ngram-raw-http/off/f2b3d163c0d44296890acb340eadf315.request.json",
+      "sha256": "f36112db34b1a341edac0add244428694a4972da880525b0d2919083cdee7fa7",
+      "bytes": 4011
+    },
+    {
+      "path": "ngram-raw-http/off/f2b3d163c0d44296890acb340eadf315.response.bin",
+      "sha256": "dc308fc649c1f7ff5ea1ed9c75bfcf431dc20d40d175f48797d33f667d3afd36",
+      "bytes": 1203
+    },
+    {
+      "path": "ngram-raw-http/off/fa05f60258bd4caeb7d0458b2b1e895d.json",
+      "sha256": "3f4bf8c9229358e2919ac187f26ba33959c3718f3d2f3b9b5464f6c034900a53",
+      "bytes": 76815
+    },
+    {
+      "path": "ngram-raw-http/off/fa05f60258bd4caeb7d0458b2b1e895d.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/fa05f60258bd4caeb7d0458b2b1e895d.response.bin",
+      "sha256": "1245370ad8ff064d039ed7ac542c1040921a7e8c082653cd325b5c258b0ae1cf",
+      "bytes": 15513
+    },
+    {
+      "path": "ngram-raw-http/off/fac3828af22c463088e46eb9f403af0d.json",
+      "sha256": "62b6e2c4e67097e55f51d818b9184c7a1456078be15dae47ef01a639fe49f8dd",
+      "bytes": 4395
+    },
+    {
+      "path": "ngram-raw-http/off/fac3828af22c463088e46eb9f403af0d.request.json",
+      "sha256": "a6c55add47e712686c7d43be809f78adacd8ad8229eb3e65d6f5131d1b8b7185",
+      "bytes": 4024
+    },
+    {
+      "path": "ngram-raw-http/off/fac3828af22c463088e46eb9f403af0d.response.bin",
+      "sha256": "be6c15e220206dba1a0a9ecf5cefbb08717de2cfc24a8c194b0651c8035f82a0",
+      "bytes": 1216
+    },
+    {
+      "path": "ngram-raw-http/off/fb20abc65e444db4a3fcf5c3f7fa6fb4.json",
+      "sha256": "9dce635eb3ade7f7fac4133f937ccfba7ef40a8c98a4ccd9db1a098608205bf7",
+      "bytes": 76741
+    },
+    {
+      "path": "ngram-raw-http/off/fb20abc65e444db4a3fcf5c3f7fa6fb4.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/off/fb20abc65e444db4a3fcf5c3f7fa6fb4.response.bin",
+      "sha256": "941f191eb14757d55b81256fdd3691b57a5288d69645e0819a818fc8f08f39e8",
+      "bytes": 15476
+    },
+    {
+      "path": "ngram-raw-http/on/1e941a58acec42e286714adc0b1023fd.json",
+      "sha256": "a84757c717b4673ffd0530b57bcde9541dbb4ec85eeb7069951a12e673d9d820",
+      "bytes": 76373
+    },
+    {
+      "path": "ngram-raw-http/on/1e941a58acec42e286714adc0b1023fd.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/1e941a58acec42e286714adc0b1023fd.response.bin",
+      "sha256": "08ce4786c6ca6c17bf5311a5d09bf4d4d94e71adf249ebb44cbb04f6db12bd54",
+      "bytes": 15270
+    },
+    {
+      "path": "ngram-raw-http/on/2193e5c4e0e840a6a955dd0010cb1321.json",
+      "sha256": "d48b7b43a731f204b98f956baa78a2ee6f71f045fe82c8bca14430b7e589de4f",
+      "bytes": 75576
+    },
+    {
+      "path": "ngram-raw-http/on/2193e5c4e0e840a6a955dd0010cb1321.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/2193e5c4e0e840a6a955dd0010cb1321.response.bin",
+      "sha256": "c95225737b9043199906e5c02e52bd6582b0322deeb81e8d6a764e5330a2d06e",
+      "bytes": 14833
+    },
+    {
+      "path": "ngram-raw-http/on/29e1f893da444eebb806574e54d9da3b.json",
+      "sha256": "0e2299ac9eb711e32f64507ec35efe545081f171259a865ef59a45f9b416f01d",
+      "bytes": 76251
+    },
+    {
+      "path": "ngram-raw-http/on/29e1f893da444eebb806574e54d9da3b.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/29e1f893da444eebb806574e54d9da3b.response.bin",
+      "sha256": "8355c01c4cbbe8bc8a1f29be972e42a477fc764f1d440ea65591c78ef458f1fd",
+      "bytes": 15215
+    },
+    {
+      "path": "ngram-raw-http/on/33dbd6cd32a340f383f1a0544832fdd2.json",
+      "sha256": "55cc0fb6cb6a45a544517c8dd684cdb1988e7ef133a582469afb677718ea7b56",
+      "bytes": 75701
+    },
+    {
+      "path": "ngram-raw-http/on/33dbd6cd32a340f383f1a0544832fdd2.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/33dbd6cd32a340f383f1a0544832fdd2.response.bin",
+      "sha256": "19ba9930e7c2698dd8e2e8698f9bd899368457a6ae91718f0ea4e8f6210f9b15",
+      "bytes": 14922
+    },
+    {
+      "path": "ngram-raw-http/on/8d09bec7d7c9484a941e286fa53adb2a.json",
+      "sha256": "bf4c3c778378dfc3ac6804138823f2ab2cea545492b39ac754e90b38ecb7b760",
+      "bytes": 75754
+    },
+    {
+      "path": "ngram-raw-http/on/8d09bec7d7c9484a941e286fa53adb2a.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/8d09bec7d7c9484a941e286fa53adb2a.response.bin",
+      "sha256": "9a1e9c19ce8492b7f0ca76dec68031bad17a51b5ce758a9f4deda839a2cdf364",
+      "bytes": 14923
+    },
+    {
+      "path": "ngram-raw-http/on/a3ab047c7da7425583af80f15de58144.json",
+      "sha256": "2c1295e47a37472f0efc6d22f39387e27888f0182735c39a59a29fac03b6c7cf",
+      "bytes": 76749
+    },
+    {
+      "path": "ngram-raw-http/on/a3ab047c7da7425583af80f15de58144.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/a3ab047c7da7425583af80f15de58144.response.bin",
+      "sha256": "f5b3b00c5a37b22b30ed918093a4e08bd31e04905aeede19a37717901d6728f0",
+      "bytes": 15456
+    },
+    {
+      "path": "ngram-raw-http/on/aaab67593e5044c7bcbbb4744d80d260.json",
+      "sha256": "c237653319df623bc43d631fcff2d1f166a90203c2327856473bf61a8a1bd9e0",
+      "bytes": 75740
+    },
+    {
+      "path": "ngram-raw-http/on/aaab67593e5044c7bcbbb4744d80d260.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/aaab67593e5044c7bcbbb4744d80d260.response.bin",
+      "sha256": "045e3ccc65b4dc4c73e45646c05376462d006fcdc2465396f761e97288336fc1",
+      "bytes": 14934
+    },
+    {
+      "path": "ngram-raw-http/on/cdd9d5fdaa9b46a7ab307bc0aebe07d0.json",
+      "sha256": "a6641c8b0edfb8d44a33a95fcae21974340c6aa5bedc7d971579c920ffc4e5e4",
+      "bytes": 75485
+    },
+    {
+      "path": "ngram-raw-http/on/cdd9d5fdaa9b46a7ab307bc0aebe07d0.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/cdd9d5fdaa9b46a7ab307bc0aebe07d0.response.bin",
+      "sha256": "866f7321c58dd085bc62aeebedb0bf1b68207bd6e2afb4906a3e0e3987e469e9",
+      "bytes": 14799
+    },
+    {
+      "path": "ngram-raw-http/on/d4e10ca985314a4992e33067a534c92a.json",
+      "sha256": "39ceeb1f2c1ba111f8dad294afec7cb6ba5adab6af7cbfa7243186c9492bf8d1",
+      "bytes": 76371
+    },
+    {
+      "path": "ngram-raw-http/on/d4e10ca985314a4992e33067a534c92a.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/d4e10ca985314a4992e33067a534c92a.response.bin",
+      "sha256": "294cbef4820bbd9909c9da018196b61cac67d91679cce7d8ca9d41c6e5f67452",
+      "bytes": 15285
+    },
+    {
+      "path": "ngram-raw-http/on/f2f899b46f074f4ca6a6bee05edd226d.json",
+      "sha256": "ae8bbb97a53662ced0fd3cdee901387e9d944a482afa3b516b5f7b2b4f1d601a",
+      "bytes": 75684
+    },
+    {
+      "path": "ngram-raw-http/on/f2f899b46f074f4ca6a6bee05edd226d.request.json",
+      "sha256": "6c9e53f28cb3adcf7994703aeda293ebd3708b9ba4a18583425aeff4d530f0ca",
+      "bytes": 3983
+    },
+    {
+      "path": "ngram-raw-http/on/f2f899b46f074f4ca6a6bee05edd226d.response.bin",
+      "sha256": "b63de2b761eb58256da8eca5bc4b4fa2ba8728a17248ecbe4e821ff4831a8e2e",
+      "bytes": 14916
+    },
+    {
+      "path": "ngram_ab_diagnostic.py.txt",
+      "sha256": "d3906d33308d5c408ca3d160570ce197a920001f16d0a34e6183b1a00c943c9e",
+      "bytes": 24795
+    }
+  ]
+}
