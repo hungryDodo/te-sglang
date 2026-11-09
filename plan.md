@@ -93,6 +93,6 @@ registration, plus a sharp falsifiable prediction for the next fp8 numeric probe
 that = non-precision defect, reclassifying part of F2 as bug-hunting).
 
 No engine change (tree bit-identical to 5a20347/i4 — verified this session via
-t7's recorded diff and unchanged HEAD since 498aa25/15fd7f4 which touch no python/);
+t7's recorded diff and unchanged HEAD since 498aa26/15fd7f4 which touch no python/);
 request_fast_gate=false (a re-screen of the unchanged tree would be a non-action).
 The t7 decode-trace request remains standing, not re-requested unchanged.
