@@ -1,0 +1,233 @@
+{
+ "assumptions": {
+  "bytes_per_weight": {
+   "bf16": 2.0,
+   "q4_k": 0.5625,
+   "q8_0": 1.0625
+  },
+  "flops": "dense 2*params*tokens; attention 4*S*eff_len*H per layer (QK^T+AV), no MLP/attention double count of the output projection beyond params",
+  "l2_bytes": 26214400,
+  "not_a_measurement": true,
+  "tied_embeddings": "model name 1.7B matches model_tied; both tied and untied totals are emitted"
+ },
+ "config_defaults": {
+  "head_dim": 256,
+  "hidden_size": 2048,
+  "intermediate_size": 6656,
+  "num_attention_heads": 8,
+  "num_hidden_layers": 28,
+  "num_key_value_heads": 2,
+  "sliding_window": 512,
+  "vocab_size": 133120
+ },
+ "layer_types": {
+  "n_full": 7,
+  "n_layers": 28,
+  "n_sliding": 21,
+  "pattern_source": "executed real list-comp"
+ },
+ "linear_shapes": {
+  "g_proj": [
+   8,
+   2048
+  ],
+  "mlp_down": [
+   6656,
+   2048
+  ],
+  "mlp_gate_up": [
+   13312,
+   2048
+  ],
+  "out_proj": [
+   2048,
+   2048
+  ],
+  "q_k_v_proj": [
+   3072,
+   2048
+  ]
+ },
+ "matrices": [
+  {
+   "bf16_bytes": 12582912.0,
+   "bf16_exceeds_l2": false,
+   "exceeds_l2": false,
+   "in_features": 2048,
+   "name": "q_k_v_proj",
+   "out_features": 3072,
+   "params": 6291456,
+   "q8_0_bytes": 6684672.0,
+   "rows_band": "rows<=5120"
+  },
+  {
+   "bf16_bytes": 32768.0,
+   "bf16_exceeds_l2": false,
+   "exceeds_l2": false,
+   "in_features": 2048,
+   "name": "g_proj",
+   "out_features": 8,
+   "params": 16384,
+   "q8_0_bytes": 17408.0,
+   "rows_band": "rows<=5120"
+  },
+  {
+   "bf16_bytes": 8388608.0,
+   "bf16_exceeds_l2": false,
+   "exceeds_l2": false,
+   "in_features": 2048,
+   "name": "out_proj",
+   "out_features": 2048,
+   "params": 4194304,
+   "q8_0_bytes": 4456448.0,
+   "rows_band": "rows<=5120"
+  },
+  {
+   "bf16_bytes": 54525952.0,
+   "bf16_exceeds_l2": true,
+   "exceeds_l2": true,
+   "in_features": 2048,
+   "name": "mlp_gate_up",
+   "out_features": 13312,
+   "params": 27262976,
+   "q8_0_bytes": 28966912.0,
+   "rows_band": "rows>5120"
+  },
+  {
+   "bf16_bytes": 27262976.0,
+   "bf16_exceeds_l2": true,
+   "exceeds_l2": false,
+   "in_features": 2048,
+   "name": "mlp_down",
+   "out_features": 6656,
+   "params": 13631488,
+   "q8_0_bytes": 14483456.0,
+   "rows_band": "rows>5120"
+  },
+  {
+   "bf16_bytes": 545259520.0,
+   "bf16_exceeds_l2": true,
+   "exceeds_l2": true,
+   "in_features": 2048,
+   "name": "token_embd(tied)",
+   "out_features": 133120,
+   "params": 272629760,
+   "q8_0_bytes": 289669120.0,
+   "rows_band": "rows>5120"
+  }
+ ],
+ "params": {
+  "embed": 272629760,
+  "model_tied": 1711734784,
+  "model_untied": 1984364544,
+  "per_layer": 51396608
+ },
+ "prefill_flops": [
+  {
+   "attn_full_tflop": 0.060129542144,
+   "attn_share_full": 0.03316675920784749,
+   "attn_windowed_tflop": 0.060129542144,
+   "dense_tflop": 1.752816418816,
+   "seq": 512,
+   "window_binds": false,
+   "window_speedup_ceiling": 1.0
+  },
+  {
+   "attn_full_tflop": 0.240518168576,
+   "attn_share_full": 0.06420407724553044,
+   "attn_windowed_tflop": 0.15032385536,
+   "dense_tflop": 3.505632837632,
+   "seq": 1024,
+   "window_binds": true,
+   "window_speedup_ceiling": 1.0246705091963728
+  },
+  {
+   "attn_full_tflop": 0.962072674304,
+   "attn_share_full": 0.12066121267212065,
+   "attn_windowed_tflop": 0.420906795008,
+   "dense_tflop": 7.011265675264,
+   "seq": 2048,
+   "window_binds": true,
+   "window_speedup_ceiling": 1.0728139560082348
+  },
+  {
+   "attn_full_tflop": 3.848290697216,
+   "attn_share_full": 0.21533932165710337,
+   "attn_windowed_tflop": 1.322849927168,
+   "dense_tflop": 14.022531350528,
+   "seq": 4096,
+   "window_binds": true,
+   "window_speedup_ceiling": 1.1645733477941433
+  },
+  {
+   "attn_full_tflop": 15.393162788864,
+   "attn_share_full": 0.35436905203312324,
+   "attn_windowed_tflop": 4.569845202944,
+   "dense_tflop": 28.045062701056,
+   "seq": 8192,
+   "window_binds": true,
+   "window_speedup_ceiling": 1.3318518518518518
+  },
+  {
+   "attn_full_tflop": 15.389404921856,
+   "attn_share_full": 0.35434112215952984,
+   "attn_windowed_tflop": 4.568817655808,
+   "dense_tflop": 28.041639231488,
+   "seq": 8191,
+   "window_binds": true,
+   "window_speedup_ceiling": 1.3318134211809636
+  }
+ ],
+ "sliding_window_exclusive": 511,
+ "source_anchors": {
+  "config": "python/sglang/srt/configs/spark2_5.py",
+  "gguf": "python/sglang/srt/layers/quantization/gguf.py",
+  "model": "python/sglang/srt/models/spark2_5.py"
+ },
+ "verdicts": {
+  "bf16_engine_lane": {
+   "decode": "roofline-closed on a4 (branch trial-1/2 measurements)",
+   "prefill": "compute-bound; only larger lever is the semantics-blocked sliding window above",
+   "status": "NO_PROMOTABLE_LEVER_ESTABLISHED"
+  },
+  "f3_changed_cells_at_batch_ge_16": 0,
+  "f3_status": "UNGATED_AND_SCORE_UNREACHABLE_UNDER_FORMAL_GATE",
+  "formal_gate_is_bf16_safetensors": true,
+  "g2t1_ceiling_measured_on_l2_resident_weights": {
+   "every_real_bf16_matrix_exceeds_l2": 3,
+   "microbench_max_weight_bytes": 14500000,
+   "real_bf16_matrices_over_l2": [
+    "mlp_gate_up",
+    "mlp_down",
+    "token_embd(tied)"
+   ],
+   "smallest_real_q8_0_matrix_bytes": 4456448.0,
+   "transfer_to_real_layers_allowed": false
+  },
+  "gguf_kernel_paths_score_relevant": false,
+  "gguf_route_note": "The frozen formal Gate loads BF16 safetensors revision e6406af... with no GGUF artifact and no --quantization gguf (controller applicability-001). Therefore neither f263262 nor any load-time-dequant GGUF change can move aggregate output tokens/s under the frozen contract, independent of its speed.",
+  "sliding_window_prefill_lever": {
+   "acceptance": "IMPOSSIBLE_UNDER_FROZEN_EXACT_TOKEN_BASELINE",
+   "mechanism_share_at_8192": 0.35436905203312324,
+   "why": "The pinned reference wheel executes the same extend_no_prefix path without window_left (branch trial-2, source-anchored). Applying the 511 window changes the attention output of every position >511 in 21/28 layers, so greedy tokens are not preserved; valid_exact_token_baseline compares against the reference output. A >512-token parity harness cannot rescue this: parity is defined against the same full-attention reference.",
+   "window_speedup_ceiling_at_8192": 1.3318518518518518
+  }
+ },
+ "weight_bytes": {
+  "bf16": {
+   "model_tied_bytes": 3423469568.0,
+   "model_untied_bytes": 3968729088.0,
+   "per_layer_bytes": 102793216.0
+  },
+  "q4_k": {
+   "model_tied_bytes": 962850816.0,
+   "model_untied_bytes": 1116205056.0,
+   "per_layer_bytes": 28910592.0
+  },
+  "q8_0": {
+   "model_tied_bytes": 1818718208.0,
+   "model_untied_bytes": 2108387328.0,
+   "per_layer_bytes": 54608896.0
+  }
+ }
+}
