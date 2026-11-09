@@ -1,0 +1,285 @@
+{
+  "trial": "g3-t10",
+  "worker": "deepseek-a",
+  "method": "ast-extract literal triton kernel/dispatch bodies and execute under a pure-Python tl shim",
+  "extracted": {
+    "fill_accept_out_cache_loc": {
+      "file": "python/sglang/kernels/ops/speculative/eagle.py",
+      "lineno": 56,
+      "end_lineno": 70,
+      "sha256": "dd6d6a82193aac02543e1b69131163fb725469e3f4a1063272183ce8c6123d14"
+    },
+    "fill_accept_out_cache_loc_func": {
+      "file": "python/sglang/kernels/ops/speculative/eagle.py",
+      "lineno": 73,
+      "end_lineno": 91,
+      "sha256": "6dc07ee3c234da6ffb2147eea45a641d3637fa635c3cc7f72eacdd53a204858f"
+    },
+    "assign_extend_cache_locs": {
+      "file": "python/sglang/kernels/ops/speculative/cache_locs.py",
+      "lineno": 500,
+      "end_lineno": 531,
+      "sha256": "f5f5fde7d6b809a7fd155be83135164cdcc21eef79d6ab3012123e8ca85deac0"
+    },
+    "fill_front_out_cache_loc_func": {
+      "file": "python/sglang/kernels/ops/speculative/cache_locs.py",
+      "lineno": 752,
+      "end_lineno": 780,
+      "sha256": "6158d6e69f1d9406b6e333deadd580b13b96bb65069e446c12776abf2c6f742f"
+    }
+  },
+  "anchor_checks": {
+    "accept_kernel_skip_sentinel": true,
+    "accept_kernel_prefix_count": true,
+    "front_kernel_prefix_sum": true,
+    "front_dispatch_view": true,
+    "front_dispatch_prefix_sum_call": true
+  },
+  "source_facts": {
+    "cpu_aot_skips_sentinel": true,
+    "cpu_aot_bounds_check": true,
+    "cpu_aot_compact_comment": true,
+    "move_uses_full_size": true,
+    "spec_utils_allocates_zero_fill": true,
+    "front_call_site": true,
+    "kv_allocator_reserves_slot0": true
+  },
+  "literal_case_1": {
+    "accept_index": [
+      0,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1
+    ],
+    "out_cache_loc": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "num_front": [
+      1
+    ],
+    "accept_out": [
+      10,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "front_out": [
+      10,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "golden_accept": [
+      10,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "golden_front": [
+      10,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "accept_matches_golden": true,
+    "front_matches_golden": true,
+    "negative_index_loads": [],
+    "conflicting_destinations": {},
+    "src_lt_tgt_pairs": 0,
+    "literal_accept_ok": true,
+    "literal_front_ok": true,
+    "ok": true
+  },
+  "literal_case_2": {
+    "accept_index": [
+      0,
+      2,
+      -1,
+      -1,
+      4,
+      6,
+      -1,
+      -1
+    ],
+    "out_cache_loc": [
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107
+    ],
+    "num_front": [
+      2,
+      2
+    ],
+    "accept_out": [
+      100,
+      102,
+      104,
+      106,
+      0,
+      0,
+      0,
+      0
+    ],
+    "front_out": [
+      100,
+      101,
+      104,
+      105,
+      0,
+      0,
+      0,
+      0
+    ],
+    "golden_accept": [
+      100,
+      102,
+      104,
+      106,
+      0,
+      0,
+      0,
+      0
+    ],
+    "golden_front": [
+      100,
+      101,
+      104,
+      105,
+      0,
+      0,
+      0,
+      0
+    ],
+    "accept_matches_golden": true,
+    "front_matches_golden": true,
+    "negative_index_loads": [],
+    "conflicting_destinations": {},
+    "src_lt_tgt_pairs": 0,
+    "literal_accept_ok": true,
+    "literal_front_ok": true,
+    "ok": true
+  },
+  "exhaustive_small": {
+    "cases": 5050,
+    "all_ok": true,
+    "fail_examples": []
+  },
+  "random_large": {
+    "cases": 1500,
+    "all_ok": true,
+    "fail_examples": []
+  },
+  "mutant_sentinel": {
+    "description": "sentinel -1 no longer skipped (t9's out_cache_loc[-1] read)",
+    "accept_out": [
+      10,
+      15,
+      0,
+      0,
+      0,
+      0
+    ],
+    "front_out": [
+      10,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "negative_index_loads": [
+      [
+        "out_cache_loc",
+        -1
+      ],
+      [
+        "out_cache_loc",
+        -1
+      ],
+      [
+        "out_cache_loc",
+        -1
+      ],
+      [
+        "out_cache_loc",
+        -1
+      ],
+      [
+        "out_cache_loc",
+        -1
+      ]
+    ],
+    "golden_accept": [
+      10,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "detected": true
+  },
+  "mutant_positional_front": {
+    "description": "front fill positional row-major with zero tail instead of dense prefix",
+    "accept_out": [
+      100,
+      102,
+      104,
+      106,
+      0,
+      0,
+      0,
+      0
+    ],
+    "front_out": [
+      100,
+      101,
+      0,
+      0,
+      104,
+      105,
+      0,
+      0
+    ],
+    "conflicting_destinations": {
+      "0": [
+        0,
+        104,
+        106
+      ]
+    },
+    "detected": true
+  },
+  "verdict": {
+    "actual_helpers_dense_pack": true,
+    "sentinel_skipped": true,
+    "conflicting_destinations_actual": 0,
+    "positive_controls_detected": true,
+    "t9_zero_tail_hazard_falsified_by_source": true
+  },
+  "limits": [
+    "Triton kernel bodies executed under a Python shim, not the CUDA kernels.",
+    "The GPU move_kv_cache copy and hnd/native variants were not executed; only index pairs were analyzed; a duplicate destination with one source value cannot corrupt KV.",
+    "NGRAM tree construction/verify logits (candidate A) are untouched; F1 remains OPEN."
+  ]
+}
