@@ -1,43 +1,31 @@
-# Plan — worker glm-b, round 3: fused Triton headwise attention-output gate (Spark2_5)
-
-## Attribution / provenance
-- Development parent: `8cfcffb59899e2fbf2dd1f9b504971a14145d443` (already contains the
-  Controller-adopted round-1 sampler disabled-trace patch; this round's measurement
-  against trusted reference `5b89820b04cb26385d45915c484708796ba7df91` therefore
-  measures the COMBINATION, not the isolated gate kernel). Parent's single C1
-  exploratory score 1.00196 does not establish a repeatable gain.
-- Round 2 failed with ECONNRESET before any tokens or code; nothing was produced.
+# Plan — worker glm-b, round 1, node a2: Sampler disabled-trace overhead
 
 ## Hypothesis
-The Spark2_5 headwise attention-output gate (`torch.sigmoid(g.float()).to(dtype)`
-then a broadcast per-head multiply) spends host time on three eager kernels
-(fp32 cast+sigmoid, dtype cast, broadcast mul) plus an output-sized intermediate.
-One Triton kernel computing sigmoid in FP32, casting the gate to `attn_output.dtype`
-(EXPLICIT intermediate BF16/FP16 rounding preserved BEFORE the multiply) and
-writing `attn_val * gate_rounded` into a NEW output tensor may reduce per-layer
-host/GPU overhead for contiguous CUDA batches. Gate index for flattened element
-`i` is `row*num_heads + head`.
+In `python/sglang/srt/layers/sampler.py::Sampler.forward`, the `SGLANG_TRACE_SAMPLER_E2E`
+instrumentation builds debug kwargs / tuple shapes and calls trace helper functions on
+every forward even when the env flag is disabled. Each disabled helper call still costs
+a Python function call + `os.environ.get`/flag lookup, and disabled-path dict/tuple
+construction allocates. Replacing the per-call disabled work with a cheap module-level
+enabled check (read env dynamically each forward, so runtime enable/disable still works)
+and skipping construction of debug shapes when off will remove that overhead from the
+sampling path (CPU-side; runs outside CUDA graph).
 
-## Scope (only this)
-- New helper `python/sglang/srt/layers/headwise_attn_output_gate.py`:
-  exact-baseline function (kept for Controller comparison), strict guards
-  (2D exact shape, CUDA, same device, bf16/fp16/fp32, same dtype, contiguous,
-  int metadata, numel bound), lazy `triton` import after guards, empty-batch
-  handled eagerly (no zero-grid launch), new-output allocation, no in-place ops.
-- Tiny call-site replacement in `python/sglang/srt/models/spark2_5.py`.
-- No attention/KV/g_proj/out_proj changes; wheels/binaries untouched.
+## Steps
+1. Read `python/sglang/srt/layers/sampler.py` (only the trace-related parts).
+2. Implement: single cheap dynamic enabled-check per forward; when disabled, no helper
+   calls and no debug kwargs/tuple construction; when enabled, behavior identical to
+   today (same trace events, same helper calls, same fields). Sampler/logprob/token-sync
+   operations unchanged in both paths.
+3. Add ONE stdlib-only CPU regression test that:
+   - Uses `ast` to extract `Sampler.forward` and verify call-order of core ops is
+     unchanged vs. the source (structural check), and that disabled path does not build
+     the debug shapes.
+   - Uses fake dependency stubs (sys.modules injection) so importing sampler.py does
+     NOT import the CUDA engine; asserts trace-off => helper not called / no debug kwargs
+     built; trace-on => helper still called (dynamic enablement preserved).
+4. Run test with `python3 -I`.
+5. Write `iteration-proposal.json`, commit everything in one new commit.
 
-## Tests
-1. Stdlib-only CPU test (AST on actual sources + fake torch/triton execution):
-   B0/B1/B32/B64 + odd shapes, dtype/device/contiguity/shape/metadata fallbacks
-   identical to baseline outcomes (including preserved error behavior),
-   no-alias/no-mutation, launch grid/BLOCK checks. Run with `/usr/bin/python3 -I`.
-2. GPU script `test/srt/test_headwise_attn_output_gate_gpu.py` — WRITTEN, NOT RUN
-   by worker (status NOT_RUN_BY_WORKER): actual baseline vs actual fused helper on
-   identical inputs, special/rounding-boundary values, fallback equivalence,
-   honest mismatch/max-abs reporting, no tolerances.
-
-## Non-claims
-Triton source compiling/executing, GPU numeric equivalence (torch.sigmoid vs
-tl.sigmoid implementations may differ), JIT compile success on the target GPU,
-speedup, repeatability, or task quality are NOT established by this round.
+## What this does NOT claim
+- No GPU/measured perf number; sampler runs outside model CUDA graph.
+- No quality/EXACT validation — controller does official evaluation.

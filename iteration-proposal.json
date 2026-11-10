@@ -1,47 +1,33 @@
 {
   "schema_version": 1,
   "worker": "glm-b",
-  "round": 3,
-  "base_commit": "8cfcffb59899e2fbf2dd1f9b504971a14145d443",
-  "trusted_reference_commit": "5b89820b04cb26385d45915c484708796ba7df91",
-  "triton_jit_source_identity": "python/sglang/srt/layers/headwise_attn_output_gate.py :: @triton.jit def _headwise_gate_kernel (lazily defined only inside _get_headwise_gate_triton_kernel, imported only after guards pass); source text only, never compiled or executed by worker",
-  "hypothesis": "Spark2_5 headwise attention output gating runs as eager fp32-cast+sigmoid, dtype-cast, and broadcast-multiply kernels plus an output-sized intermediate. A single Triton kernel that loads the flattened attn_output and gate, computes sigmoid in FP32, casts the gate to attn_output.dtype (explicit intermediate BF16/FP16 rounding preserved BEFORE the multiply), multiplies per head (gate index row*num_heads+head) and writes a brand-new output tensor may reduce per-layer overhead for strict contiguous CUDA batches; anything unexpected falls back to the exact original torch expression.",
+  "round": 1,
+  "base_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "candidate_origin": "CONTROLLER_ADOPTED_FAILED_PROVIDER_PARTIAL",
+  "original_Provider_status": "AGENT_ERROR",
+  "hypothesis": "When SGLANG_TRACE_SAMPLER_E2E is disabled, reading its flag once per Sampler.forward and guarding trace calls avoids eight helper calls and two debug shape tuples per decoded step. Sampling tensor operations remain structurally identical.",
   "changed_files": [
-    "python/sglang/srt/layers/headwise_attn_output_gate.py",
-    "python/sglang/srt/models/spark2_5.py",
-    "test/srt/test_headwise_attn_output_gate_cpu.py",
-    "test/srt/test_headwise_attn_output_gate_gpu.py",
-    "plan.md",
-    "learning.md",
-    "iteration-proposal.json"
+    "python/sglang/srt/layers/sampler.py",
+    "test/srt/test_sampler_trace_disabled_overhead.py"
   ],
-  "expected_effect": "Potential reduction of host/kernel-launch overhead for the headwise gate on eligible contiguous CUDA batches (B>=1); empty batch stays eager with no zero-grid launch. No GPU speedup is measured or claimed; effect may be below screen resolution.",
+  "expected_effect": "Potential small host-overhead reduction, possibly below noisy C1 screening resolution; no measured GPU gain yet.",
   "applicability": [
-    "Only Spark2_5 headwise_attn_output_gate path with attn_output exactly 2D [T, num_heads*head_dim], gate [T, num_heads], same CUDA device, identical bf16/fp16/fp32 dtypes, both contiguous, integer metadata, numel < 2^31",
-    "All other inputs (CPU, wrong shape/dim/dtype/device, non-contiguous, non-tensor, empty batch) take the exact original eager baseline preserved in headwise_attn_output_gate_baseline",
-    "No change to attention/KV/g_proj/out_proj, sampler, quantization, or native wheels; triton imported lazily only after guards pass"
+    "Default disabled optional tracing",
+    "Greedy and sampling paths keep all core operations",
+    "Flag changes between forwards remain supported",
+    "Sampler executes outside model CUDA graph"
   ],
   "cpu_tests": {
-    "command": "/usr/bin/python3 -I /workspace/test/srt/test_headwise_attn_output_gate_cpu.py",
-    "exit_code": 0,
-    "output": "helper: /workspace/python/sglang/srt/layers/headwise_attn_output_gate.py\ncall site: /workspace/python/sglang/srt/models/spark2_5.py\nPASS ast: helper top-level imports are torch only (triton lazy)\nPASS ast: helper contains no in-place mul_/add_/div_/sub_ calls\nPASS ast: baseline helper function exists\nPASS ast: apply function exists\nPASS ast: guard function exists\nPASS ast: baseline = torch.sigmoid(g.float()).to(attn_output.dtype) first\nPASS ast: baseline multiplies view(attn) by g.unsqueeze(-1)\nPASS ast: baseline returns gate_output.view(*attn_output.shape)\nPASS ast: triton kernel _headwise_gate_kernel defined in helper\nPASS ast: kernel loads gate via tl.load\nPASS ast: kernel sigmoid input is gate cast to tl.float32\nPASS ast: kernel rounds sigmoid to attn dtype BEFORE multiply\nPASS ast: kernel multiplies attn_val * gate_rounded (rounded gate)\nPASS ast: kernel stores ONLY to out_ptr (never attn/gate ptrs)\nPASS ast: kernel gate index = row*num_heads + head\nPASS ast: apply allocates new output via torch.empty_like\nPASS ast: apply fallback returns exact baseline call\nPASS ast: empty-batch/fallback return precedes any kernel allocation\nPASS ast: apply guards numel()==0 (empty batch, no zero-grid launch)\nPASS ast: spark2_5 imports apply_headwise_attn_output_gate\nPASS ast: spark2_5 gate branch found\nPASS ast: gate branch calls helper with self.num_heads/self.head_dim\nPASS ast: gate branch no longer inlines torch.sigmoid\nPASS ast: gate branch no longer inlines broadcast multiply\nPASS behavior B0: empty batch returns empty tensor, no kernel launch\nPASS fused B1/H4/D16 bf16: exactly one kernel launch with expected grid/BLOCK\nPASS fused B1/H4/D16 bf16: output is a NEW tensor (no alias of inputs), right shape/dtype\nPASS fused B1/H4/D16 bf16: inputs not mutated\nPASS fused B1/H4/D16 bf16: values exactly match baseline under fake semantics\nPASS fused B32/H8/D32 bf16: exactly one kernel launch with expected grid/BLOCK\nPASS fused B32/H8/D32 bf16: output is a NEW tensor (no alias of inputs), right shape/dtype\nPASS fused B32/H8/D32 bf16: inputs not mutated\nPASS fused B32/H8/D32 bf16: values exactly match baseline under fake semantics\nPASS fused B64/H4/D16 bf16: exactly one kernel launch with expected grid/BLOCK\nPASS fused B64/H4/D16 bf16: output is a NEW tensor (no alias of inputs), right shape/dtype\nPASS fused B64/H4/D16 bf16: inputs not mutated\nPASS fused B64/H4/D16 bf16: values exactly match baseline under fake semantics\nPASS fused B33/H3/D5 odd bf16: exactly one kernel launch with expected grid/BLOCK\nPASS fused B33/H3/D5 odd bf16: output is a NEW tensor (no alias of inputs), right shape/dtype\nPASS fused B33/H3/D5 odd bf16: inputs not mutated\nPASS fused B33/H3/D5 odd bf16: values exactly match baseline under fake semantics\nPASS fused B17/H5/D7 fp32: exactly one kernel launch with expected grid/BLOCK\nPASS fused B17/H5/D7 fp32: output is a NEW tensor (no alias of inputs), right shape/dtype\nPASS fused B17/H5/D7 fp32: inputs not mutated\nPASS fused B17/H5/D7 fp32: values exactly match baseline under fake semantics\nPASS fused B128/H2/D64 fp16 (rounding not emulated): exactly one kernel launch with expected grid/BLOCK\nPASS fused B128/H2/D64 fp16 (rounding not emulated): output is a NEW tensor (no alias of inputs), right shape/dtype\nPASS fused B128/H2/D64 fp16 (rounding not emulated): inputs not mutated\nPASS fused B128/H2/D64 fp16 (rounding not emulated): values exactly match baseline under fake semantics\nPASS fallback gate dtype mismatch: no kernel launch\nPASS fallback gate dtype mismatch: outcome identical to exact baseline\nPASS fallback fp64 attn unsupported: no kernel launch\nPASS fallback fp64 attn unsupported: outcome identical to exact baseline\nPASS fallback cpu tensors: no kernel launch\nPASS fallback cpu tensors: outcome identical to exact baseline\nPASS fallback device mismatch: no kernel launch\nPASS fallback device mismatch: outcome identical to exact baseline\nPASS fallback non-contiguous attn: no kernel launch\nPASS fallback non-contiguous attn: outcome identical to exact baseline\nPASS fallback non-contiguous gate: no kernel launch\nPASS fallback non-contiguous gate: outcome identical to exact baseline\nPASS fallback 3D attn_output: no kernel launch\nPASS fallback 3D attn_output: outcome identical to exact baseline\nPASS fallback num_heads mismatch with columns: no kernel launch\nPASS fallback num_heads mismatch with columns: outcome identical to exact baseline\nPASS fallback gate width mismatch: no kernel launch\nPASS fallback gate width mismatch: outcome identical to exact baseline\nPASS fallback 1D gate: no kernel launch\nPASS fallback 1D gate: outcome identical to exact baseline\nPASS fallback float num_heads: no kernel launch\nPASS fallback float num_heads: outcome identical to exact baseline\nPASS fallback None num_heads: no kernel launch\nPASS fallback None num_heads: outcome identical to exact baseline\nPASS fallback None attn_output: no kernel launch\nPASS fallback None attn_output: outcome identical to exact baseline\nCHECKS_TOTAL=75 CHECKS_FAILED=0\nCPU_TEST_RESULT: PASS",
-    "limitations": "Stdlib-only AST + fake torch/triton execution of the actual helper and call-site sources; verifies guards, fused/fallback routing, no-alias/no-mutation, launch grid/BLOCK wiring, preserved baseline error behavior, and SOURCE-TEXT rounding order (fp32 sigmoid -> cast to attn dtype -> multiply). The Triton kernel is never compiled or executed; the fake-Triton mirror re-derives indexing from launch args per spec and cannot detect Triton-source divergence; fake bf16 rounding is emulated round-to-nearest-even but fp16 rounding and fp32 storage rounding are not; no GPU numerics, sigmoid implementation identity, JIT compilation, performance, or quality is established."
+    "command": "python3 test/srt/test_sampler_trace_disabled_overhead.py",
+    "result": "PASS:2 tests plus6 trace/logprob subcases",
+    "coverage": "AST core equals immutable5b source in all branches; fake greedy trace off/on/off with logprob off/on preserves operation sequence and enabled trace fields.",
+    "does_not_prove": "GPU bitwise numeric equivalence, stochastic semantics, actual performance, task quality or all backend behavior"
   },
-  "prepared_GPU_test": {
-    "path": "test/srt/test_headwise_attn_output_gate_gpu.py",
-    "status": "NOT_RUN_BY_WORKER",
-    "note": "Actual baseline vs actual fused helper on identical inputs; special/rounding-boundary/large/zero/tiny values; BF16/FP16/FP32; empty batch; non-contiguous/CPU/dtype-mismatch/3D fallback equivalence; bitwise input-mutation and output-alias structural checks; exact mismatch counts, max abs diff, NaN/Inf counts and unrounded-gate diagnostic reported honestly with no tolerances."
-  },
-  "requested_measurement": {
-    "small_c1_first": true,
-    "larger_c_only_if_justified": "Repeat only with longer outputs / C32-C64 if the C1 pair shows a visible effect and the GPU numeric script shows acceptable exact/near-exact agreement; otherwise retain negative result."
-  },
+  "requested_measurement": "Fresh same-node C1 baseline/candidate first; if visible effect repeat with longer outputs and then frozen ordinary workload.",
   "risks": [
-    "tl.sigmoid vs torch.sigmoid FP32 implementations may differ (needs actual GPU verification via prepared script); intermediate rounding order is preserved in Triton source but equivalence is unproven until run",
-    "Triton JIT compile for the target GPU/arch is unknown (kernel never executed by worker); first-call compile cost may appear in any latency screen",
-    "Combined-parent provenance: parent 8cfcffb already contains the adopted r1 sampler patch, so a paired screen vs trusted 5b89820 measures the combination, not the isolated gate kernel; parent's single C1 exploratory 1.00196 is not a repeatable gain",
-    "Kernel launch may interact with CUDA graph capture/replay paths not exercised here",
-    "No quality/performance acceptance: candidate may be numeric-mismatched or slower; negative results retained"
+    "Small gain may be below measurement noise",
+    "Tracing enabled reads one extra flag per forward",
+    "Mid-forward tracing environment mutation is diagnostic-only and its exact interleaving is not promised"
   ],
   "fixed_policy": {
     "weights": "Q8_0",
@@ -49,5 +35,5 @@
     "swa_kv": "bfloat16",
     "native_binaries_changed": false
   },
-  "learning": "Round2 ECONNRESET produced nothing; a tight sequential budget with the last turns reserved for test/proposal/commit completed this round. Shared-packet glm-a V2 outputs were treated strictly as diagnostics, not causal or quality evidence. A stdlib AST+fake-tensor harness can honestly bound a Triton candidate to guard/fallback/no-alias/source-ordering claims only; GPU numeric identity (sigmoid implementation, rounding, JIT) must come from the Controller running the prepared NOT_RUN script before any performance or quality interpretation."
+  "learning": "Original Provider hit8turn budget after production edit. Controller preserved failure, replaced failing test adapter with independent baseline structural comparison, and explicitly adopted this partial."
 }
