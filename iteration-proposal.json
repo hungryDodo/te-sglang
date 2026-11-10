@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "worker": "glm-b",
+  "round": 1,
+  "base_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "candidate_origin": "CONTROLLER_ADOPTED_FAILED_PROVIDER_PARTIAL",
+  "original_Provider_status": "AGENT_ERROR",
+  "hypothesis": "When SGLANG_TRACE_SAMPLER_E2E is disabled, reading its flag once per Sampler.forward and guarding trace calls avoids eight helper calls and two debug shape tuples per decoded step. Sampling tensor operations remain structurally identical.",
+  "changed_files": [
+    "python/sglang/srt/layers/sampler.py",
+    "test/srt/test_sampler_trace_disabled_overhead.py"
+  ],
+  "expected_effect": "Potential small host-overhead reduction, possibly below noisy C1 screening resolution; no measured GPU gain yet.",
+  "applicability": [
+    "Default disabled optional tracing",
+    "Greedy and sampling paths keep all core operations",
+    "Flag changes between forwards remain supported",
+    "Sampler executes outside model CUDA graph"
+  ],
+  "cpu_tests": {
+    "command": "python3 test/srt/test_sampler_trace_disabled_overhead.py",
+    "result": "PASS:2 tests plus6 trace/logprob subcases",
+    "coverage": "AST core equals immutable5b source in all branches; fake greedy trace off/on/off with logprob off/on preserves operation sequence and enabled trace fields.",
+    "does_not_prove": "GPU bitwise numeric equivalence, stochastic semantics, actual performance, task quality or all backend behavior"
+  },
+  "requested_measurement": "Fresh same-node C1 baseline/candidate first; if visible effect repeat with longer outputs and then frozen ordinary workload.",
+  "risks": [
+    "Small gain may be below measurement noise",
+    "Tracing enabled reads one extra flag per forward",
+    "Mid-forward tracing environment mutation is diagnostic-only and its exact interleaving is not promised"
+  ],
+  "fixed_policy": {
+    "weights": "Q8_0",
+    "full_kv": "bfloat16",
+    "swa_kv": "bfloat16",
+    "native_binaries_changed": false
+  },
+  "learning": "Original Provider hit8turn budget after production edit. Controller preserved failure, replaced failing test adapter with independent baseline structural comparison, and explicitly adopted this partial."
+}

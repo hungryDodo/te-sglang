@@ -173,19 +173,27 @@ class Sampler(nn.Module):
         """
         logits = logits_output.next_token_logits
         maybe_detect_nan(logits, "sampler: next_token_logits")
-        _trace_e2e_sampler(
-            "forward_enter",
-            logits_shape=tuple(logits.shape),
-            all_greedy=sampling_info.is_all_greedy,
-        )
+        # Check the trace flag once per forward call. When tracing is disabled
+        # (the default) this skips the per-stage helper calls, their kwargs
+        # construction and shape-tuple building entirely, while still honoring
+        # enable/disable changes made between forward calls.
+        trace_e2e = _trace_e2e_sampler if envs.SGLANG_TRACE_SAMPLER_E2E.get() else None
+        if trace_e2e is not None:
+            trace_e2e(
+                "forward_enter",
+                logits_shape=tuple(logits.shape),
+                all_greedy=sampling_info.is_all_greedy,
+            )
 
         if _is_hip and logits.shape[0] == 0:
             return torch.empty((0,), dtype=torch.int64, device=logits.device)
 
         # Preprocess logits (custom processors and NaN handling)
-        _trace_e2e_sampler("preprocess_enter")
+        if trace_e2e is not None:
+            trace_e2e("preprocess_enter")
         logits = self._preprocess_logits(logits, sampling_info)
-        _trace_e2e_sampler("preprocess_returned")
+        if trace_e2e is not None:
+            trace_e2e("preprocess_returned")
         target_logprobs = None
         if logprob_logits is not None:
             logprob_logits = self._preprocess_logits(logprob_logits, sampling_info)
@@ -206,7 +214,8 @@ class Sampler(nn.Module):
         sampling_mask_capture = None
 
         if sampling_info.is_all_greedy:
-            _trace_e2e_sampler("greedy_enter")
+            if trace_e2e is not None:
+                trace_e2e("greedy_enter")
             if _use_aiter and not _disable_aiter_greedy_sample:
                 batch_next_token_ids = torch.empty(
                     logits.shape[0], device=logits.device, dtype=torch.int32
@@ -214,9 +223,10 @@ class Sampler(nn.Module):
                 _aiter_greedy_sample(batch_next_token_ids, logits)
             else:
                 batch_next_token_ids = torch.argmax(logits, -1)
-            _trace_e2e_sampler(
-                "greedy_returned", output_shape=tuple(batch_next_token_ids.shape)
-            )
+            if trace_e2e is not None:
+                trace_e2e(
+                    "greedy_returned", output_shape=tuple(batch_next_token_ids.shape)
+                )
             if return_logprob:
                 original_logprobs = logprobs = torch.nn.functional.log_softmax(
                     logits, dim=-1
@@ -329,9 +339,11 @@ class Sampler(nn.Module):
             )
             logprob_result.write_output_to(logits_output)
 
-        _trace_e2e_sampler("token_sync_enter")
+        if trace_e2e is not None:
+            trace_e2e("token_sync_enter")
         self._sync_token_ids_across_tp(batch_next_token_ids, sampling_info)
-        _trace_e2e_sampler("token_sync_returned")
+        if trace_e2e is not None:
+            trace_e2e("token_sync_returned")
 
         if return_sampling_mask:
             assert sampling_mask_batch_indices is not None
@@ -356,7 +368,8 @@ class Sampler(nn.Module):
                     sampling_support_logprobs_capture_indices,
                 )
 
-        _trace_e2e_sampler("forward_returned")
+        if trace_e2e is not None:
+            trace_e2e("forward_returned")
         return batch_next_token_ids
 
     def _sample_from_probs(
