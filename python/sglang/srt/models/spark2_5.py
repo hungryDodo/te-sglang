@@ -7,6 +7,9 @@ from torch import nn
 
 from sglang.srt.layers.activation import GeluAndMul
 from sglang.srt.layers.dp_attention import is_dp_attention_enabled
+from sglang.srt.layers.headwise_attn_output_gate import (
+    apply_headwise_attn_output_gate,
+)
 from sglang.srt.layers.layer_boundary import (
     append_stages,
     declare_attn,
@@ -200,13 +203,9 @@ class Spark2_5Attention(nn.Module):
 
         if self.headwise_attn_output_gate:
             g, _ = self.g_proj(hidden_states)
-            g = torch.sigmoid(g.float()).to(attn_output.dtype)
-            gate_output = attn_output.view(
-                attn_output.shape[0],
-                self.num_heads,
-                self.head_dim,
-            ) * g.unsqueeze(-1)
-            attn_output = gate_output.view(*attn_output.shape)
+            attn_output = apply_headwise_attn_output_gate(
+                attn_output, g, self.num_heads, self.head_dim
+            )
 
         output, _ = self.out_proj(attn_output)
         return output
