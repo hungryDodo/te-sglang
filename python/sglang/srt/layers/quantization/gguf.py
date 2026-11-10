@@ -513,6 +513,82 @@ class GGUFLinearMethod(LinearMethodBase):
             padded_param.shard_id = ordered_shard_ids
             set_weight_attrs(padded_param, {"shard_offset_map": shard_offset_map})
             layer.register_parameter("qweight", padded_param)
+            self._prepare_shard_exec_plan(layer)
+
+    # Name of the plain layer attribute holding the prepared shard plan. The
+    # cached value is a tuple of scalars and parameter references — never a
+    # Parameter — so torch.nn.Module keeps it out of _parameters/state_dict.
+    _SHARD_EXEC_PLAN_ATTR = "_gguf_shard_exec_plan"
+
+    def _prepare_shard_exec_plan(self, layer: torch.nn.Module):
+        """Precompute scalar-only shard execution metadata for apply().
+
+        apply()'s sharded path otherwise re-derives the shard order and
+        re-reads the scalar shard_offset_map / shard_weight_type entries on
+        every forward. The snapshot holds Python scalars/tuples plus the
+        current parameter object references for identity validation; no weight
+        data, tensor views or dequantized weights are copied or prepared.
+        """
+        qweight = layer.qweight
+        qweight_type_param = layer.qweight_type
+        shard_id = qweight.shard_id
+        offset_map = getattr(qweight, "shard_offset_map", None)
+        shard_weight_type = getattr(qweight_type_param, "shard_weight_type", None)
+        if not shard_id or offset_map is None or shard_weight_type is None:
+            return
+        try:
+            plan = []
+            for idx in _ordered_gguf_shard_ids(shard_id):
+                start, end, offset = offset_map[idx]
+                plan.append((start, end, offset, shard_weight_type[idx]))
+            snapshot = (
+                qweight,
+                qweight_type_param,
+                list(shard_id),
+                dict(offset_map),
+                dict(shard_weight_type),
+                tuple(plan),
+            )
+        except KeyError:
+            # Incomplete metadata: leave apply() on its fallback path.
+            return
+        setattr(layer, self._SHARD_EXEC_PLAN_ATTR, snapshot)
+
+    def _validated_shard_exec_plan(self, layer: torch.nn.Module):
+        """Return the prepared plan if the layer still matches it, else None.
+
+        Parameter replacement, changed shard ordering, or mutated offset /
+        weight-type metadata invalidates the cached plan (it is dropped) so
+        apply() re-reads the live metadata instead of using stale values.
+        """
+        cached = getattr(layer, self._SHARD_EXEC_PLAN_ATTR, None)
+        if cached is None:
+            return None
+        (
+            qweight,
+            qweight_type_param,
+            shard_id_snapshot,
+            offset_map_snapshot,
+            shard_type_snapshot,
+            plan,
+        ) = cached
+        try:
+            valid = (
+                layer.qweight is qweight
+                and layer.qweight_type is qweight_type_param
+                and layer.qweight.shard_id == shard_id_snapshot
+                and layer.qweight.shard_offset_map == offset_map_snapshot
+                and layer.qweight_type.shard_weight_type == shard_type_snapshot
+            )
+        except AttributeError:
+            valid = False
+        if not valid:
+            try:
+                delattr(layer, self._SHARD_EXEC_PLAN_ATTR)
+            except AttributeError:
+                pass
+            return None
+        return plan
 
     def apply(
         self,
@@ -524,17 +600,28 @@ class GGUFLinearMethod(LinearMethodBase):
 
         if shard_id:
             # dequantize shard weights respectively
-            shard_id = _ordered_gguf_shard_ids(shard_id)
             qweight = layer.qweight
             result = []
-            for idx in shard_id:
-                start, end, offset = layer.qweight.shard_offset_map[idx]
-                qweight_type = layer.qweight_type.shard_weight_type[idx]
-                result.append(
-                    fused_mul_mat_gguf(
-                        x, qweight[start:end, :offset].contiguous(), qweight_type
+            plan = self._validated_shard_exec_plan(layer)
+            if plan is not None:
+                # Same per-shard dispatches as the fallback loop below, using
+                # the scalar metadata prepared after loading.
+                for start, end, offset, qweight_type in plan:
+                    result.append(
+                        fused_mul_mat_gguf(
+                            x, qweight[start:end, :offset].contiguous(), qweight_type
+                        )
                     )
-                )
+            else:
+                shard_id = _ordered_gguf_shard_ids(shard_id)
+                for idx in shard_id:
+                    start, end, offset = layer.qweight.shard_offset_map[idx]
+                    qweight_type = layer.qweight_type.shard_weight_type[idx]
+                    result.append(
+                        fused_mul_mat_gguf(
+                            x, qweight[start:end, :offset].contiguous(), qweight_type
+                        )
+                    )
             out = torch.cat(result, axis=1)
         else:
             qweight = layer.qweight

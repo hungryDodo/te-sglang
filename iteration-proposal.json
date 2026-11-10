@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "worker": "glm-a",
+  "round": 2,
+  "base_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "adoption_status": "ADOPTED_FROM_FAILED_PROVIDER_PARTIAL",
+  "provider_status": "AGENT_ERROR",
+  "provider_wrapper_session_id": "297f8ebb2ced436c9674e17699808f95",
+  "provider_native_session_id": "0c5ef2cc-e5b6-4b97-bdee-2d7f2411c9ac",
+  "hypothesis": "Prepare scalar shard offsets/types at load time and validate parameter identities and metadata before reuse, preserving each original matmul/slice/contiguous/cat/bias; may reduce Python bookkeeping in eager execution.",
+  "changed_files": [
+    "python/sglang/srt/layers/quantization/gguf.py",
+    "test/srt/test_gguf_prepared_shard_metadata_cpu.py",
+    "plan.md",
+    "iteration-proposal.json"
+  ],
+  "expected_effect": "Synthetic fake-dispatch Python timing only: two-shard median2034.03ns original vs1623.64ns prepared, three-shard2858.09 vs2307.88ns. These finite CPU figures do not establish GPU/graph throughput gain.",
+  "applicability": "Only padded multishard GGUFLinearMethod prepared after load. Unsharded or absent/stale cache retains live original route. CUDA graph replay may bypass apply Python entirely.",
+  "cpu_tests": {
+    "command": "/usr/bin/python3 -I test/srt/test_gguf_prepared_shard_metadata_cpu.py",
+    "exit_code": 0,
+    "output": "{\n  \"status\": \"PASS\",\n  \"actual_source_dispatch_controls\": [\n    \"integer-gateup-order\",\n    \"QKV-logical-order-and-padding\",\n    \"custom-order-preserved\",\n    \"qweight-replaced-fallback\",\n    \"type-parameter-replaced-fallback\",\n    \"offset-inplace-mutated-fallback\",\n    \"type-inplace-mutated-fallback\",\n    \"shard-list-mutated-fallback\",\n    \"missing-offset-invalidates-plan\",\n    \"missing-type-invalidates-plan\",\n    \"unsharded-bias-once\",\n    \"uncached-original-fallback\"\n  ],\n  \"count\": 12,\n  \"limitations\": \"Actual source AST and fake dispatch only; not torch/CUDA numerical equivalence or end-to-end performance.\"\n}\n",
+    "limitations": "Actual changed AST/fake dispatch, independent golden metadata/order/guard controls; no torch import or GPU numerical test. Controller sandbox has no broker, credentials, external network or GPU devices."
+  },
+  "controller_timing": {
+    "scope": "One host/process synthetic fixed-dispatch Python only",
+    "raw_artifact": "adoptions/glm-a-r2/controls.stdout",
+    "raw_sha256": "cf334c0a451bec316853d7714d7414c560a576e90fbd00b896b453734148fe77",
+    "details": [
+      {
+        "shards": 2,
+        "loops_per_sample": 20000,
+        "interleaved_repeats": 6,
+        "ns_per_call_samples": {
+          "old": [
+            2038.78075,
+            2057.51725,
+            1945.656,
+            2029.27055,
+            1997.76385,
+            2083.6552
+          ],
+          "prepared": [
+            1649.2771,
+            1579.9703,
+            1590.8341,
+            1900.0624,
+            1598.0116,
+            1655.1626
+          ]
+        },
+        "median_old_ns": 2034.02565,
+        "median_prepared_ns": 1623.64435,
+        "old_over_prepared_ratio": 1.2527531968438779
+      },
+      {
+        "shards": 3,
+        "loops_per_sample": 20000,
+        "interleaved_repeats": 6,
+        "ns_per_call_samples": {
+          "old": [
+            2894.65715,
+            2736.21515,
+            3583.1989,
+            2928.97815,
+            2821.51525,
+            2803.6092
+          ],
+          "prepared": [
+            2566.38445,
+            2136.62785,
+            2277.52865,
+            2338.226,
+            2139.28865,
+            2397.2722
+          ]
+        },
+        "median_old_ns": 2858.0861999999997,
+        "median_prepared_ns": 2307.8773250000004,
+        "old_over_prepared_ratio": 1.238404731932621
+      }
+    ]
+  },
+  "requested_measurement": {
+    "small_c1_first": "Optional trusted same-node source-bound eager C1 screen. Keep CUDA graph configuration explicit; no expected benefit under replay.",
+    "larger_c_only_if_justified": "Do not prioritize over shape/native hotspots. Larger tests only if separate actual evidence warrants."
+  },
+  "risks": [
+    "Cached references retain old Parameters until mismatch invalidation; no copies of weight bytes/views are cached.",
+    "Metadata equality guards may offset savings in real layouts; no GPU or real torch timing was measured.",
+    "Fake source controls do not prove exact GPU values, numerical class or quality.",
+    "Original Provider failed ECONNRESET and did not execute its editor/test/commit; Controller adoption is distinct and preserves original records."
+  ],
+  "fixed_policy": {
+    "weights": "Q8_0",
+    "full_kv": "bfloat16",
+    "swa_kv": "bfloat16",
+    "native_binaries_changed": false
+  },
+  "learning": "The failed Provider produced a specific unexecuted edit script. Controller ran it under isolation, independently tested source routing, corrected only an inaccurate no-tensor-reference comment, and observed finite synthetic Python overhead reduction. This is a candidate, not GPU performance/numeric/quality acceptance."
+}
