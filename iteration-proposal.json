@@ -1,43 +1,13 @@
 {
-  "worker": "glm-a",
-  "round": 5,
-  "type": "source-only-native-candidate",
-  "candidate": "q8_mmq_x64",
-  "base_commit": "5a2354dede460fa90ccc82aa04c4468fab5c3363",
-  "development_parent": "5a2354dede460fa90ccc82aa04c4468fab5c3363 (original Provider X32 source; not the 5b performance reference and not the e84a14b runtime-metadata child)",
-  "performance_reference_commit": "5b89820b04cb26385d45915c484708796ba7df91",
-  "hypothesis": "single factor: CUDA #else #define MMQ_X_Q8_0 32->64 only, with MMQ_Y_Q8_0=32 and NWARPS_Q8_0=4 unchanged (the ROCm X64/Y128/8warp branch is untouched and is NOT this 4-warp CUDA experiment); a testable tile-geometry hypothesis, not a source proof of math equivalence or of gain",
-  "change_summary": "X32 parent -> X64: MMQ_X_Q8_0 32->64 only plus unique x64 identities (namespace tierengine_q8_mmq_x64_v1, *_research_x64*, q8_mmq_x64.so, SGLANG_Q8_MMQ_X64_DIAGNOSTICS); ib0/ir/k traversal, VDR/DP4A, FP32 accumulation, quantize_q8_1, shared/index math, BF16 output, coverage guards and fatal-load semantics unchanged; X8 vendor headers still shared via ../native_q8_mmq_x8/vendor/",
-  "seam": "python/sglang/srt/layers/quantization/gguf.py import/call switched from gguf_q8_mmq_x32 to gguf_q8_mmq_x64 only",
-  "cpu_checks": {
-    "command": "python3 -I python/sglang/kernels/ops/quantization/native_q8_mmq_x64/check_x64_source.py",
-    "result": "PASS 13/13 in Controller AgentSandbox without broker/credentials/network/GPU; original Provider output mistakenly printed11/11 and is retained separately.",
-    "assertions": 13,
-    "constraints": "stdlib AST/text/SHA only; no torch/FakeTorch/Triton, no compilation, no GPU; passes on the committed clean tree; integer bounds checked as source/index controls only, never CUDA math"
-  },
-  "worker_build": "NOT_RUN",
-  "worker_gpu": "NOT_RUN",
-  "native_numerical_check": "NOT_RUN",
-  "native_performance_check": "NOT_RUN",
-  "native_quality_check": "NOT_RUN",
-  "compiled": false,
-  "static_resource_note": "source-only static shared-array sum (NOT actual compiler resource, NOT a fact about occupancy or speed): fixed weight tile 4752B (mmq_y=32 unchanged) + 144*64 activation tile = 13968B, vs 9360B static for X32; X32 actual sm121 PTXAS evidence: tail 88 / non-tail 64 registers, 9360B smem, 0 stack/spill (log sha256 4cc216bd5826e6f4a1af4f9adb569a66ce4d05f83fd9ff1a10ef8ed07d008c06), quantizer 19 registers; X64 actual resources, spills and occupancy are UNKNOWN until Controller build; gridY per batch with MMQ_X=64: batch 32 or 63 -> 1 block, 64 -> 1, 65 -> 2 (vs 1/2/2/3 at X32)",
-  "motivation_scope": "finite observations only: X32 source 5a scored 1.825218709172329/1.8405400258167868/1.8983675933511484 on three independent model-pair screens; six-case single-operator micro spans showed larger-B speedups in their specific input/weight/process, but those are whole-operator event spans, not isolated kernel durations or model TPS; prior 17 same-input + 12 tail finite math tests and concurrent output-ID forks bound nothing about X64; resource pressure, occupancy and any X64 gain are UNKNOWN until real matched measurements",
-  "requested_controller_evaluation": [
-    "Build q8_mmq_x64.so from native_q8_mmq_x64/q8_mmq_x64.cu under separate grant (cpp_extension/nvcc); write NATIVE-BUILD-MANIFEST.json (namespace, library, library_sha256)",
-    "Capture actual PTXAS resources for the tail/non-tail specializations; X64 may regress, spill, or fail to compile",
-    "Same-input BF16 math vs performance reference 5b89820b04cb26385d45915c484708796ba7df91 across batch 32, 33, 63, 64, 65 and N 31/33 partial tiles plus the retained 17 same-input + 12 tail cases, maintaining the old guard",
-    "Paired same-machine latency vs X32 5a2354dede460fa90ccc82aa04c4468fab5c3363 and vs 5b89820b04cb26385d45915c484708796ba7df91 (not subtraction of unrelated ratios); DIAGNOSTICS via SGLANG_Q8_MMQ_X64_DIAGNOSTICS=1 with unchanged coverage semantics"
-  ],
-  "origin": "PROVIDER_PARTIAL_CONTROLLER_REPAIRED_NOT_PROVIDER_DELIVERY",
-  "original_provider_status": "AGENT_ERROR",
-  "original_native_subtype": "error_max_turns",
-  "original_native_private_commit_abbrev": "471a76d",
-  "original_imported_HEAD": "5a2354dede460fa90ccc82aa04c4468fab5c3363",
-  "Controller_adoption_changes": [
-    "No production core/CU/helper/GGUF bytes changed from archived Provider partial.",
-    "Correct checker denominator from hardcoded11 to actual evaluated13; preserve original erroneous output in archive.",
-    "Add explicit failed-Provider partial/Controller adoption provenance."
-  ],
-  "Provider_delivery_success": false
+  "worker": "controller-adaptive-x32-x64",
+  "origin": "CONTROLLER_PRODUCED_NEW_SHAPE_DISPATCH_FROM_X32_AND_ADOPTED_X64_SOURCE",
+  "base_commit": "e89c9ce3550d97a597eccbca8967251c90447a24",
+  "trusted_reference_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "hypothesis": "Preserve X32 for B<64 and exploit X64 weight reuse for B>=64, sameY32/4warps. No altered precision/quantizer/K-accumulation/order.",
+  "scope": "RESEARCH_ONLY_NO_GATE_PROMOTION_OR_QUALITY_ACCEPTANCE",
+  "CPU_checks": "Core arithmetic prefix exact; four32/64\u00d7needcheck launch specializations, selectedgrid tied to B threshold; helper AST and exactidentityseam; originalvendor/source retained.",
+  "build": "NOT_RUN",
+  "GPU_math": "NOT_RUN",
+  "model_performance": "NOT_RUN",
+  "quality": "NOT_RUN"
 }

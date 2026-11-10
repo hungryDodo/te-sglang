@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "origin": "CONTROLLER_PRODUCED_NEW_SHAPE_DISPATCH_FROM_X32_AND_ADOPTED_X64_SOURCE",
+  "parent": "e89c9ce3550d97a597eccbca8967251c90447a24",
+  "namespace": "tierengine_q8_mmq_adaptive_x32_x64_v1",
+  "library": "q8_mmq_adaptive_x32_x64.so",
+  "operator": "mmq",
+  "policy": {
+    "activation_rows_B_lt_64": {
+      "X": 32,
+      "Y": 32,
+      "warps": 4
+    },
+    "activation_rows_B_ge_64": {
+      "X": 64,
+      "Y": 32,
+      "warps": 4
+    }
+  },
+  "basis": "Observed X64 six-case micro B32 weaker and B64/B128 stronger relative to its baseline; new prospective shape policy, not a causal X32/X64 comparison. X64 firstV2=1.97246550326546; quality/modelnumeric stillunknown.",
+  "source_files": {
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_adaptive_x32_x64/mmq_adaptive_x32_x64_core.cuh": {
+      "sha256": "af56663fb2b3a563b1052c6746065b4060b8033131ec4723d8119e81da8dbdc6",
+      "bytes": 7064
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_adaptive_x32_x64/q8_mmq_adaptive_x32_x64.cu": {
+      "sha256": "ad4d4da4dda5e1c7f0701e9f50c3d41822cf894ffdcba32169428696dc97459b",
+      "bytes": 3133
+    },
+    "python/sglang/kernels/ops/quantization/gguf_q8_mmq_adaptive_x32_x64.py": {
+      "sha256": "ad4f6cbb5e0dbf4bb5bc36f1a80b91f208b03c9a3b119b162edb349982bee618",
+      "bytes": 2913
+    },
+    "python/sglang/srt/layers/quantization/gguf.py": {
+      "sha256": "8e71f3310f602ae26b7c2281acaf474ce38249db2df6bc6bb35b109fa275bc92",
+      "bytes": 39345
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/device_compat.cuh": {
+      "sha256": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5",
+      "bytes": 495
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/ggml-common.h": {
+      "sha256": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8",
+      "bytes": 84564
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/quantize_q8_1.cuh": {
+      "sha256": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4",
+      "bytes": 1820
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/vecdotq.cuh": {
+      "sha256": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4",
+      "bytes": 69050
+    }
+  },
+  "helper_path": "../gguf_q8_mmq_adaptive_x32_x64.py",
+  "guard": "Exact original B32..8192/K2048or6656/N1..131072/Q8_0 packed/BF16/sameCUDA/contiguous/intbounds; selected errorsfatal/fullunsupportedfallback",
+  "compiled": false,
+  "library_sha256": null,
+  "build_GPU_math_model_quality": "NOT_RUN"
+}
