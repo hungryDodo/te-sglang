@@ -1,0 +1,29 @@
+{
+  "worker": "glm-a",
+  "round": 3,
+  "type": "source-only-native-candidate",
+  "candidate": "q8_mmq_x16",
+  "base_commit": "5013a4cede7b82bedc471344089f5dd4309feaac",
+  "development_parent": "5013a4cede7b82bedc471344089f5dd4309feaac",
+  "performance_reference_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "change_summary": "X8 seed -> X16: CUDA MMQ_X_Q8_0 8->16 only, plus unique identities (namespace tierengine_q8_mmq_x16_v1, *_research_x16*, q8_mmq_x16.so, SGLANG_Q8_MMQ_X16_DIAGNOSTICS); MMQ_Y=32, NWARPS=4, K-loop order, VDR/DP4A, FP32 accumulation, quantize_q8_1, shared/index math, BF16 output, coverage guards and fatal-load semantics unchanged; X8 vendor headers shared via ../native_q8_mmq_x8/vendor/",
+  "seam": "python/sglang/srt/layers/quantization/gguf.py import/call switched from gguf_q8_mmq_x8 to gguf_q8_mmq_x16 only",
+  "cpu_checks": {
+    "command": "python3 -I python/sglang/kernels/ops/quantization/native_q8_mmq_x16/check_x16_source.py",
+    "result": "PASS 12/12",
+    "assertions": 12,
+    "constraints": "stdlib AST/text only; no torch/FakeTorch/Triton, no compilation, no GPU"
+  },
+  "worker_build": "NOT_RUN",
+  "worker_gpu": "NOT_RUN",
+  "native_numerical_check": "NOT_RUN",
+  "native_performance_check": "NOT_RUN",
+  "native_quality_check": "NOT_RUN",
+  "compiled": false,
+  "requested_controller_evaluation": [
+    "Build q8_mmq_x16.so from native_q8_mmq_x16/q8_mmq_x16.cu under separate grant (cpp_extension/nvcc); write NATIVE-BUILD-MANIFEST.json (namespace, library, library_sha256)",
+    "Capture actual PTXAS resources for tail/non-tail specializations (X8 evidence: 64/40 regs, 5904B smem; X16 may improve or regress)",
+    "Same-input math vs performance reference 5b89820b04cb26385d45915c484708796ba7df91 across batch 32..8192, K 2048 and 6656, including partial-tile rows",
+    "Latency sweep vs 5b89820 reference and vs X8; DIAGNOSTICS via SGLANG_Q8_MMQ_X16_DIAGNOSTICS=1 with unchanged coverage semantics"
+  ]
+}

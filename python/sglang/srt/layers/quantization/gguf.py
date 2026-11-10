@@ -56,9 +56,9 @@ if _is_cuda:
     from sglang.kernels.ops.activation.activation import gelu_and_mul, silu_and_mul
     from sglang.kernels.ops.moe.gguf_moe_vec import gguf_moe_a8_vec as ggml_moe_a8_vec
     from sglang.kernels.ops.moe.gguf_moe_weights import apply_gguf_moe_weights
-    from sglang.kernels.ops.quantization.gguf_q8_mmq_x8 import (
-        apply as _research_q8_mmq_x8_apply,
-        covered as _research_q8_mmq_x8_covered,
+    from sglang.kernels.ops.quantization.gguf_q8_mmq_x16 import (
+        apply as _research_q8_mmq_x16_apply,
+        covered as _research_q8_mmq_x16_covered,
     )
 elif _is_musa:
     from sgl_kernel import gelu_and_mul, moe_sum, silu_and_mul
@@ -229,8 +229,8 @@ def fused_mul_mat_gguf(
         y = ggml_mul_mat_vec_a8(qweight, x, qweight_type, qweight.shape[0])
     # Use MMQ Kernel if it's available (standard + k-quants)
     elif qweight_type in MMQ_QUANT_TYPES:
-        if _is_cuda and _research_q8_mmq_x8_covered(x, qweight, qweight_type):
-            y = _research_q8_mmq_x8_apply(x, qweight)
+        if _is_cuda and _research_q8_mmq_x16_covered(x, qweight, qweight_type):
+            y = _research_q8_mmq_x16_apply(x, qweight)
         else:
             y = ggml_mul_mat_a8(qweight, x, qweight_type, qweight.shape[0])
     # If there is no available MMQ kernel, fallback to dequantize

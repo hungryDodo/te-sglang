@@ -1,0 +1,39 @@
+{
+  "actual_library_sha256": null,
+  "base_commit": "5013a4cede7b82bedc471344089f5dd4309feaac",
+  "candidate": "q8_mmq_x16",
+  "change_vs_seed_x8": "only #define MMQ_X_Q8_0 8->16 plus unique x16 identities; vendor headers shared from native_q8_mmq_x8/vendor via relative include",
+  "compiled": false,
+  "controller_request": "build under separate grant, capture actual PTXAS resources for tail/non-tail, map/SHA proof, same-input math vs 5b89820b04cb26385d45915c484708796ba7df91",
+  "coverage": "unchanged: CUDA same-device contiguous uint8 Q8_0 weights x BF16, batch 32..8192, K in {2048,6656}, 0<N<=131072, packed width K/32*34, index overflow guard; else FULL baseline route",
+  "fatal_semantics": "missing NATIVE-BUILD-MANIFEST.json / library / sha mismatch / load or launch error is fatal; no silent old-kernel fallback",
+  "library": "q8_mmq_x16.so",
+  "namespace": "tierengine_q8_mmq_x16_v1",
+  "performance_reference_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "round": 3,
+  "schema_version": 1,
+  "source_sha256": {
+    "python/sglang/kernels/ops/quantization/gguf_q8_mmq_x16.py": "f4128e5963ec2f18e24fbdfd334f3a8952d472e2cbdb4f99afd3992a3fe3d398",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x16/mmq_x16_core.cuh": "1087d6a5851f6d4390a44bf90213e5a80e2c0eae15d7ff0be01f68f3fac31b34",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x16/q8_mmq_x16.cu": "983a152f099e8a60a57eefe43dea05f013523aa580078ba91b055992dc1e2a9e",
+    "python/sglang/srt/layers/quantization/gguf.py": "566e281b6b949e12664c1fc113f8c4edb815b1177c830e53fe43f18bedf0c8bf"
+  },
+  "source_unit": "python/sglang/kernels/ops/quantization/native_q8_mmq_x16/q8_mmq_x16.cu",
+  "tile_geometry": {
+    "MMQ_X_Q8_0": 16,
+    "MMQ_Y_Q8_0": 32,
+    "NWARPS_Q8_0": 4
+  },
+  "torch_operator": "tierengine_q8_mmq_x16_v1::mmq",
+  "vendor_include_path": "../native_q8_mmq_x8/vendor/",
+  "vendor_reference_sha256": {
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/device_compat.cuh": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/ggml-common.h": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/quantize_q8_1.cuh": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/vecdotq.cuh": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4"
+  },
+  "worker": "glm-a",
+  "worker_build": "NOT_RUN",
+  "worker_gpu": "NOT_RUN",
+  "x8_ptxas_reference_log_sha256": "57a8e3c822b74e39b00e6a05fa8a83cb8983ff21b31292219f9cc596ac65ac87"
+}
