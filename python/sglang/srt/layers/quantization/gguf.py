@@ -54,6 +54,10 @@ if _is_cuda:
     )
 
     from sglang.kernels.ops.activation.activation import gelu_and_mul, silu_and_mul
+    from sglang.kernels.ops.quantization.gguf_q8_gemv_y4 import (
+        apply as _q8_gemv_y4_apply,
+        covered as _q8_gemv_y4_covered,
+    )
     from sglang.kernels.ops.moe.gguf_moe_vec import gguf_moe_a8_vec as ggml_moe_a8_vec
     from sglang.kernels.ops.moe.gguf_moe_weights import apply_gguf_moe_weights
 elif _is_musa:
@@ -222,7 +226,10 @@ def fused_mul_mat_gguf(
         return x @ qweight.T
     # enable MMVQ in contiguous batching with batch_size=1
     if x.shape[0] <= mmvq_safe and qweight_type in MMVQ_QUANT_TYPES:
-        y = ggml_mul_mat_vec_a8(qweight, x, qweight_type, qweight.shape[0])
+        if _is_cuda and _q8_gemv_y4_covered(x, qweight, qweight_type):
+            y = _q8_gemv_y4_apply(x, qweight)
+        else:
+            y = ggml_mul_mat_vec_a8(qweight, x, qweight_type, qweight.shape[0])
     # Use MMQ Kernel if it's available (standard + k-quants)
     elif qweight_type in MMQ_QUANT_TYPES:
         y = ggml_mul_mat_a8(qweight, x, qweight_type, qweight.shape[0])
