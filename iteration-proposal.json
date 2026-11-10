@@ -1,0 +1,25 @@
+{
+  "worker": "glm-b",
+  "round": 4,
+  "base_commit": "532bc0cd56a0bb25b798087b74d2aa1eb1c11133",
+  "performance_reference_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "candidate": "q8_mmq_x8_y64",
+  "factor": "single orthogonal CUDA tile factor: MMQ_Y_Q8_0 32 -> 64. X8, NWARPS 4, per-output K traversal, FP32 accumulation order, quantize_q8_1, VDR/DP4A, guard semantics unchanged. Distinct from Provider's X16/Y32 factor; not combined.",
+  "source_only_evidence": {
+    "files": [
+      "python/sglang/kernels/ops/quantization/native_q8_mmq_x8_y64/mmq_x8_y64_core.cuh",
+      "python/sglang/kernels/ops/quantization/native_q8_mmq_x8_y64/q8_mmq_x8_y64.cu",
+      "python/sglang/kernels/ops/quantization/gguf_q8_mmq_x8_y64.py",
+      "python/sglang/srt/layers/quantization/gguf.py"
+    ],
+    "delta_vs_seed": "after normalizing unique identities (namespace tierengine_q8_mmq_x8_y64_v1, kernel mul_mat_q8_0_research_x8_y64, library q8_mmq_x8_y64.so, env SGLANG_Q8_MMQ_X8_Y64_DIAGNOSTICS) and the vendor reference path ../native_q8_mmq_x8/vendor/, the only delta vs retained X8/Y32 seed is MMQ_Y_Q8_0 32 -> 64",
+    "cpu_checks": "native_q8_mmq_x8_y64/source_check_y64.py: 11/11 PASS (stdlib text/AST; seeds+vendor bytes == HEAD; no binaries)",
+    "worker_build": "NOT_RUN",
+    "gpu": "NOT_RUN",
+    "math_validation": "NOT_RUN",
+    "quality": "NOT_RUN",
+    "performance": "NOT_RUN"
+  },
+  "motivation": "finite measured X8/Y32 screens geo 1.3058/1.3239/1.3072 across matched models incl. reversed role order and another node; Y64 doubles rows per CTA at constant warps/X, trading occupancy/smem for reuse; may compile, fail, improve, or regress",
+  "requested_evaluation": "Controller independent build + maps/SHA + finite math + A-B performance under new grants; X8/Y32 ptxas baseline 40/64 regs, 5904B smem, Y64 resources unknown from source"
+}

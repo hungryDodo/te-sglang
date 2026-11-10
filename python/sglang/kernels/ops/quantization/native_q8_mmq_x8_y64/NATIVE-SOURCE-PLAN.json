@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "worker": "glm-b",
+  "candidate": "q8_mmq_x8_y64",
+  "factor": "single CUDA tile factor: MMQ_Y_Q8_0 32 -> 64; MMQ_X_Q8_0 8, NWARPS_Q8_0 4, per-output K traversal, FP32 accumulation order, quantize_q8_1, VDR/DP4A, packed Q8_0/BF16 in/out, guard semantics all unchanged",
+  "tile": {
+    "mmq_x": 8,
+    "mmq_y": 64,
+    "nwarps": 4,
+    "rocm_tile_unchanged": {
+      "mmq_x": 64,
+      "mmq_y": 128,
+      "nwarps": 8
+    }
+  },
+  "namespace": "tierengine_q8_mmq_x8_y64_v1",
+  "torch_op": "tierengine_q8_mmq_x8_y64_v1::mmq",
+  "library": "q8_mmq_x8_y64.so",
+  "source_files": [
+    "mmq_x8_y64_core.cuh",
+    "q8_mmq_x8_y64.cu",
+    "../../gguf_q8_mmq_x8_y64.py"
+  ],
+  "source_sha256": {
+    "mmq_x8_y64_core.cuh": "08acdba5d1c2bff39664d96ae01866b32d9d88d24ce2d180b7203f7dcdc97b45",
+    "q8_mmq_x8_y64.cu": "603db44c85412d9667e261019dbd285a981020798af5a45f50ea6087c8bf7f1f",
+    "gguf_q8_mmq_x8_y64.py": "b1cb0753db2d3a4b83e3db3e2987a1fa5e899bb0a5765591fa39c4dcca64d349"
+  },
+  "vendor_refs": {
+    "real_dependency_path": "../native_q8_mmq_x8/vendor/",
+    "referenced_unchanged_from_seed": [
+      "ggml-common.h",
+      "vecdotq.cuh",
+      "quantize_q8_1.cuh"
+    ],
+    "vendor_sha256": {
+      "device_compat.cuh": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5",
+      "ggml-common.h": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8",
+      "quantize_q8_1.cuh": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4",
+      "vecdotq.cuh": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4"
+    },
+    "note": "vendor headers referenced, never duplicated; seed tree native_q8_mmq_x8/ preserved byte-identical"
+  },
+  "seed_reference": {
+    "dir": "../native_q8_mmq_x8",
+    "preserved": true
+  },
+  "compiled": false,
+  "actual_library_sha256": null,
+  "x8_y32_ptxas_reference": {
+    "log_sha256": "57a8e3c822b74e39b00e6a05fa8a83cb8983ff21b31292219f9cc596ac65ac87",
+    "registers_tail": 64,
+    "registers_non_tail": 40,
+    "smem_bytes": 5904,
+    "note": "existing X8/Y32 build; Y64 resources unknown until Controller build"
+  },
+  "worker_build": "NOT_RUN",
+  "gpu": "NOT_RUN",
+  "math": "NOT_RUN",
+  "quality": "NOT_RUN",
+  "performance": "NOT_RUN",
+  "fallback_policy": "unsupported shapes execute COMPLETE original fallback; missing manifest/library/SHA or load/launch failure for the selected target stays fatal",
+  "diagnostics_env": "SGLANG_Q8_MMQ_X8_Y64_DIAGNOSTICS"
+}
