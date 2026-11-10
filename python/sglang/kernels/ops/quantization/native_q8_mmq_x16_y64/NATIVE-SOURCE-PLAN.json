@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "worker": "controller",
+  "candidate": "q8_mmq_x16_y64",
+  "origin": "CONTROLLER_PRODUCED_NEW_NO_PROVIDER_CODE_DELIVERY",
+  "source_parent": "92156e8b88ba8a87aaf23ed2b5f8758c693016fd",
+  "trusted_performance_reference": "5b89820b04cb26385d45915c484708796ba7df91",
+  "factor": "Only CUDA MMQ_X_Q8_0 8 -> 16 relative to Provider Y64; MMQ_Y_Q8_0 64 and NWARPS_Q8_0 4 unchanged. Per-output K traversal, FP32 accumulation, quantize_q8_1, VDR/DP4A, packed Q8_0 and BF16 in/out, KV and guard semantics unchanged.",
+  "tile": {
+    "mmq_x": 16,
+    "mmq_y": 64,
+    "nwarps": 4
+  },
+  "namespace": "tierengine_q8_mmq_x16_y64_v1",
+  "torch_op": "tierengine_q8_mmq_x16_y64_v1::mmq",
+  "library": "q8_mmq_x16_y64.so",
+  "source_unit": "q8_mmq_x16_y64.cu",
+  "dispatch_helper": "../gguf_q8_mmq_x16_y64.py",
+  "source_sha256": {
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x16_y64/mmq_x16_y64_core.cuh": "7b60b82fc0b37bee42097704cf9f124042407ecfb4bcd3f52e8657c6b7d8f571",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x16_y64/q8_mmq_x16_y64.cu": "6acead553d6c419a23b3514eb6d416e8dad8f9d9d27311cbe312ad05c42ad7c4",
+    "python/sglang/kernels/ops/quantization/gguf_q8_mmq_x16_y64.py": "cef3f3e116b63f5d87d6ca112f7cd0cc19b8e95c65d88beaf347334cd452d55b",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x16_y64/check_x16_y64_source.py": "b9030ace31c3ca04c524f7cb42bb48d6d4fc60fcf24dae1f6d81baee0f29a20b",
+    "python/sglang/srt/layers/quantization/gguf.py": "508d1b666bc696f86ce3f816f627972ed915e7d9493814bde4b532b0f741506b"
+  },
+  "vendor_include_path": "../native_q8_mmq_x8/vendor/",
+  "vendor_sha256": {
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/device_compat.cuh": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/ggml-common.h": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/quantize_q8_1.cuh": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/vecdotq.cuh": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4"
+  },
+  "compiled": false,
+  "actual_library_sha256": null,
+  "build": "NOT_RUN",
+  "GPU": "NOT_RUN",
+  "math": "NOT_RUN",
+  "quality": "NOT_RUN",
+  "performance": "NOT_RUN",
+  "proposed_future_build": {
+    "arch": "sm_121",
+    "flags": [
+      "-O3",
+      "-Xptxas=-v"
+    ],
+    "executed": false
+  },
+  "future_math_tail_plan": {
+    "B": [
+      32,
+      33,
+      63,
+      64,
+      65
+    ],
+    "N": [
+      31,
+      33,
+      2048,
+      6656
+    ],
+    "K": [
+      2048,
+      6656
+    ],
+    "status": "NOT_RUN",
+    "note": "CPU launch-coverage checks do not execute CUDA or prove numerical equivalence."
+  },
+  "failed_Provider_attempt": {
+    "session_id": "e9f1733e3b6a42ce914386bf2551653b",
+    "status": "AGENT_ERROR",
+    "error": "EPROTO",
+    "code_delivered": false,
+    "adopted": false
+  },
+  "fallback_policy": "Unsupported shapes execute the complete original fallback; selected target manifest/library/SHA/load/launch errors remain fatal."
+}
