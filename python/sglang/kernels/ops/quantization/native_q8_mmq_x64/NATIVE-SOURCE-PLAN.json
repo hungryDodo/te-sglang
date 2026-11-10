@@ -1,0 +1,57 @@
+{
+  "actual_library_sha256": null,
+  "base_commit": "5a2354dede460fa90ccc82aa04c4468fab5c3363",
+  "candidate": "q8_mmq_x64",
+  "change_vs_parent_x32": "only #else CUDA #define MMQ_X_Q8_0 32->64 plus unique x64 identities; MMQ_Y_Q8_0=32 and NWARPS_Q8_0=4 unchanged; ROCm branch (X64/Y128/8 warps) left byte-identical and is NOT this 4-warp CUDA experiment; ib0/ir/k traversal, VDR/DP4A, FP32 sum update/order, quantize_q8_1, shared/index formulas, BF16 output unchanged; vendor headers still shared from native_q8_mmq_x8/vendor via relative include",
+  "compiled": false,
+  "controller_request": "build under separate grant; capture actual PTXAS resources for tail/non-tail (X32 evidence: tail 88 / non-tail 64 regs, 9360B smem, 0 stack/spill, log sha256 4cc216bd5826e6f4a1af4f9adb569a66ce4d05f83fd9ff1a10ef8ed07d008c06; X64 actual resources/spills/occupancy UNKNOWN, may regress, spill, or fail to compile); same-input math vs 5b89820b04cb26385d45915c484708796ba7df91 including the retained 17 same-input + 12 tail cases, B33/63/65 and N31/33",
+  "coverage": "unchanged from X32 (guard bytes identical): CUDA same-device contiguous uint8 Q8_0 weights x BF16, batch 32..8192, K in {2048,6656}, 0<N<=131072, packed width K/32*34, index overflow guard; else FULL baseline route",
+  "dispatch_helper": "../gguf_q8_mmq_x64.py",
+  "fatal_semantics": "missing NATIVE-BUILD-MANIFEST.json / library / sha mismatch / load or launch error is fatal; no silent old-kernel fallback",
+  "library": "q8_mmq_x64.so",
+  "namespace": "tierengine_q8_mmq_x64_v1",
+  "parent_source_unit": "python/sglang/kernels/ops/quantization/native_q8_mmq_x32/q8_mmq_x32.cu",
+  "performance_reference_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "round": 5,
+  "schema_version": 1,
+  "source_sha256": {
+    "python/sglang/kernels/ops/quantization/gguf_q8_mmq_x64.py": "2fd2b6d2172ff9bcc7738018214cddfdae27f99e6dfaa86eeb3eeb891213cde1",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x64/mmq_x64_core.cuh": "d52ff4e8fd29d36e85ed7d81f66f2410df3c6e41a9515f207647a057005002ed",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x64/q8_mmq_x64.cu": "af6275c72c32913de945be2da553c421ec6209b4a1ba9347f7cff5c0aa524846",
+    "python/sglang/srt/layers/quantization/gguf.py": "51db767dd790a25b6f8b77b3fd4a9cae9cd5b7c2068b6150193b0b53c7b0559f",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x64/check_x64_source.py": "c500d7e13f2eae2175a93f3dafcce5e7bbe6d7edff93f019bcbc23634f0cdb1c"
+  },
+  "source_unit": "python/sglang/kernels/ops/quantization/native_q8_mmq_x64/q8_mmq_x64.cu",
+  "tile_geometry": {
+    "MMQ_X_Q8_0": 64,
+    "MMQ_Y_Q8_0": 32,
+    "NWARPS_Q8_0": 4
+  },
+  "torch_operator": "tierengine_q8_mmq_x64_v1::mmq",
+  "vendor_include_path": "../native_q8_mmq_x8/vendor/",
+  "vendor_reference_sha256": {
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/device_compat.cuh": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/ggml-common.h": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/quantize_q8_1.cuh": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4",
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/vecdotq.cuh": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4"
+  },
+  "worker": "glm-a",
+  "worker_build": "NOT_RUN",
+  "worker_gpu": "NOT_RUN",
+  "worker_math": "NOT_RUN",
+  "worker_performance": "NOT_RUN",
+  "worker_quality": "NOT_RUN",
+  "origin": "PROVIDER_PARTIAL_CONTROLLER_REPAIRED_NOT_PROVIDER_DELIVERY",
+  "original_partial_worker": "glm-a",
+  "original_partial_round": 5,
+  "original_provider_wrapper_session_id": "369ab389248d4e1ca2d7e6554d8084b5",
+  "original_provider_status": "AGENT_ERROR",
+  "original_native_subtype": "error_max_turns",
+  "original_native_private_commit_abbrev": "471a76d",
+  "original_native_private_commit_is_not_imported_authority": true,
+  "Controller_adoption_changes": [
+    "No production core/CU/helper/GGUF bytes changed from archived Provider partial.",
+    "Correct checker denominator from hardcoded11 to actual evaluated13; preserve original erroneous output in archive.",
+    "Add explicit failed-Provider partial/Controller adoption provenance."
+  ]
+}
