@@ -89,6 +89,33 @@ def _ordered_gguf_shard_ids(shard_ids: list) -> list:
     return list(shard_ids)
 
 
+def _can_fuse_spark_q8_gate_up(layer: torch.nn.Module) -> bool:
+    """Recognize the fixed TP1 Spark gate/up layout, preserving MMVQ dispatch.
+
+    Both original 6656-row shards and the fused 13312-row matrix exceed the
+    5120-row dispatch boundary. Other layouts keep the existing shard path.
+    """
+    from sglang.srt.distributed.utils import get_group_rank_size
+
+    qweight = layer.qweight
+    return (
+        getattr(layer, "prefix", "").endswith(".mlp.gate_up_proj")
+        and getattr(layer, "input_size", None) == 2048
+        and getattr(layer, "output_sizes", None) == [6656, 6656]
+        and getattr(layer, "output_partition_sizes", None) == [6656, 6656]
+        and hasattr(layer, "tp_group")
+        and get_group_rank_size(layer.tp_group)[1] == 1
+        and getattr(qweight, "shard_id", None) == [0, 1]
+        and getattr(qweight, "shard_offset_map", None)
+        == {0: (0, 6656, 2176), 1: (6656, 13312, 2176)}
+        and getattr(layer.qweight_type, "shard_weight_type", None) == {0: 8, 1: 8}
+        and tuple(qweight.shape) == (13312, 2176)
+        and qweight.dtype == torch.uint8
+        and qweight.is_cuda
+        and qweight.is_contiguous()
+    )
+
+
 class GGUFConfig(QuantizationConfig):
     """Config class for GGUF."""
 
@@ -464,6 +491,9 @@ class GGUFLinearMethod(LinearMethodBase):
         # For MergedColumnParallelLinear and QKVParallelLinear, we need to
         # materialize the padded weight parameter for CUDA Graph compatibility.
         self._create_padded_weight_param(layer)
+        layer.qweight.spark_q8_gate_up_fused = _can_fuse_spark_q8_gate_up(layer)
+        if layer.qweight.spark_q8_gate_up_fused:
+            logger.info("GGUF Spark Q8 gate/up fusion enabled: %s", layer.prefix)
 
     def _create_padded_weight_param(self, layer: torch.nn.Module):
         """Create padded weight parameter for GGUF MergedLinear layer."""
@@ -522,7 +552,23 @@ class GGUFLinearMethod(LinearMethodBase):
     ) -> torch.Tensor:
         shard_id = layer.qweight.shard_id
 
-        if shard_id:
+        qweight = layer.qweight
+        if (
+            getattr(qweight, "spark_q8_gate_up_fused", False)
+            and _can_fuse_spark_q8_gate_up(layer)
+            and x.ndim == 2
+            and x.shape[1] == 2048
+            and x.dtype in (torch.bfloat16, torch.float16)
+            and x.device == qweight.device
+            and tuple(qweight.shape) == (13312, 2176)
+            and qweight.dtype == torch.uint8
+            and qweight.is_cuda
+            and qweight.is_contiguous()
+        ):
+            # The already-packed rows remain [gate, up]; no new quantization
+            # format, weight copy, activation, or native kernel is introduced.
+            out = fused_mul_mat_gguf(x, qweight, 8)
+        elif shard_id:
             # dequantize shard weights respectively
             shard_id = _ordered_gguf_shard_ids(shard_id)
             qweight = layer.qweight
