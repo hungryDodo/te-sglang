@@ -3842,11 +3842,17 @@ class ScheduleBatch(ScheduleBatchDisaggregationDecodeMixin):
                 reqs_to_exclude = [reqs_to_exclude]
             elif reqs_to_exclude is None:
                 reqs_to_exclude = []
-            keep_indices = [
-                i
-                for i in range(len(self.reqs))
-                if not self.reqs[i].finished() and self.reqs[i] not in reqs_to_exclude
-            ]
+            if reqs_to_exclude:
+                keep_indices = [
+                    i
+                    for i in range(len(self.reqs))
+                    if not self.reqs[i].finished()
+                    and self.reqs[i] not in reqs_to_exclude
+                ]
+            else:
+                keep_indices = [
+                    i for i in range(len(self.reqs)) if not self.reqs[i].finished()
+                ]
 
         if keep_indices is None or len(keep_indices) == 0:
             # Filter out all requests. Stale tensors are left as-is: is_empty()

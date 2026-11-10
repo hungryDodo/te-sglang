@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "worker": "deepseek-a",
+  "round": 2,
+  "round_label": "round2",
+  "base_commit": "5b89820b04cb26385d45915c484708796ba7df91",
+  "prior_round": {
+    "round": 1,
+    "status": "error_max_turns",
+    "production_change": false,
+    "claimed_success": false
+  },
+  "hypothesis": "For the common filter_batch path where reqs_to_exclude normalizes to an empty list (None or []), the per-request `self.reqs[i] not in reqs_to_exclude` test is always true and can be omitted; selecting non-finished requests directly removes up to len(self.reqs) redundant empty-list membership checks per call while producing identical keep_indices. Nonempty exclusions still use LIST membership and explicit keep_indices metadata behavior is unchanged.",
+  "changed_files": [
+    "python/sglang/srt/managers/schedule_batch.py",
+    "test/filter_batch_pure_python_regression.py",
+    "iteration-proposal.json",
+    "plan.md"
+  ],
+  "expected_effect": "Small reduction in Python scheduler CPU overhead for filter_batch calls with no explicit exclusions; keep-index selection is intended to be bit-identical. This is not a measured GPU throughput gain and no performance claim is made.",
+  "applicability": "SGLang scheduler calls with reqs_to_exclude=None or [] (the common no-exclusions path). Benefit scales with len(self.reqs) and filter frequency. No effect on the nonempty-exclusions path or when an explicit keep_indices list is supplied.",
+  "cpu_tests": {
+    "command": "/usr/bin/python3 -I test/filter_batch_pure_python_regression.py",
+    "cwd": "/workspace",
+    "exit_code": 0,
+    "output": "test_extracted_source_has_no_set_conversion (__main__.ExtractedBlockStructureTest.test_extracted_source_has_no_set_conversion) ... ok\ntest_truthiness_split_and_list_membership_only_when_nonempty (__main__.ExtractedBlockStructureTest.test_truthiness_split_and_list_membership_only_when_nonempty) ... ok\ntest_all_finished_selects_nothing (__main__.KeepIndicesSelectionTest.test_all_finished_selects_nothing) ... ok\ntest_all_unfinished_none_exclusions (__main__.KeepIndicesSelectionTest.test_all_unfinished_none_exclusions) ... ok\ntest_empty_exclusion_list_is_not_probed (__main__.KeepIndicesSelectionTest.test_empty_exclusion_list_is_not_probed) ... ok\ntest_empty_exclusions_selects_nonfinished (__main__.KeepIndicesSelectionTest.test_empty_exclusions_selects_nonfinished) ... ok\ntest_empty_reqs (__main__.KeepIndicesSelectionTest.test_empty_reqs) ... ok\ntest_equality_based_nonempty_membership_without_hash (__main__.KeepIndicesSelectionTest.test_equality_based_nonempty_membership_without_hash) ... ok\ntest_explicit_empty_keep_indices_untouched (__main__.KeepIndicesSelectionTest.test_explicit_empty_keep_indices_untouched) ... ok\ntest_explicit_keep_indices_untouched (__main__.KeepIndicesSelectionTest.test_explicit_keep_indices_untouched) ... ok\ntest_multiple_nonempty_exclusions (__main__.KeepIndicesSelectionTest.test_multiple_nonempty_exclusions) ... ok\ntest_none_exclusions_selects_nonfinished (__main__.KeepIndicesSelectionTest.test_none_exclusions_selects_nonfinished) ... ok\ntest_nonempty_exclusions_with_duplicates (__main__.KeepIndicesSelectionTest.test_nonempty_exclusions_with_duplicates) ... ok\ntest_partial_finished_nonempty_exclusions_use_list_membership (__main__.KeepIndicesSelectionTest.test_partial_finished_nonempty_exclusions_use_list_membership) ... ok\ntest_partial_finished_with_overlapping_exclusion (__main__.KeepIndicesSelectionTest.test_partial_finished_with_overlapping_exclusion) ... ok\ntest_single_req_exclusion (__main__.KeepIndicesSelectionTest.test_single_req_exclusion) ... ok\n\n----------------------------------------------------------------------\nRan 16 tests in 0.001s\n\nOK",
+    "limitations": "Stdlib-only unit-level test that AST-extracts and executes the actual production keep_indices block with fake Req objects. It imports no torch/CUDA and does not exercise the full scheduler, tokenizer, model execution, or end-to-end generation, and it does not measure wall-clock speedup. Nonempty-path equality semantics are checked with unhashable fake requests to rule out set/hashability changes."
+  },
+  "requested_measurement": {
+    "small_c1_first": "Run the small C1 scheduler-overhead comparison first under the fixed policy: same host, Python build, workload, and batch sizes; compare ScheduleBatch.filter_batch CPU time for reqs_to_exclude in {None, []} before vs after this commit, reporting per-call CPU time and call counts. This probes Python scheduler overhead only.",
+    "larger_c_only_if_justified": "Escalate to larger C/batch sizes only if the small C1 comparison shows a repeatable reduction that clears run-to-run variance; otherwise stop and make no benefit claim."
+  },
+  "risks": [
+    "Touches a hot scheduler function; intended behavior is equivalent, but full scheduler integration is not exercised in this environment.",
+    "Any real speedup is likely small and may sit within measurement noise; no GPU-side effect is expected or claimed.",
+    "Nonempty exclusions must retain list membership and unhashable/equality semantics; covered by runtime and AST checks in the CPU regression.",
+    "No GPU, SSH, benchmark harness, or official scorer was available here; official evaluation by the trusted controller is required."
+  ],
+  "fixed_policy": {
+    "weights": "Q8_0",
+    "full_kv": "bfloat16",
+    "swa_kv": "bfloat16",
+    "native_binaries_changed": false
+  },
+  "learning": "Empty-list membership probes in a per-request Python comprehension are redundant and can be hoisted behind a truthiness check without changing list membership, equality, or hashability semantics for nonempty exclusions. Round 1 produced no production change (error_max_turns); this round kept scope to one function, one AST-extracted CPU regression, and an honest measurement request. No other worker data was available."
+}
