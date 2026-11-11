@@ -400,6 +400,60 @@ TEST_RETRACT = envs.SGLANG_TEST_RETRACT.get()
 TEST_RETRACT_INTERVAL = envs.SGLANG_TEST_RETRACT_INTERVAL.get()
 TEST_RETRACT_NO_PREFILL_BS = envs.SGLANG_TEST_RETRACT_NO_PREFILL_BS.get()
 
+# Name of the decode-aware prefill admission throttle env var (research).
+# Read once at startup by _parse_prefill_budget_under_decode_env().
+PREFILL_BUDGET_UNDER_DECODE_ENV = "SGLANG_PREFILL_BUDGET_UNDER_DECODE"
+
+
+def _parse_prefill_budget_under_decode_env() -> int:
+    """Startup-only read of SGLANG_PREFILL_BUDGET_UNDER_DECODE.
+
+    -1 or unset keeps prefill admission unchanged. A positive integer caps
+    the prefill chunk budget of any scheduling round that has runnable
+    decode requests (see _cap_chunked_prefill_under_decode). Any other
+    value is a configuration error and fails fast rather than silently
+    disabling the throttle.
+    """
+    raw = os.environ.get(PREFILL_BUDGET_UNDER_DECODE_ENV)
+    if raw is None:
+        return -1
+    try:
+        budget = int(raw, 10)
+    except ValueError:
+        raise ValueError(
+            f"{PREFILL_BUDGET_UNDER_DECODE_ENV} must be -1 or a positive "
+            f"integer, got {raw!r}"
+        ) from None
+    if budget != -1 and budget <= 0:
+        raise ValueError(
+            f"{PREFILL_BUDGET_UNDER_DECODE_ENV} must be -1 or a positive "
+            f"integer, got {raw!r}"
+        )
+    return budget
+
+
+def _cap_chunked_prefill_under_decode(
+    chunked_prefill_size: Optional[int],
+    prefill_budget_under_decode: int,
+    decode_runnable: int,
+) -> Optional[int]:
+    """Cap a round's prefill chunk budget while decode requests are runnable.
+
+    The cap bounds how many new prefill tokens one prefill forward can
+    admit, and with it how long that forward keeps the decode step behind
+    it waiting. Prefills beyond the cap stay queued in FCFS order for later
+    rounds; with no runnable decode request the full chunk budget (current
+    behavior) is kept.
+    """
+    if prefill_budget_under_decode <= 0 or decode_runnable <= 0:
+        return chunked_prefill_size
+    if (
+        chunked_prefill_size is None
+        or chunked_prefill_size > prefill_budget_under_decode
+    ):
+        return prefill_budget_under_decode
+    return chunked_prefill_size
+
 
 STEP_MAX_US = 2_000_000
 # Pause windows kept for prefill busy accounting.
@@ -1371,6 +1425,9 @@ class Scheduler(
             self.chunked_prefill_size = None
         elif self.chunked_prefill_size is not None and self.chunked_prefill_size <= 0:
             self.chunked_prefill_size = None
+        # Decode-aware prefill admission throttle: read once at startup so
+        # the scheduling loop never touches os.environ.
+        self.prefill_budget_under_decode = _parse_prefill_budget_under_decode_env()
         self.chunked_req = None
         self._pending_chunked_abort_req = None
         self.is_mixed_chunk = (
@@ -4145,6 +4202,44 @@ class Scheduler(
             dynamic_size = self.dynamic_chunk_sizer.predict(history_len)
             if dynamic_size is not None:
                 chunked_prefill_size = dynamic_size
+
+        # Decode-aware prefill admission throttle: while decode requests are
+        # runnable, cap the new-prefill-token budget of this forward so the
+        # decode step behind it waits on bounded prefill work. Prefills
+        # beyond the cap stay queued in FCFS order for the next round; with
+        # no runnable decode the full chunk budget (current behavior) is
+        # kept. `running_batch` is already filtered of finished requests.
+        decode_runnable = len(running_batch.reqs)
+        uncapped_prefill_size = chunked_prefill_size
+        chunked_prefill_size = _cap_chunked_prefill_under_decode(
+            chunked_prefill_size,
+            self.prefill_budget_under_decode,
+            decode_runnable,
+        )
+        if chunked_prefill_size != uncapped_prefill_size:
+            # One line per clipped scheduling decision. The demand check
+            # keeps rounds whose queue fits inside the cap unlogged.
+            queued_demand = sum(
+                len(r.origin_input_ids) for r in self.waiting_queue
+            )
+            if self.chunked_req is not None:
+                queued_demand += (
+                    len(self.chunked_req.origin_input_ids)
+                    - self.chunked_req.prefix_len
+                )
+            if queued_demand > chunked_prefill_size:
+                logger.info(
+                    "Decode-aware prefill admission clipped: budget=%d, "
+                    "requested=%d, admitted=%d, decode_runnable=%d",
+                    self.prefill_budget_under_decode,
+                    (
+                        -1
+                        if uncapped_prefill_size is None
+                        else uncapped_prefill_size
+                    ),
+                    chunked_prefill_size,
+                    decode_runnable,
+                )
 
         # Prefill policy
         # Get BLOCK_M from the backend for tile-budget admission logic
