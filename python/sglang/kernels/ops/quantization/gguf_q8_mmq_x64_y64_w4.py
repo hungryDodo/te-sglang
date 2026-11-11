@@ -70,6 +70,7 @@ def _load_library():
             or hashlib.sha256(library.read_bytes()).hexdigest() != binding.get("library_sha256")):
         raise RuntimeError("Registered X8 library bytes differ")
     torch.ops.load_library(str(library))
+    return binding
 
 
 @functools.lru_cache(maxsize=1)
@@ -89,3 +90,19 @@ def apply_gate_up(x, gate, up):
     if _DIAGNOSTICS:
         _COUNTS["paired_gate_up"] += 1
     return torch.ops.tierengine_q8_mmq_x64_y64_w4_v1.mmq_gate_up.default(gate, up, x)
+
+
+@functools.lru_cache(maxsize=1)
+def _gelu_down_operator():
+    binding = _load_library()
+    if (
+        binding.get("source_build_commit") != "1de12dae53ec34e0d5947c3d8f2480230a7d4f1a"
+        or binding.get("library_sha256") != "9e2bf7d2605e9eabe20fe64e5d6c451c9349eabb27e40fa5ff62cbcf5cdb439a"
+        or binding.get("library_bytes") != 378040
+    ):
+        raise RuntimeError("Exact validated W4 fused GELU/down library required")
+    return torch.ops.tierengine_q8_mmq_x64_y64_w4_v1.mmq_gelu_down_probe.default
+
+
+def apply_gelu_down(gate_up, weight):
+    return _gelu_down_operator()(weight, gate_up)

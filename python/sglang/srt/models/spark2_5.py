@@ -5,6 +5,8 @@ from typing import Iterable, Optional, Tuple, Union
 import torch
 from torch import nn
 
+from sglang.kernels.fused_op import get_fused_op_backend
+from sglang.srt.distributed.utils import get_group_rank_size
 from sglang.srt.layers.activation import GeluAndMul
 from sglang.srt.layers.dp_attention import is_dp_attention_enabled
 from sglang.srt.layers.layer_boundary import (
@@ -35,7 +37,7 @@ from sglang.srt.model_loader.weight_utils import (
 )
 from sglang.srt.platforms import current_platform
 from sglang.srt.runtime_context import get_parallel
-from sglang.srt.utils import add_prefix, make_pp_layers
+from sglang.srt.utils import add_prefix, is_cuda, make_pp_layers, print_info_once
 
 Spark2_5Config = None
 
@@ -76,12 +78,76 @@ class Spark2_5MLP(nn.Module):
         )
         self.act_fn = GeluAndMul()
 
+    def _try_w4_fused_gelu_down(self, gate_up):
+        if (
+            gate_up.shape != (8192, 13312)
+            or not gate_up.is_cuda
+            or gate_up.dtype != torch.bfloat16
+            or not gate_up.is_contiguous()
+            or gate_up.storage_offset() != 0
+            or gate_up.requires_grad
+            or not is_cuda()
+            or current_platform.is_out_of_tree()
+            or torch.compiler.is_compiling()
+        ):
+            return None
+
+        act, down = self.act_fn, self.down_proj
+        if (
+            type(act) is not GeluAndMul
+            or act.approximate != "tanh"
+            or act.is_torch_compile
+            or get_fused_op_backend() is not None
+            or act._forward_method not in (None, act.forward_cuda)
+            or type(down) is not RowParallelLinear
+            or not down.input_is_parallel
+            or down.bias is not None
+            or down.skip_bias_add
+            or down.use_dp_attention_reduce
+            or down.use_decode_attn_tp
+            or get_group_rank_size(down.tp_group) != (0, 1)
+            or get_group_rank_size(get_parallel().tp_group) != (0, 1)
+            or any(
+                module._forward_pre_hooks or module._forward_hooks or module._backward_hooks
+                for module in (act, down)
+            )
+        ):
+            return None
+
+        from sglang.srt.layers.quantization.gguf import GGUFLinearMethod
+
+        if type(down.quant_method) is not GGUFLinearMethod:
+            return None
+        weight = down.qweight
+        if (
+            weight.shape != (2048, 7072)
+            or weight.device != gate_up.device
+            or weight.dtype != torch.uint8
+            or not weight.is_contiguous()
+            or weight.storage_offset() != 0
+            or getattr(weight, "shard_id", None) != []
+            or getattr(down.qweight_type, "weight_type", None) != 8
+            or torch.cuda.get_device_capability(gate_up.device) != (12, 1)
+        ):
+            return None
+
+        from sglang.kernels.ops.quantization.gguf_q8_mmq_x64_y64_w4 import apply_gelu_down
+
+        # At TP1, the original down call has no split, bias, collective, or
+        # symmetric allocation context. The fused op preserves its BF16 result.
+        out = apply_gelu_down(gate_up, weight)
+        print_info_once("Using W4 fused Spark GELU/Q8_1 down at B8192")
+        return out
+
     def forward(
         self,
         x,
         forward_batch=None,
     ):
         gate_up, _ = self.gate_up_proj(x)
+        fused = self._try_w4_fused_gelu_down(gate_up)
+        if fused is not None:
+            return fused
         x = self.act_fn(gate_up)
         x, _ = self.down_proj(x)
         return x
