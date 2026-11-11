@@ -17,6 +17,9 @@ import torch
 _DIAGNOSTICS = os.environ.get("SGLANG_Q8_MMQ_X64_Y64_W4_DIAGNOSTICS") == "1"
 _COUNTS = Counter()
 _NAMESPACE = "tierengine_q8_mmq_x64_y64_w4_v1"
+_NATIVE_SOURCE = "eae6129e7dcd59c60b0ecf2ab5415de044b5bf99"
+_NATIVE_SHA256 = "23eb82be770da5cf4b716cae41cc1d269b97521f3fdfa39e6408d83c79f215d9"
+_NATIVE_BYTES = 380520
 
 
 def coverage_reason(x, weight, quant_type):
@@ -62,13 +65,21 @@ def diagnostic_counts():
 def _load_library():
     root = Path(__file__).with_name("native_q8_mmq_x64_y64_w4")
     binding = json.loads((root / "NATIVE-BUILD-MANIFEST.json").read_bytes())
-    if (binding.get("schema_version") != 1 or binding.get("namespace") != _NAMESPACE
-            or binding.get("library") != "q8_mmq_x64_y64_w4.so"):
-        raise RuntimeError("Explicit X8 prebuilt library manifest required")
+    if (
+        binding.get("schema_version") != 1
+        or binding.get("namespace") != _NAMESPACE
+        or binding.get("library") != "q8_mmq_x64_y64_w4.so"
+        or binding.get("source_build_commit") != _NATIVE_SOURCE
+        or binding.get("library_sha256") != _NATIVE_SHA256
+        or binding.get("library_bytes") != _NATIVE_BYTES
+    ):
+        raise RuntimeError("Exact validated W4 head-gate/GELU library manifest required")
     library = root / binding["library"]
-    if (library.is_symlink() or not library.is_file()
-            or hashlib.sha256(library.read_bytes()).hexdigest() != binding.get("library_sha256")):
-        raise RuntimeError("Registered X8 library bytes differ")
+    if library.is_symlink() or not library.is_file():
+        raise RuntimeError("Exact validated W4 library file required")
+    data = library.read_bytes()
+    if len(data) != _NATIVE_BYTES or hashlib.sha256(data).hexdigest() != _NATIVE_SHA256:
+        raise RuntimeError("Registered W4 library bytes differ")
     torch.ops.load_library(str(library))
     return binding
 
@@ -94,15 +105,19 @@ def apply_gate_up(x, gate, up):
 
 @functools.lru_cache(maxsize=1)
 def _gelu_down_operator():
-    binding = _load_library()
-    if (
-        binding.get("source_build_commit") != "1de12dae53ec34e0d5947c3d8f2480230a7d4f1a"
-        or binding.get("library_sha256") != "9e2bf7d2605e9eabe20fe64e5d6c451c9349eabb27e40fa5ff62cbcf5cdb439a"
-        or binding.get("library_bytes") != 378040
-    ):
-        raise RuntimeError("Exact validated W4 fused GELU/down library required")
+    _load_library()
     return torch.ops.tierengine_q8_mmq_x64_y64_w4_v1.mmq_gelu_down_probe.default
 
 
 def apply_gelu_down(gate_up, weight):
     return _gelu_down_operator()(weight, gate_up)
+
+
+@functools.lru_cache(maxsize=1)
+def _head_gate_out_operator():
+    _load_library()
+    return torch.ops.tierengine_q8_mmq_x64_y64_w4_v1.mmq_head_gate_out_probe.default
+
+
+def apply_head_gate_out(x, gate, weight):
+    return _head_gate_out_operator()(weight, x, gate)

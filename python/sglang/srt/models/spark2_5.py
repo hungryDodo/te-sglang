@@ -31,7 +31,11 @@ from sglang.srt.layers.vocab_parallel_embedding import (
     ParallelLMHead,
     VocabParallelEmbedding,
 )
-from sglang.srt.model_executor.forward_batch_info import ForwardBatch, PPProxyTensors
+from sglang.srt.model_executor.forward_batch_info import (
+    ForwardBatch,
+    ForwardMode,
+    PPProxyTensors,
+)
 from sglang.srt.model_loader.weight_utils import (
     default_weight_loader,
 )
@@ -42,6 +46,7 @@ from sglang.srt.utils import add_prefix, is_cuda, make_pp_layers, print_info_onc
 Spark2_5Config = None
 
 logger = logging.getLogger(__name__)
+_w4_head_gate_reported_batches = set()
 
 
 # Aligned with HF's implementation, using sliding window inclusive with the last token
@@ -254,6 +259,81 @@ class Spark2_5Attention(nn.Module):
             prefix=add_prefix("attn", prefix),
         )
 
+    def _try_w4_head_gate_out(self, attn_output, gate, forward_batch):
+        if (
+            forward_batch.forward_mode != ForwardMode.EXTEND
+            or self.num_heads != 8
+            or self.head_dim != 256
+            or attn_output.shape != (8192, 2048)
+            or gate.shape != (8192, 8)
+            or not is_cuda()
+            or current_platform.is_out_of_tree()
+            or torch.compiler.is_compiling()
+            or get_fused_op_backend() is not None
+            or any(
+                not value.is_cuda
+                or value.dtype != torch.bfloat16
+                or value.storage_offset() != 0
+                or value.stride() != (value.shape[1], 1)
+                or value.requires_grad
+                for value in (attn_output, gate)
+            )
+            or gate.device != attn_output.device
+            or torch.cuda.get_device_capability(attn_output.device) != (12, 1)
+            or torch.cuda.is_current_stream_capturing()
+        ):
+            return None
+
+        out = self.out_proj
+        if (
+            type(out) is not RowParallelLinear
+            or out.parallel_group != "attn_tp"
+            or not out.input_is_parallel
+            or out.reduce_results
+            or out.bias is not None
+            or out.skip_bias_add
+            or out.use_dp_attention_reduce
+            or out.use_decode_attn_tp
+            or get_group_rank_size(out.tp_group) != (0, 1)
+            or get_group_rank_size(get_parallel().tp_group) != (0, 1)
+            or out._forward_pre_hooks
+            or out._forward_hooks
+            or out._backward_hooks
+        ):
+            return None
+
+        from sglang.srt.layers.quantization.gguf import GGUFLinearMethod
+
+        if type(out.quant_method) is not GGUFLinearMethod:
+            return None
+        weight = getattr(out, "qweight", None)
+        if (
+            weight is None
+            or weight.shape != (2048, 2176)
+            or weight.device != attn_output.device
+            or weight.dtype != torch.uint8
+            or not weight.is_contiguous()
+            or weight.storage_offset() != 0
+            or getattr(weight, "shard_id", None) != []
+            or getattr(getattr(out, "qweight_type", None), "weight_type", None) != 8
+        ):
+            return None
+
+        from sglang.kernels.ops.quantization.gguf_q8_mmq_x64_y64_w4 import (
+            apply_head_gate_out,
+        )
+
+        result = apply_head_gate_out(attn_output, gate, weight)
+        singleton = forward_batch.batch_size == 1
+        if singleton not in _w4_head_gate_reported_batches:
+            _w4_head_gate_reported_batches.add(singleton)
+            print_info_once(
+                "Using W4 fused Spark attention gate/Q8_1 out at "
+                f"B{attn_output.shape[0]} H{self.num_heads} D{self.head_dim} "
+                f"requests={forward_batch.batch_size} mode=EXTEND"
+            )
+        return result
+
     def forward(
         self,
         positions: torch.Tensor,
@@ -268,6 +348,10 @@ class Spark2_5Attention(nn.Module):
         if self.headwise_attn_output_gate:
             g, _ = self.g_proj(hidden_states)
             g = torch.sigmoid(g.float()).to(attn_output.dtype)
+            if attn_output.shape == (8192, 2048):
+                fused = self._try_w4_head_gate_out(attn_output, g, forward_batch)
+                if fused is not None:
+                    return fused
             gate_output = attn_output.view(
                 attn_output.shape[0],
                 self.num_heads,

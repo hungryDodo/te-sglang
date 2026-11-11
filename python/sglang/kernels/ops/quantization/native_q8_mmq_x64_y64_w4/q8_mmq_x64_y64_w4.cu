@@ -150,6 +150,51 @@ at::Tensor launch_probe_gelu_quant(const at::Tensor& gate_up, cudaStream_t strea
   return quant;
 }
 
+constexpr int kGateHeads = 8, kGateHeadDim = 256;
+constexpr int kGateWidth = kGateHeads * kGateHeadDim;
+static_assert(kGateHeadDim % QK8_1 == 0 && kGateWidth % 512 == 0);
+static_assert(kGateWidth % CUDA_QUANTIZE_BLOCK_SIZE == 0);
+static_assert(kGateWidth % MMQ_Y_Q8_0 == 0 && kProbeBatch % MMQ_X_Q8_0 == 0);
+
+void require_head_gate_tensor(const at::Tensor& value, int width) {
+  TORCH_CHECK(value.is_cuda() && value.scalar_type() == at::kBFloat16 && value.dim() == 2 &&
+                  value.size(0) == kProbeBatch && value.size(1) == width &&
+                  value.stride(0) == width && value.stride(1) == 1 &&
+                  reinterpret_cast<std::uintptr_t>(value.data_ptr()) % alignof(at::BFloat16) == 0,
+              "W4 head-gate probe requires exact contiguous CUDA BF16 geometry");
+}
+
+static __global__ void quantize_head_gate_q8_1(
+    const at::BFloat16* __restrict__ x, const at::BFloat16* __restrict__ gate,
+    block_q8_1* __restrict__ out) {
+  const int col = blockIdx.x * blockDim.x + threadIdx.x;
+  const int row = blockIdx.y;
+  const int index = row * kGateWidth + col;
+  const float product = __fmul_rn(static_cast<float>(x[index]),
+                                static_cast<float>(gate[row * kGateHeads + col / kGateHeadDim]));
+  // Preserve the materialized PyTorch BF16 product rounding before block reduction.
+  const float rounded = __bfloat162float(__float2bfloat16_rn(product));
+  quantize_q8_1_store(rounded, out, index / QK8_1, index % QK8_1);
+}
+
+at::Tensor head_gate_quant_buffer(const at::Tensor& x) {
+  constexpr int words_per_block = sizeof(block_q8_1) / sizeof(int32_t);
+  return at::empty({kProbeBatch, kGateWidth / QK8_1 * words_per_block},
+                   x.options().dtype(at::kInt));
+}
+
+at::Tensor launch_head_gate_quant(
+    const at::Tensor& x, const at::Tensor& gate, cudaStream_t stream) {
+  auto quant = head_gate_quant_buffer(x);
+  // No tails: all 32 lanes participate in each original Q8_1 reduction.
+  const dim3 grid(kGateWidth / CUDA_QUANTIZE_BLOCK_SIZE, kProbeBatch, 1);
+  const dim3 block(CUDA_DEQUANTIZE_BLOCK_SIZE, 1, 1);
+  quantize_head_gate_q8_1<<<grid, block, 0, stream>>>(
+      x.data_ptr<at::BFloat16>(), gate.data_ptr<at::BFloat16>(),
+      static_cast<block_q8_1*>(quant.data_ptr()));
+  return quant;
+}
+
 }  // namespace
 
 at::Tensor quant_probe(const at::Tensor& x) {
@@ -191,6 +236,50 @@ at::Tensor mmq_gelu_down_probe(const at::Tensor& weight, const at::Tensor& gate_
   return out;
 }
 
+at::Tensor head_gate_reference_quant_probe(const at::Tensor& gated) {
+  require_head_gate_tensor(gated, kGateWidth);
+  const c10::cuda::CUDAGuard guard(gated.device());
+  const auto stream = c10::cuda::getCurrentCUDAStream(gated.get_device()).stream();
+  auto quant = head_gate_quant_buffer(gated);
+  quantize_row_q8_1_cuda<at::BFloat16>(
+      gated.data_ptr<at::BFloat16>(), quant.data_ptr(), kGateWidth, kProbeBatch, stream);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+  return quant;
+}
+
+at::Tensor head_gate_quant_probe(const at::Tensor& x, const at::Tensor& gate) {
+  require_head_gate_tensor(x, kGateWidth);
+  require_head_gate_tensor(gate, kGateHeads);
+  TORCH_CHECK(gate.device() == x.device(), "W4 head-gate probe device mismatch");
+  const c10::cuda::CUDAGuard guard(x.device());
+  const auto stream = c10::cuda::getCurrentCUDAStream(x.get_device()).stream();
+  auto quant = launch_head_gate_quant(x, gate, stream);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+  return quant;
+}
+
+at::Tensor mmq_head_gate_out_probe(
+    const at::Tensor& weight, const at::Tensor& x, const at::Tensor& gate) {
+  require_head_gate_tensor(x, kGateWidth);
+  require_head_gate_tensor(gate, kGateHeads);
+  constexpr int packed_width = kGateWidth / QK8_0 * sizeof(block_q8_0);
+  TORCH_CHECK(gate.device() == x.device() && weight.device() == x.device() &&
+                  weight.scalar_type() == at::kByte && weight.is_contiguous() &&
+                  weight.dim() == 2 && weight.size(0) == kGateWidth &&
+                  weight.size(1) == packed_width &&
+                  reinterpret_cast<std::uintptr_t>(weight.data_ptr()) % alignof(block_q8_0) == 0,
+              "W4 head-gate out requires exact same-device packed Q8_0 [2048,2176]");
+  const c10::cuda::CUDAGuard guard(x.device());
+  const auto stream = c10::cuda::getCurrentCUDAStream(x.get_device()).stream();
+  auto quant = launch_head_gate_quant(x, gate, stream);
+  auto out = at::empty({kProbeBatch, kGateWidth}, x.options());
+  ggml_mul_mat_q8_0_research_x64_y64_w4_q8_1_cuda<at::BFloat16>(
+      weight.data_ptr(), quant.data_ptr(), out.data_ptr<at::BFloat16>(),
+      kGateWidth, kGateWidth, kProbeBatch, kGateWidth, kGateWidth, stream);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+  return out;
+}
+
 }  // namespace tierengine_q8_mmq_x64_y64_w4_v1
 
 TORCH_LIBRARY(tierengine_q8_mmq_x64_y64_w4_v1, m) {
@@ -199,6 +288,9 @@ TORCH_LIBRARY(tierengine_q8_mmq_x64_y64_w4_v1, m) {
   m.def("quant_probe(Tensor x) -> Tensor");
   m.def("gelu_quant_probe(Tensor gate_up) -> Tensor");
   m.def("mmq_gelu_down_probe(Tensor weight, Tensor gate_up) -> Tensor");
+  m.def("head_gate_reference_quant_probe(Tensor gated) -> Tensor");
+  m.def("head_gate_quant_probe(Tensor x, Tensor gate) -> Tensor");
+  m.def("mmq_head_gate_out_probe(Tensor weight, Tensor x, Tensor gate) -> Tensor");
 }
 TORCH_LIBRARY_IMPL(tierengine_q8_mmq_x64_y64_w4_v1, CUDA, m) {
   m.impl("mmq", &tierengine_q8_mmq_x64_y64_w4_v1::run);
@@ -206,4 +298,7 @@ TORCH_LIBRARY_IMPL(tierengine_q8_mmq_x64_y64_w4_v1, CUDA, m) {
   m.impl("quant_probe", &tierengine_q8_mmq_x64_y64_w4_v1::quant_probe);
   m.impl("gelu_quant_probe", &tierengine_q8_mmq_x64_y64_w4_v1::gelu_quant_probe);
   m.impl("mmq_gelu_down_probe", &tierengine_q8_mmq_x64_y64_w4_v1::mmq_gelu_down_probe);
+  m.impl("head_gate_reference_quant_probe", &tierengine_q8_mmq_x64_y64_w4_v1::head_gate_reference_quant_probe);
+  m.impl("head_gate_quant_probe", &tierengine_q8_mmq_x64_y64_w4_v1::head_gate_quant_probe);
+  m.impl("mmq_head_gate_out_probe", &tierengine_q8_mmq_x64_y64_w4_v1::mmq_head_gate_out_probe);
 }
