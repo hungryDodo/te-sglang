@@ -2,7 +2,7 @@
   "schema_version": 1,
   "identity": "tierengine_q8_mmq_x64_y64_w4_v1",
   "operator": "mmq",
-  "candidate": "q8_mmq_x64_y64_w4_paired_gate_up",
+  "candidate": "q8_mmq_x64_y64_w4_down_scale_only",
   "tile_cuda_else": {
     "MMQ_X_Q8_0": 64,
     "MMQ_Y_Q8_0": 64,
@@ -13,18 +13,18 @@
     "MMQ_Y_Q8_0": 128,
     "NWARPS_Q8_0": 8
   },
-  "single_factor": "Exact Spark B8192 paired gate/up shares the original Q8_1 scratch and writes both original W4 MMQs into disjoint contiguous BF16 output row halves; keeps both independent MMQs and removes the intermediate cat.",
+  "single_factor": "Private B64 W4 down probe skips only the Q8_1 sum reduction, writes deterministic FP16 positive-zero s, and keeps d, qs and MMQ unchanged. Ordinary quantizer keeps original sum. No model routing.",
   "admission_n64": "N=weight.shape[0] must be divisible by 64 (full MMQ_Y tiles): helper coverage returns fallback_weight_rows_not_multiple_of_64 so the gguf.py seam takes the unchanged original ggml_mul_mat_a8 baseline, never the old x32_y64 target; standalone C++ mmq entry TORCH_CHECKs row % 64 == 0 before quantize/launch including direct torch.ops calls; legacy N tails are out of scope, not repaired or tested; batch (activation) tails remain allowed",
-  "base_commit": "9f0bfa6fd854f17b4dc33d4f99299c1f14ac9e0b",
-  "derived_from_candidate": "q8_mmq_x64_y64_w4",
+  "base_commit": "8ce388ca4e1f5f6e064697df0066925b2003ddcf",
+  "derived_from_candidate": "q8_mmq_x64_y64_w4_paired_gate_up",
   "derived_from_sha256": {
-    "mmq_x64_y64_w4_core.cuh": "dd09ca7b40d8767e364bbd2f855f016514309e052ac444366e7e261216afccba",
-    "q8_mmq_x64_y64_w4.cu": "3463039348e5c7302f54ba7ac7ed6fe2bf065f1be373c3769bf30b69b1b135ba",
-    "gguf_q8_mmq_x64_y64_w4.py": "412aa14802e4034a33942a44df628727ce032080cb767ffd47764dc195b60910"
+    "mmq_x64_y64_w4_core.cuh": "0609f246af964bc0614040d066fef5188b451312925da6a18ba63a75e14a975b",
+    "q8_mmq_x64_y64_w4.cu": "0c68d63708bf78768daa64ad18d0a8c623096ebf1e7dc7bc9d8118a7ab12ac80",
+    "quantize_q8_1.cuh": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4"
   },
   "source_sha256": {
     "mmq_x64_y64_w4_core.cuh": "0609f246af964bc0614040d066fef5188b451312925da6a18ba63a75e14a975b",
-    "q8_mmq_x64_y64_w4.cu": "0c68d63708bf78768daa64ad18d0a8c623096ebf1e7dc7bc9d8118a7ab12ac80"
+    "q8_mmq_x64_y64_w4.cu": "c2f6a05004c6eef2ccd647893933b2a29cdba028f739be76819062e98faa00dd"
   },
   "helper_path": "../gguf_q8_mmq_x64_y64_w4.py",
   "helper_sha256": "97b8352c8c8c8983cca4c2967188a60704893b13c13bb92723a4e7b29d1678ba",
@@ -33,7 +33,7 @@
     "files_sha256": {
       "device_compat.cuh": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5",
       "ggml-common.h": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8",
-      "quantize_q8_1.cuh": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4",
+      "quantize_q8_1.cuh": "a87344f4ed49bc50098fc9b0fa30e7807d2ec9f0009de3ac616eb962e6e759e6",
       "vecdotq.cuh": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4"
     }
   },
@@ -46,7 +46,7 @@
   "math_equivalence": "NOT_RUN",
   "performance": "NOT_RUN",
   "quality": "NOT_RUN",
-  "origin": "CONTROLLER_PAIRED_GATE_UP_OUTPUT_STRIDE_NOT_PROVIDER_DELIVERY",
+  "origin": "CONTROLLER_STANDALONE_B64_DOWN_SCALE_ONLY_NOT_PROVIDER_DELIVERY",
   "paired_operator": "mmq_gate_up(Tensor gate, Tensor up, Tensor x) -> Tensor",
   "paired_admission": {
     "batch": 8192,
@@ -67,5 +67,23 @@
     "actual_run_id": "df66ac2334a34d4380ce91b07d507fca",
     "physical_result_sha256": "f8fb547b6e8e63bde0e75ea755eb6e891cbf0be571504f8fd71a2a7e314a8b6f",
     "reference_elf_sha256": "10973f70eaea9d30ff716391c5a923a77a742f54f3f4e66e5f304621bb0f0dca"
-  }
+  },
+  "scale_only_probe_schemas": [
+    "quant_down_full_probe(Tensor x) -> Tensor",
+    "quant_down_scale_only_probe(Tensor x) -> Tensor",
+    "mmq_down_scale_only_probe(Tensor weight, Tensor x) -> Tensor"
+  ],
+  "scale_only_scope": {
+    "batch": 64,
+    "activation_width": 6656,
+    "down_output_width": 2048,
+    "down_weight_packed_width": 7072,
+    "cuda_only": true,
+    "native_probe_only": true
+  },
+  "paired_parent_ELF": {
+    "sha256": "6e923b499fd279d1fe2f68daf08fc57d46c827da904adb2375f932415c59c42d",
+    "bytes": 374128
+  },
+  "identity_contract": "Original-vs-new ordinary quantizer and all three W4 MMQ machine-code bodies must match. Private block bytes d/qs must exactly match full oracle; s must be 0x0000. Full down BF16 output must exactly match ordinary mmq."
 }

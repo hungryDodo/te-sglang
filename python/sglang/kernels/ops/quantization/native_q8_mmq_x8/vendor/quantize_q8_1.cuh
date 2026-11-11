@@ -2,6 +2,33 @@
 
 #include "ggml-common.h"
 
+template <bool need_sum>
+static __device__ __forceinline__ void
+quantize_q8_1_store(float xi, block_q8_1* y, const int ib, const int iqs) {
+  float amax = fabsf(xi);
+  float sum = need_sum ? xi : 0.0f;
+
+#pragma unroll
+  for (int mask = 16; mask > 0; mask >>= 1) {
+    amax = fmaxf(amax, SGLANG_SHFL_XOR_SYNC_WIDTH(uint32_t(-1), amax, mask, 32));
+    if constexpr (need_sum) {
+      sum += SGLANG_SHFL_XOR_SYNC_WIDTH(uint32_t(-1), sum, mask, 32);
+    }
+  }
+
+  const float d = amax / 127;
+  const int8_t q = amax == 0.0f ? 0 : roundf(xi / d);
+
+  y[ib].qs[iqs] = q;
+
+  if (iqs > 0) {
+    return;
+  }
+
+  y[ib].ds.x = __float2half(d);
+  y[ib].ds.y = __float2half(sum);
+}
+
 // Q8 gemv
 template <typename scalar_t>
 static __global__ void
@@ -19,26 +46,7 @@ quantize_q8_1(const scalar_t* __restrict__ x, void* __restrict__ vy, const int k
   const int iqs = i_padded % QK8_1;  // quant index
 
   const float xi = ix < kx ? static_cast<float>(x[iy * kx + ix]) : 0.0f;
-  float amax = fabsf(xi);
-  float sum = xi;
-
-#pragma unroll
-  for (int mask = 16; mask > 0; mask >>= 1) {
-    amax = fmaxf(amax, SGLANG_SHFL_XOR_SYNC_WIDTH(uint32_t(-1), amax, mask, 32));
-    sum += SGLANG_SHFL_XOR_SYNC_WIDTH(uint32_t(-1), sum, mask, 32);
-  }
-
-  const float d = amax / 127;
-  const int8_t q = amax == 0.0f ? 0 : roundf(xi / d);
-
-  y[ib].qs[iqs] = q;
-
-  if (iqs > 0) {
-    return;
-  }
-
-  y[ib].ds.x = __float2half(d);
-  y[ib].ds.y = __float2half(sum);
+  quantize_q8_1_store<true>(xi, y, ib, iqs);
 }
 
 template <typename scalar_t>

@@ -9,6 +9,7 @@
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <initializer_list>
 
@@ -92,13 +93,92 @@ at::Tensor run_gate_up(const at::Tensor& gate, const at::Tensor& up, const at::T
   return y;
 }
 
+namespace {
+
+constexpr int kProbeBatch = 64, kDownInput = 6656, kDownOutput = 2048;
+static_assert(kDownInput % 512 == 0 && kDownInput % CUDA_QUANTIZE_BLOCK_SIZE == 0);
+static_assert(CUDA_QUANTIZE_BLOCK_SIZE == CUDA_DEQUANTIZE_BLOCK_SIZE);
+static_assert(kProbeBatch % MMQ_X_Q8_0 == 0 && kDownOutput % MMQ_Y_Q8_0 == 0);
+static_assert(sizeof(block_q8_0) == 34 && sizeof(block_q8_1) == 36);
+static_assert(offsetof(block_q8_1, ds) == 0 && offsetof(block_q8_1, qs) == 4);
+
+void require_down_probe_input(const at::Tensor& x) {
+  TORCH_CHECK(x.is_cuda() && x.scalar_type() == at::kBFloat16 && x.is_contiguous() &&
+                  x.dim() == 2 && x.size(0) == kProbeBatch && x.size(1) == kDownInput &&
+                  reinterpret_cast<std::uintptr_t>(x.data_ptr()) % alignof(at::BFloat16) == 0,
+              "W4 down probe requires aligned contiguous CUDA BF16 [64,6656]");
+}
+
+static __global__ void quantize_down_scale_only_q8_1(
+    const at::BFloat16* __restrict__ x, block_q8_1* __restrict__ out) {
+  const int ix = blockIdx.x * blockDim.x + threadIdx.x;
+  const int i = blockIdx.y * kDownInput + ix;
+  const float xi = static_cast<float>(x[i]);
+  // Only the scoped Q8_0 MMQ reads this scratch, and it reads d and q only.
+  quantize_q8_1_store<false>(xi, out, i / QK8_1, i % QK8_1);
+}
+
+template <bool full>
+at::Tensor launch_down_probe_quant(const at::Tensor& x, cudaStream_t stream) {
+  auto quant = at::empty(
+      {kProbeBatch, kDownInput / QK8_1 * int(sizeof(block_q8_1) / sizeof(int32_t))},
+      x.options().dtype(at::kInt));
+  if constexpr (full) {
+    quantize_row_q8_1_cuda<at::BFloat16>(
+        x.data_ptr<at::BFloat16>(), quant.data_ptr(), kDownInput, kProbeBatch, stream);
+  } else {
+    const dim3 grid(kDownInput / CUDA_QUANTIZE_BLOCK_SIZE, kProbeBatch, 1);
+    const dim3 block(CUDA_DEQUANTIZE_BLOCK_SIZE, 1, 1);
+    quantize_down_scale_only_q8_1<<<grid, block, 0, stream>>>(
+        x.data_ptr<at::BFloat16>(), static_cast<block_q8_1*>(quant.data_ptr()));
+  }
+  return quant;
+}
+
+}  // namespace
+
+template <bool full>
+at::Tensor quant_down_probe(const at::Tensor& x) {
+  require_down_probe_input(x);
+  const c10::cuda::CUDAGuard guard(x.device());
+  cudaStream_t stream = c10::cuda::getCurrentCUDAStream(x.get_device()).stream();
+  auto quant = launch_down_probe_quant<full>(x, stream);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+  return quant;
+}
+
+at::Tensor mmq_down_scale_only_probe(const at::Tensor& weight, const at::Tensor& x) {
+  require_down_probe_input(x);
+  constexpr int packed_width = kDownInput / QK8_0 * sizeof(block_q8_0);
+  TORCH_CHECK(weight.device() == x.device() && weight.scalar_type() == at::kByte &&
+                  weight.is_contiguous() && weight.dim() == 2 &&
+                  weight.size(0) == kDownOutput && weight.size(1) == packed_width &&
+                  reinterpret_cast<std::uintptr_t>(weight.data_ptr()) % alignof(block_q8_0) == 0,
+              "W4 down probe requires aligned contiguous Q8_0 [2048,7072] on the input device");
+  const c10::cuda::CUDAGuard guard(x.device());
+  auto y = at::empty({kProbeBatch, kDownOutput}, x.options());
+  cudaStream_t stream = c10::cuda::getCurrentCUDAStream(x.get_device()).stream();
+  auto quant = launch_down_probe_quant<false>(x, stream);
+  ggml_mul_mat_q8_0_research_x64_y64_w4_q8_1_cuda<at::BFloat16>(
+      weight.data_ptr(), quant.data_ptr(), y.data_ptr<at::BFloat16>(),
+      kDownInput, kDownOutput, kProbeBatch, kDownInput, kDownOutput, stream);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+  return y;
+}
+
 }  // namespace tierengine_q8_mmq_x64_y64_w4_v1
 
 TORCH_LIBRARY(tierengine_q8_mmq_x64_y64_w4_v1, m) {
   m.def("mmq(Tensor weight, Tensor x) -> Tensor");
   m.def("mmq_gate_up(Tensor gate, Tensor up, Tensor x) -> Tensor");
+  m.def("quant_down_full_probe(Tensor x) -> Tensor");
+  m.def("quant_down_scale_only_probe(Tensor x) -> Tensor");
+  m.def("mmq_down_scale_only_probe(Tensor weight, Tensor x) -> Tensor");
 }
 TORCH_LIBRARY_IMPL(tierengine_q8_mmq_x64_y64_w4_v1, CUDA, m) {
   m.impl("mmq", &tierengine_q8_mmq_x64_y64_w4_v1::run);
   m.impl("mmq_gate_up", &tierengine_q8_mmq_x64_y64_w4_v1::run_gate_up);
+  m.impl("quant_down_full_probe", &tierengine_q8_mmq_x64_y64_w4_v1::quant_down_probe<true>);
+  m.impl("quant_down_scale_only_probe", &tierengine_q8_mmq_x64_y64_w4_v1::quant_down_probe<false>);
+  m.impl("mmq_down_scale_only_probe", &tierengine_q8_mmq_x64_y64_w4_v1::mmq_down_scale_only_probe);
 }
