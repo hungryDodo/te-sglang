@@ -101,6 +101,9 @@ static __device__ __forceinline__ void mul_mat_q(
       __syncthreads();
 
       // #pragma unroll // unrolling this loop causes too much register pressure
+#if !defined(USE_ROCM)
+      #pragma unroll 2
+#endif
       for (int k = ir * WARP_SIZE_GGUF / qr; k < (ir + 1) * WARP_SIZE_GGUF / qr; k += vdr) {
 #pragma unroll
         for (int j = 0; j < mmq_x; j += nwarps) {

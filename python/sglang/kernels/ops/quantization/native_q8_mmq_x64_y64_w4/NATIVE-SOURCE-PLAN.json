@@ -13,7 +13,7 @@
     "MMQ_Y_Q8_0": 128,
     "NWARPS_Q8_0": 8
   },
-  "single_factor": "CUDA #else MMQ_X_Q8_0 32 -> 64 only; MMQ_Y_Q8_0=64 and NWARPS_Q8_0=4 kept; ROCm branch untouched; ib0/ir/k traversal, FP32 sum update order, quantize_q8_1, VDR/DP4A, shared-memory/index formulas, packed Q8_0 weights, BF16 activations/output and fatal-target semantics unchanged vs q8_mmq_x32_y64 source",
+  "single_factor": "round 9 (base 9f0bfa6fd854f17b4dc33d4f99299c1f14ac9e0b): CUDA-only '#pragma unroll 2' partial unroll on the existing innermost 'for (int k = ir * WARP_SIZE_GGUF / qr; k < (ir + 1) * WARP_SIZE_GGUF / qr; k += vdr)' FP32 accumulation loop, wrapped in '#if !defined(USE_ROCM)'/'#endif' per the file's existing USE_ROCM condition so the ROCm path compiles unchanged; historical full-unroll register-pressure comment retained; X64/Y64/4-warp CUDA tile, ib0/ir/k traversal, FP32 sum update order, quantize_q8_1, VDR/DP4A, shared-memory/index formulas, packed Q8_0 weights, BF16 activations/output, N%64 admission and fatal-target semantics unchanged vs base (prior X32->64 tile factor already landed in base)",
   "admission_n64": "N=weight.shape[0] must be divisible by 64 (full MMQ_Y tiles): helper coverage returns fallback_weight_rows_not_multiple_of_64 so the gguf.py seam takes the unchanged original ggml_mul_mat_a8 baseline, never the old x32_y64 target; standalone C++ mmq entry TORCH_CHECKs row % 64 == 0 before quantize/launch including direct torch.ops calls; legacy N tails are out of scope, not repaired or tested; batch (activation) tails remain allowed",
   "base_commit": "6cd8d0dc999b587bb7f84b6447d36b679434d43e",
   "derived_from_candidate": "q8_mmq_x32_y64",
@@ -23,7 +23,7 @@
     "gguf_q8_mmq_x32_y64.py": "5887eb85dd2d3bf1043abdf35d14cf65887d61b0a903e917d99e9d081994c821"
   },
   "source_sha256": {
-    "mmq_x64_y64_w4_core.cuh": "dd09ca7b40d8767e364bbd2f855f016514309e052ac444366e7e261216afccba",
+    "mmq_x64_y64_w4_core.cuh": "f89393625c5db6564192b3fc93184e4ce40db8f39f3229226b7bc57efb2b9e1d",
     "q8_mmq_x64_y64_w4.cu": "3463039348e5c7302f54ba7ac7ed6fe2bf065f1be373c3769bf30b69b1b135ba"
   },
   "helper_path": "../gguf_q8_mmq_x64_y64_w4.py",
