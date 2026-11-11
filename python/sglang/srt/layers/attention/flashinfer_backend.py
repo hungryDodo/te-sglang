@@ -162,6 +162,7 @@ class PrefillMetadata:
     extend_no_prefix: bool
     multi_item_params: Optional[MultiItemScoringParams] = None
     swa_out_cache_loc: Optional[torch.Tensor] = None
+    spark_swa_ragged_wrapper: Optional[BatchPrefillWithRaggedKVCacheWrapper] = None
 
 
 # Reuse this workspace buffer across all flashinfer wrappers
@@ -560,6 +561,23 @@ class FlashInferAttnBackend(AttentionBackend):
                 model_runner, self
             )  # for verify
         self.indices_updater_decode = FlashInferIndicesUpdaterDecode(model_runner, self)
+        self._spark_swa_ragged_wrapper = None
+        self._spark_swa_ragged_supported = (
+            not skip_prefill
+            and getattr(model_runner.model_config.hf_config, "model_type", None)
+            == "spark2_5"
+            and self.dispatch_reason == WrapperDispatch.SLIDING_WINDOW
+            and self.use_sliding_window_kv_pool
+            and model_runner.sliding_window_size == 511
+            and self.page_size == 1
+            and get_parallel().attn_tp_size == get_parallel().attn_dcp_size == 1
+            and model_runner.dtype == self.flashinfer_kv_cache_dtype == torch.bfloat16
+            and self.indices_updater_prefill.num_qo_heads == 8
+            and self.indices_updater_prefill.num_kv_heads == 2
+            and self.indices_updater_prefill.head_dim
+            == model_runner.model_config.v_head_dim
+            == 256
+        )
 
         # Other metadata
         self.forward_metadata: Union[PrefillMetadata, DecodeMetadata] = None
@@ -1095,7 +1113,45 @@ class FlashInferAttnBackend(AttentionBackend):
                 extend_no_prefix,
                 multi_item_params,
                 swa_out_cache_loc=swa_out_cache_loc,
+                spark_swa_ragged_wrapper=self._plan_spark_swa_ragged_prefill(
+                    forward_batch, use_ragged, extend_no_prefix
+                ),
             )
+
+    def _plan_spark_swa_ragged_prefill(
+        self, forward_batch: ForwardBatch, use_ragged: bool, extend_no_prefix: bool
+    ) -> Optional[BatchPrefillWithRaggedKVCacheWrapper]:
+        if not (
+            self._spark_swa_ragged_supported
+            and use_ragged
+            and extend_no_prefix
+            and forward_batch.forward_mode == ForwardMode.EXTEND
+            and forward_batch.spec_info is None
+            and forward_batch.encoder_lens is None
+            and forward_batch.cross_attention_custom_mask is None
+            and self.prefill_wrapper_ragged._backend == "fa2"
+            and max(forward_batch.extend_seq_lens_cpu or (), default=0) > 512
+        ):
+            return None
+
+        # Windowed and full layers in one batch must keep separate plans.
+        if self._spark_swa_ragged_wrapper is None:
+            self._spark_swa_ragged_wrapper = BatchPrefillWithRaggedKVCacheWrapper(
+                self.workspace_buffer, "NHD", backend="fa2"
+            )
+        wrapper = self._spark_swa_ragged_wrapper
+        indptr = self.qo_indptr[0][: forward_batch.batch_size + 1]
+        wrapper.begin_forward(
+            indptr,
+            indptr,
+            8,
+            2,
+            256,
+            causal=True,
+            window_left=511,
+            q_data_type=torch.bfloat16,
+        )
+        return wrapper
 
     def init_cuda_graph_state(
         self,
@@ -1458,18 +1514,27 @@ class FlashInferAttnBackend(AttentionBackend):
                 save_kv_cache = False
 
             if self.forward_metadata.extend_no_prefix:
-                # NOTE: FlashInfer currently has limitations with head_dim = 32 or other dimensions
-                # The FlashInfer head_dim limitation itself is tracked here:
-                # https://github.com/flashinfer-ai/flashinfer/issues/1048
-                o = self.prefill_wrapper_ragged.forward(
-                    q.view(-1, layer.tp_q_head_num, layer.head_dim),
-                    k.view(-1, layer.tp_k_head_num, layer.head_dim),
-                    v.view(-1, layer.tp_v_head_num, layer.head_dim),
-                    causal=causal,
-                    sm_scale=layer.scaling,
-                    logits_soft_cap=logits_soft_cap,
-                )
-
+                spark_swa_ragged = self.forward_metadata.spark_swa_ragged_wrapper
+                if (
+                    spark_swa_ragged is not None
+                    and causal
+                    and layer.sliding_window_size == 511
+                ):
+                    o = self._forward_spark_swa_ragged(
+                        spark_swa_ragged, q, k, v, layer, forward_batch.extend_num_tokens
+                    )
+                else:
+                    # NOTE: FlashInfer currently has limitations with head_dim = 32 or other dimensions
+                    # The FlashInfer head_dim limitation itself is tracked here:
+                    # https://github.com/flashinfer-ai/flashinfer/issues/1048
+                    o = self.prefill_wrapper_ragged.forward(
+                        q.view(-1, layer.tp_q_head_num, layer.head_dim),
+                        k.view(-1, layer.tp_k_head_num, layer.head_dim),
+                        v.view(-1, layer.tp_v_head_num, layer.head_dim),
+                        causal=causal,
+                        sm_scale=layer.scaling,
+                        logits_soft_cap=logits_soft_cap,
+                    )
             else:
                 swa_window_left = (
                     layer.sliding_window_size
@@ -1516,6 +1581,40 @@ class FlashInferAttnBackend(AttentionBackend):
                 )
 
         return o.view(-1, layer.tp_q_head_num * layer.head_dim)
+
+    def _forward_spark_swa_ragged(self, wrapper, q, k, v, layer, extend_num_tokens):
+        if (
+            (layer.tp_q_head_num, layer.tp_k_head_num, layer.tp_v_head_num)
+            != (8, 2, 2)
+            or layer.head_dim != 256
+            or layer.v_head_dim != 256
+            or layer.logit_cap != 0.0
+        ):
+            raise RuntimeError("Unexpected Spark SWA layer geometry for ragged prefill")
+        q = q.view(-1, 8, 256)
+        k = k.view(-1, 2, 256)
+        v = v.view(-1, 2, 256)
+        if (
+            not q.is_cuda
+            or q.device != k.device
+            or q.device != v.device
+            or not (q.dtype == k.dtype == v.dtype == torch.bfloat16)
+            or q.shape[0] != extend_num_tokens
+            or q.shape[0] != k.shape[0]
+            or q.shape[0] != v.shape[0]
+            or k.stride() != v.stride()
+            or k.stride() not in ((512, 256, 1), (3072, 256, 1))
+        ):
+            raise RuntimeError("Unexpected Spark SWA Q/K/V layout for ragged prefill")
+        return wrapper.forward(
+            q,
+            k,
+            v,
+            causal=True,
+            window_left=511,
+            sm_scale=layer.scaling,
+            logits_soft_cap=layer.logit_cap,
+        )
 
     @debug_kernel_api
     def forward_decode(
