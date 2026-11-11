@@ -2,23 +2,8 @@
 
 #include "ggml-common.h"
 
-// Q8 gemv
-template <typename scalar_t>
-static __global__ void
-quantize_q8_1(const scalar_t* __restrict__ x, void* __restrict__ vy, const int kx, const int kx_padded) {
-  const auto ix = blockDim.x * blockIdx.x + threadIdx.x;
-  if (ix >= kx_padded) {
-    return;
-  }
-  const auto iy = blockDim.y * blockIdx.y + threadIdx.y;
-  const int i_padded = iy * kx_padded + ix;
-
-  block_q8_1* y = (block_q8_1*)vy;
-
-  const int ib = i_padded / QK8_1;   // block index
-  const int iqs = i_padded % QK8_1;  // quant index
-
-  const float xi = ix < kx ? static_cast<float>(x[iy * kx + ix]) : 0.0f;
+static __device__ __forceinline__ void
+quantize_q8_1_store(float xi, block_q8_1* y, const int ib, const int iqs) {
   float amax = fabsf(xi);
   float sum = xi;
 
@@ -39,6 +24,26 @@ quantize_q8_1(const scalar_t* __restrict__ x, void* __restrict__ vy, const int k
 
   y[ib].ds.x = __float2half(d);
   y[ib].ds.y = __float2half(sum);
+}
+
+// Q8 gemv
+template <typename scalar_t>
+static __global__ void
+quantize_q8_1(const scalar_t* __restrict__ x, void* __restrict__ vy, const int kx, const int kx_padded) {
+  const auto ix = blockDim.x * blockIdx.x + threadIdx.x;
+  if (ix >= kx_padded) {
+    return;
+  }
+  const auto iy = blockDim.y * blockIdx.y + threadIdx.y;
+  const int i_padded = iy * kx_padded + ix;
+
+  block_q8_1* y = (block_q8_1*)vy;
+
+  const int ib = i_padded / QK8_1;   // block index
+  const int iqs = i_padded % QK8_1;  // quant index
+
+  const float xi = ix < kx ? static_cast<float>(x[iy * kx + ix]) : 0.0f;
+  quantize_q8_1_store(xi, y, ib, iqs);
 }
 
 template <typename scalar_t>
