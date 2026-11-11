@@ -444,6 +444,12 @@ _is_npu = is_npu()
 _is_hip = is_hip()
 
 
+# Floor for SGLANG_DECODE_GRAPH_MIXED's idle interval: decode must have gone
+# idle longer than a decode step (~22 ms at C32) before prefill yields to it,
+# so a just-launched decode step can never keep re-arming the gate.
+_DECODE_GRAPH_MIXED_MIN_IDLE_MS = 200
+
+
 class Scheduler(
     SchedulerDisaggregationDecodeMixin,
     SchedulerDisaggregationPrefillMixin,
@@ -654,6 +660,7 @@ class Scheduler(
 
         # Init chunked prefill
         self.init_chunked_prefill()
+        self.init_decode_graph_mixed()
         self.maybe_init_dynamic_chunk_sizer()
 
         # Init diffusion LLM
@@ -1424,6 +1431,72 @@ class Scheduler(
         )
         if is_extend:
             self._prefill_decode_interval_remaining = self.prefill_decode_interval
+
+    def init_decode_graph_mixed(self) -> None:
+        """Opt-in decode-priority gate (SGLANG_DECODE_GRAPH_MIXED).
+
+        Parsed once at startup as a strict integer. 0 (or unset) disables the
+        gate and leaves scheduling byte-identical to the default; N > 0
+        enables it with an idle threshold of max(N, 200) ms.
+        """
+        raw = os.environ.get("SGLANG_DECODE_GRAPH_MIXED")
+        if raw is None or raw.strip() == "":
+            value = 0
+        else:
+            try:
+                value = int(raw.strip(), 10)
+            except ValueError as exc:
+                raise RuntimeError(
+                    "SGLANG_DECODE_GRAPH_MIXED must be an integer (0 disables), "
+                    f"got {raw!r}"
+                ) from exc
+            if value < 0:
+                raise RuntimeError(
+                    f"SGLANG_DECODE_GRAPH_MIXED must be >= 0, got {raw!r}"
+                )
+        self.decode_graph_mixed_idle_ms = (
+            0 if value == 0 else max(value, _DECODE_GRAPH_MIXED_MIN_IDLE_MS)
+        )
+        self._last_decode_launch_ts: Optional[float] = None
+        self._last_prefill_launch_ts: Optional[float] = None
+        self._decode_graph_mixed_yields = 0
+
+    def _has_pending_prefill_work(self) -> bool:
+        return self.chunked_req is not None or bool(self.waiting_queue)
+
+    def _should_yield_prefill_to_decode(
+        self, running_batch: ScheduleBatch
+    ) -> bool:
+        """Whether a prefill step should run the pending decode forward first.
+
+        Pure scheduling reorder: when the gate fires, this scheduler step
+        returns the running batch (normal decode path, CUDA graph replay) and
+        the prefill is rebuilt on the next step. No batch contents, kernels or
+        per-request execution order change.
+        """
+        if self.decode_graph_mixed_idle_ms <= 0:
+            return False
+        if (
+            running_batch is None
+            or running_batch.is_empty()
+            or running_batch.is_prefill_only
+        ):
+            return False
+        # Arm only after a prefill forward: a decode forward never re-arms the
+        # gate by itself, so the gate cannot starve the prefill queue.
+        if (
+            self._last_decode_launch_ts is None
+            or self._last_prefill_launch_ts is None
+            or self._last_prefill_launch_ts <= self._last_decode_launch_ts
+        ):
+            return False
+        if not self._has_pending_prefill_work():
+            return False
+        idle_ms = (time.monotonic() - self._last_decode_launch_ts) * 1000.0
+        if idle_ms < self.decode_graph_mixed_idle_ms:
+            return False
+        self._decode_graph_mixed_yields += 1
+        return True
 
     def init_metrics_reporter(self) -> None:
         # Override point for deployments that need a specialized reporter.
@@ -3969,7 +4042,11 @@ class Scheduler(
 
         if self.dllm_config is not None:
             new_batch = self.get_new_batch_dllm(running_batch)
-        elif self._should_defer_prefill(running_batch):
+        elif self._should_defer_prefill(
+            running_batch
+        ) or self._should_yield_prefill_to_decode(running_batch):
+            # The opt-in gate defers the prefill to the next step so this step
+            # can replay the pending decode graph instead of starving it.
             new_batch = None
         else:
             prefill_plan = self.get_new_batch_prefill(running_batch)
@@ -4621,6 +4698,16 @@ class Scheduler(
         self.forward_ct += 1
         batch.forward_iter = self.forward_ct
         batch.launch_ts = time.monotonic()
+        if self.decode_graph_mixed_idle_ms > 0:
+            # Launch-time stamps drive the opt-in decode-priority gate. A DP
+            # converted-decode extend batch counts as decode, not prefill.
+            if batch.forward_mode.is_decode() or batch.forward_mode.is_mixed():
+                self._last_decode_launch_ts = batch.launch_ts
+            elif batch.forward_mode.is_extend():
+                if getattr(batch, "decoding_reqs", None):
+                    self._last_decode_launch_ts = batch.launch_ts
+                else:
+                    self._last_prefill_launch_ts = batch.launch_ts
         is_split_prefill = batch.forward_mode.is_split_prefill()
         if not is_split_prefill or batch.split_index == 0:
             batch.after_idle_gap = self._sched_idled

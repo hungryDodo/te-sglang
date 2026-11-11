@@ -1,81 +1,12 @@
 {
-  "schema_version": 1,
-  "worker": "deepseek-b",
-  "round": 4,
-  "candidate": "spark_lm_head_logits_q8_mmq_route",
-  "factor": "single factor: lm_head logits GEMM routing at the LogitsProcessor call site",
-  "base_commit": "6ee7279a93b98d17b1da0c200f9db1c2b0addc78",
-  "outcome": "NEGATIVE_FINDING_NO_SOURCE_CHANGE",
-  "changed_files": [
-    {
-      "path": "NATIVE-LMHEAD-FINDING.json",
-      "sha256": "074f70cf0a7da0f04a8b0ceb1d990b512c6124b87200dee147797b0510a22be4",
-      "kind": "determination-artifact"
-    },
-    {
-      "path": "q8_lmhead_route_checks.py",
-      "sha256": "c84b4504a5c5db6c7641d00b125549177ac3f1d0353a2be1c20501793ba28f7d",
-      "kind": "stdlib-source-guard-checks",
-      "lines": 117
-    },
-    {
-      "path": "ITERATION-PROPOSAL.json",
-      "sha256": "self",
-      "kind": "proposal"
-    }
-  ],
-  "runtime_source_changes": [],
-  "runtime_source_unchanged_evidence": {
-    "python/sglang/srt/layers/quantization/gguf.py": "38c97e72f5ef14f7502fbbd51a5833930ebed569084b2d8a1a098a7806d42b19 (equals base)",
-    "python/sglang/srt/layers/logits_processor.py": "5154d547402a84649e625f3eae4e8e5671f4d3fdf0ef2d255b5a60611c1debb5 (equals base)"
-  },
-  "finding_summary": "Spark2_5 ties lm_head to model.embed_tokens (spark2_5.py:462; gguf_name_maps.py:84), which owns only GGUF qweight/qweight_type, no dense weight. LogitsProcessor._compute_lm_head therefore takes the GGUF else branch and calls lm_head.quant_method.apply (logits_processor.py:1203-1213), which reaches fused_mul_mat_gguf (gguf.py:594). With a Q8_0 vocab matrix of 133120 rows that means vendor MMVQ for B<=2 (gguf.py:266-267) and vendor ggml_mul_mat_a8 for 3<=B<=64 (gguf.py:270-273). The research W4 apply() is not reachable from the lm_head site today: coverage requires batch 32..8192 (helper:36-37) and weight rows <= 131072 (helper:38), while decode B is 1..10 and the repo config vocab is 133120. There is no dequantized BF16 GEMM to replace, so the requested narrow routing was not implemented.",
-  "implementation": {
-    "status": "NOT_IMPLEMENTED_BY_DESIGN",
-    "reason": "Finding shows lm_head already routes quantized; the task's own rule says implement nothing in that case. Also the 'batch any' guard cannot be made exact against the existing operator (batch 32..8192, rows <= 131072).",
-    "trace_marker_added": false
-  },
-  "blockers": [
-    "operator admission requires batch 32..8192 (gguf_q8_mmq_x64_y64_w4.py:36-37)",
-    "operator admission requires weight.shape[0] <= 131072 (helper:38); vocab 133120 exceeds it",
-    "decode B<=2 is claimed by vendor MMVQ before the MMQ branch (gguf.py:266-267)",
-    "GGUF lm_head has no .weight, so the should_apply_lm_head_quant_method seam is dead for it (logits_processor.py:146)",
-    "research .so is not present in this sandbox and covered() is never true for this matrix at any batch"
-  ],
-  "expected_bottleneck_relief": {
-    "per_step_logits_gemm_B_le_64": "none: the decode-time vocab GEMM is already Q8_0 quantized; no path change was made",
-    "expected_per_user_effect_C8_C10": "0% (zero-diff candidate); no decode-step latency change can be attributed",
-    "measurement": "NOT_RUN; not measurable because no runtime code changed"
-  },
-  "analysis_notes": {
-    "lm_head_cost_floor": "V*K Q8_0 bytes = 133120*2176 = 289669120 B (~276 MiB) read per decode step at B<=10; this is weight-format-bound and cannot be reduced under the fixed-weights (Q8_0) constraint.",
-    "only_admissible_future_lever": "an operator-level admission extension of the research X64/Y64 tile to batch 3..31 (kernel work, out of scope for this round and unsupported by any B<=10 evidence)"
-  },
-  "risks": [
-    "Determination depends on the campaign's prior realweights evidence that token_embd.weight is Q8_0; if the runtime GGUF stores it F16/BF16/F32, fused_mul_mat_gguf would take the UNQUANTIZED_TYPES x @ qweight.T branch (gguf.py:263-264) and the finding must be reopened.",
-    "Vocab 133120 is the repo config default (configs/spark2_5.py:77) because the model-directory config.json is absent from this read-only sandbox; the B<32 blocker is vocab-independent, the 131072 row-cap blocker is not.",
-    "Zero runtime risk: no python/ file changed; gguf.py and logits_processor.py hash-match base 6ee7279."
-  ],
-  "cpu_checks": {
-    "command": "python3 -I q8_lmhead_route_checks.py",
-    "result": "PASS: LMHEAD-FINDING-CHECKS OK path=quantized_mmq B1=mmvq B8=vendor_mmq B64=vendor_mmq research_reachable=false",
-    "lines": 117,
-    "covers": ["B1/B8/B10/B64 dispatch", "wrong dtype/rank/device/layout coverage rejection", "base SHA256 identity", "no lm_head trace marker", "stdlib only, no torch/CUDA import"]
-  },
-  "proposed_test_request": {
-    "official_evaluation_requested": false,
-    "rationale": "Zero-diff candidate: a C8/C10 run would execute the base tree and cannot measure the nonexistent routing.",
-    "if_controller_requires_a_control": "Run the unchanged 6ee7279 tree at C8 and C10 with per-request streaming metrics; expected per-request decode tok/s and aggregate metrics equal base exactly (byte-identical sources).",
-    "read_only_confirmation_optional": "At startup the Controller may assert SGLANG_Q8_MMQ_X64_Y64_W4_DIAGNOSTICS counters show no covered lm_head call (all vocab-matrix attempts classify as fallback_rows_outside_32_8192 or fallback_fixed_model_dimensions); this needs no source change.",
-    "build": "NOT_RUN",
-    "gpu": "NOT_RUN",
-    "quality": "NOT_RUN"
-  },
-  "not_run": {
-    "build": "NOT_RUN",
-    "gpu": "NOT_RUN",
-    "model_run": "NOT_RUN",
-    "quality": "NOT_RUN",
-    "performance": "NOT_RUN"
-  }
+ "worker": "deepseek-b",
+ "round": 8,
+ "base_commit": "6ee7279a93b98d17b1da0c200f9db1c2b0addc78",
+ "adoption": "Controller-completed: provider r8 hit turns+cost caps with the priority-swap partial fully implemented but uncommitted; Controller fixed two unit/ordering bugs in the agent's guard checks (timestamp units, docstring index) and relaxed one base-tree evidence assertion (decoding_reqs location) with a note; scheduler diff itself is byte-identical to the provider partial.",
+ "mechanism": "priority-swap partial",
+ "description": "SGLANG_DECODE_GRAPH_MIXED=N (opt-in, default off): after a prefill forward, if decode has been idle >= max(N,200) ms while prefill work pends, the scheduler defers the prefill one step and replays the pending decode CUDA graph first. Pure scheduling reorder; no batch contents, kernel or per-request execution order change.",
+ "changed_files": ["python/sglang/srt/managers/scheduler.py", "decode_graph_mixed_checks.py"],
+ "expected_effect": "Bounds decode stalls during prefill waves to ~idle_ms instead of unbounded back-to-back prefill forwards (observed 1.7s = 2x867ms); recovers part of the 33.8% serialized wall; TTFT slightly up for long prefills.",
+ "blocker_note_full_mechanism": "Full mixed-batch decode-graph composition not attempted: mixed forwards execute as one extend batch; splitting into eager-prefill + graph-decode sub-forwards inside one scheduler step exceeds one focused change.",
+ "NOT_RUN": ["GPU", "build", "model run", "quality", "numerics"]
 }
