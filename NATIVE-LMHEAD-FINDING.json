@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "worker": "deepseek-b",
+  "round": 4,
+  "base_commit": "6ee7279a93b98d17b1da0c200f9db1c2b0addc78",
+  "mode": "READ_ONLY_DETERMINATION",
+  "candidate": "spark lm_head logits Q8_0 MMQ routing",
+  "current_path": "quantized_mmq",
+  "current_path_summary": "Spark2_5 ties lm_head to model.embed_tokens. That module is a GGUF-quantized VocabParallelEmbedding with qweight/qweight_type and no .weight, so LogitsProcessor._compute_lm_head skips the dense/FP branches and calls lm_head.quant_method.apply(), i.e. GGUFLinearMethod.apply -> fused_mul_mat_gguf -> quantized Q8_0 kernels. Logits are never produced by a dequantized BF16 GEMM on this path.",
+  "not_dequant_bf16_gemm": true,
+  "w4_mmq_apply_reachable_from_lm_head_today": false,
+  "evidence": [
+    {
+      "file": "python/sglang/srt/models/spark2_5.py",
+      "line": 462,
+      "claim": "Single-rank tied config binds lm_head to the embedding module: self.lm_head = self.model.embed_tokens (else ParallelLMHead at 464 with the same quant_config, also GGUF-quantized)."
+    },
+    {
+      "file": "python/sglang/srt/model_loader/gguf_name_maps.py",
+      "line": 84,
+      "claim": "Commit 762e71c comment: '\"output\" only exists when embeddings are not tied; Spark2_5 ties them.' The spark2_5 name map has no output->lm_head entry, so lm_head is the token_embd Q8_0 matrix, not a separate FP tensor."
+    },
+    {
+      "file": "python/sglang/srt/layers/vocab_parallel_embedding.py",
+      "line": 304,
+      "claim": "VocabParallelEmbedding gets GGUFEmbeddingMethod from GGUFConfig.get_quant_method; create_weights at 342 registers qweight (packed uint8) and qweight_type, not a dense weight."
+    },
+    {
+      "file": "python/sglang/srt/layers/quantization/gguf.py",
+      "line": 470,
+      "claim": "GGUFLinearMethod.create_weights registers qweight (uint8, is_gguf_weight) and qweight_type only; a GGUF lm_head therefore has no .weight attribute."
+    },
+    {
+      "file": "python/sglang/srt/layers/logits_processor.py",
+      "line": 143,
+      "claim": "should_apply_lm_head_quant_method requires hasattr(lm_head, 'weight') (line 146); a GGUF qweight-only lm_head fails that predicate."
+    },
+    {
+      "file": "python/sglang/srt/layers/logits_processor.py",
+      "line": 1156,
+      "claim": "The should_apply branch is skipped; the hasattr(lm_head,'weight') branch at 1158 is skipped; the GGUF else branch at 1203-1213 calls lm_head.quant_method.apply(lm_head, hidden_states, embedding_bias)."
+    },
+    {
+      "file": "python/sglang/srt/layers/quantization/gguf.py",
+      "line": 562,
+      "claim": "GGUFLinearMethod.apply: lm_head qweight has empty shard_id, so it takes the unsharded branch at 590-594 and calls fused_mul_mat_gguf(x, qweight, qweight_type)."
+    },
+    {
+      "file": "python/sglang/srt/layers/quantization/gguf.py",
+      "line": 257,
+      "claim": "fused_mul_mat_gguf: mmvq_safe = 2 for qweight.shape[0] > 5120 (vocab 133120); B<=2 takes ggml_mul_mat_vec_a8 (266-267), B>=3 takes the MMQ branch (269-273)."
+    },
+    {
+      "file": "python/sglang/srt/layers/quantization/gguf.py",
+      "line": 270,
+      "claim": "The research binding is consulted only inside the MMQ branch: if _is_cuda and _research_q8_mmq_x64_y64_w4_covered(...): apply(...) else ggml_mul_mat_a8(...). So the W4 apply() is syntactically reachable only through covered()."
+    },
+    {
+      "file": "python/sglang/kernels/ops/quantization/gguf_q8_mmq_x64_y64_w4.py",
+      "line": 36,
+      "claim": "coverage_reason rejects any batch outside [32, 8192] with rows_outside_32_8192; decode batches B in [1..10] can never select the research W4 target."
+    },
+    {
+      "file": "python/sglang/kernels/ops/quantization/gguf_q8_mmq_x64_y64_w4.py",
+      "line": 38,
+      "claim": "coverage_reason also requires 0 < weight.shape[0] <= 131072 and col in (2048, 6656); a 133120-row vocab matrix is rejected with fixed_model_dimensions even at prefill batch >= 32."
+    },
+    {
+      "file": "python/sglang/srt/layers/quantization/gguf.py",
+      "line": 306,
+      "claim": "Real Spark Q8_0 gate/up qweight geometry (13312, 2176) proves hidden K=2048 (2176 = 2048/32*34), the same packed row width expected for the [133120, 2176] vocab matrix."
+    }
+  ],
+  "shapes": {
+    "hidden_size_K": 2048,
+    "hidden_size_source": "Spark2_5Config default hidden_size=2048 (python/sglang/srt/configs/spark2_5.py:69), corroborated by the real Q8_0 gate/up qweight (13312, 2176) in gguf.py:306-310.",
+    "vocab_size_V": 133120,
+    "vocab_size_source": "Spark2_5Config default vocab_size=133120 (python/sglang/srt/configs/spark2_5.py:77); Spark2_5Config.from_gguf reads token_embd.weight.shape[1] (spark2_5.py:31). The model-directory config.json is NOT present in this read-only sandbox, so 133120 is source-derived (repo config default), not re-read from the runtime artifact here.",
+    "q8_0_block": 32,
+    "q8_0_row_width_bytes": 2176,
+    "expected_vocab_qweight_shape": [133120, 2176],
+    "vocab_rows_divisible_by_64": true,
+    "vocab_rows_within_131072_cap": false
+  },
+  "per_batch_dispatch_today": {
+    "B_1_to_2": "ggml_mul_mat_vec_a8 (vendor MMVQ), gguf.py:266-267",
+    "B_3_to_10": "covered() false (rows_outside_32_8192) -> vendor ggml_mul_mat_a8, gguf.py:270-273",
+    "B_32_to_8192": "covered() false for V=133120 (fixed_model_dimensions) -> vendor ggml_mul_mat_a8; would reach research W4 only if the runtime vocab were <= 131072",
+    "prefill_B_above_8192": "covered() false (rows_outside_32_8192) -> vendor ggml_mul_mat_a8"
+  },
+  "decision": "IMPLEMENT_NOTHING_NEGATIVE_FINDING",
+  "decision_rationale": "The premise for narrow routing (lm_head runs through a dequantized/FP BF16 GEMM) is false: the quantized GGUF apply() is already the logits path, and for B<=10 it already uses a Q8_0 MMQ/MMVQ kernel. The requested 'batch any' guard is also impossible to make exact because the existing W4 operator admits only batch 32..8192 and vocab rows <= 131072; inserting a direct apply() call at B in [1..10] (or at V=133120) would execute outside the operator's admitted domain and violate the campaign's exact-guard rule. Nothing was modified under python/.",
+  "blockers": [
+    "B1 operator domain: covered() requires batch in [32, 8192] (gguf_q8_mmq_x64_y64_w4.py:36-37); decode B in [1..10] is outside the admitted domain and its tail behavior is NOT_RUN.",
+    "B2 weight geometry: covered() requires weight.shape[0] <= 131072 (helper:38); vocab 133120 exceeds it, so even prefill B>=32 cannot select the W4 target for the lm_head matrix.",
+    "B3 already quantized: lm_head logits dispatch to GGUFLinearMethod.apply -> fused_mul_mat_gguf (logits_processor.py:1203-1213, gguf.py:594); there is no dequantized BF16 GEMM to replace at B<=10.",
+    "B4 branch-order: B<=2 is claimed by MMVQ before the MMQ branch (gguf.py:266-267), so a decode-side lm_head routing would also need to displace MMVQ, not only the vendor MMQ fallback.",
+    "B5 no dead seam: any insertion inside the should_apply_lm_head_quant_method branch is unreachable for GGUF lm_head because it has no .weight (logits_processor.py:146), so the existing routing cannot be expressed there.",
+    "B6 native library: the research apply() loads NATIVE-BUILD-MANIFEST.json plus q8_mmq_x64_y64_w4.so; the .so is not present in this sandbox and would only ever be exercised for covered shapes, which the lm_head matrix never satisfies."
+  ],
+  "recheck_trigger": "If a Controller model run shows token_embd.weight tensor_type != Q8_0 (i.e. F16/BF16/F32), fused_mul_mat_gguf would take the UNQUANTIZED_TYPES branch x @ qweight.T (gguf.py:263-264) and this finding must be reopened; campaign prior x8 realweights evidence says the vocab matrix is Q8_0, which is what this determination relies on.",
+  "source_only_evidence": {
+    "changed_runtime_files": [],
+    "gguf_py_sha256_equals_base": "38c97e72f5ef14f7502fbbd51a5833930ebed569084b2d8a1a098a7806d42b19",
+    "logits_processor_py_sha256_equals_base": "5154d547402a84649e625f3eae4e8e5671f4d3fdf0ef2d255b5a60611c1debb5",
+    "checks_command": "python3 q8_lmhead_route_checks.py",
+    "checks_properties": [
+      "B1/B8/B64 and B10 dispatch classification",
+      "wrong dtype/rank/device/layout rejected by the committed coverage predicate",
+      "base gguf.py and logits_processor.py SHA256 unchanged",
+      "absence of the proposed lm_head trace marker (nothing implemented)",
+      "stdlib only; no torch or CUDA at import time"
+    ]
+  },
+  "not_run": {
+    "build": "NOT_RUN",
+    "gpu": "NOT_RUN",
+    "model_run": "NOT_RUN",
+    "quality": "NOT_RUN"
+  }
+}
