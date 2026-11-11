@@ -23,7 +23,7 @@
     "gguf_q8_mmq_x32_y64.py": "5887eb85dd2d3bf1043abdf35d14cf65887d61b0a903e917d99e9d081994c821"
   },
   "source_sha256": {
-    "mmq_x64_y64_w4_core.cuh": "dd09ca7b40d8767e364bbd2f855f016514309e052ac444366e7e261216afccba",
+    "mmq_x64_y64_w4_core.cuh": "662ae8330b4491b0c9bf8155f7e21b901417882f4c4f44bae873649ae72b4aa0",
     "q8_mmq_x64_y64_w4.cu": "3463039348e5c7302f54ba7ac7ed6fe2bf065f1be373c3769bf30b69b1b135ba"
   },
   "helper_path": "../gguf_q8_mmq_x64_y64_w4.py",
@@ -45,5 +45,13 @@
   "gpu_execution": "NOT_RUN",
   "math_equivalence": "NOT_RUN",
   "performance": "NOT_RUN",
-  "quality": "NOT_RUN"
+  "quality": "NOT_RUN",
+  "research_variant": {
+    "id": "CTA_B_MAJOR_FULL_TILE",
+    "origin": "CONTROLLER_NATIVE_RESEARCH_NOT_PROVIDER_DELIVERY",
+    "direct_parent_commit": "9f0bfa6fd854f17b4dc33d4f99299c1f14ac9e0b",
+    "factor": "CUDA-only CTA grid/index axis order on actual B>=128 and B%64==0 with complete N tiles and transposed grid.y in [1,65535]; all other shapes keep the original route. X64/Y64/W4, inputs, per-output arithmetic, stream, and existing unsupported/tail routes unchanged.",
+    "build": "NOT_RUN",
+    "GPU": "NOT_RUN"
+  }
 }

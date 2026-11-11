@@ -15,6 +15,7 @@ template <
     int mmq_x,
     int mmq_y,
     int nwarps,
+    bool b_major,
     allocate_tiles_cuda_t allocate_tiles,
     load_tiles_cuda_t load_tiles,
     int vdr,
@@ -37,10 +38,10 @@ static __device__ __forceinline__ void mul_mat_q(
 
   const int& ncols_dst = ncols_y;
 
-  const auto row_dst_0 = blockIdx.x * mmq_y;
+  const auto row_dst_0 = (b_major ? blockIdx.y : blockIdx.x) * mmq_y;
   const int& row_x_0 = row_dst_0;
 
-  const auto col_dst_0 = blockIdx.y * mmq_x;
+  const auto col_dst_0 = (b_major ? blockIdx.x : blockIdx.y) * mmq_x;
   const int& col_y_0 = col_dst_0;
 
   int* tile_x_ql = nullptr;
@@ -143,7 +144,7 @@ static __device__ __forceinline__ void mul_mat_q(
 #define NWARPS_Q8_0 4
 #endif
 
-template <typename scalar_t, bool need_check>
+template <typename scalar_t, bool need_check, bool b_major = false>
 static __global__ void
 #if defined(USE_ROCM)
 __launch_bounds__(WARP_SIZE_GGUF* NWARPS_Q8_0, 2)
@@ -171,6 +172,7 @@ __launch_bounds__(WARP_SIZE_GGUF* NWARPS_Q8_0, 2)
       mmq_x,
       mmq_y,
       nwarps,
+      b_major,
       allocate_tiles_q8_0<mmq_y>,
       load_tiles_q8_0<mmq_y, nwarps, need_check>,
       VDR_Q8_0_Q8_1_MMQ,
@@ -196,6 +198,18 @@ static void ggml_mul_mat_q8_0_research_x64_y64_w4_q8_1_cuda(
   const int block_num_y = (ncols_y + mmq_x - 1) / mmq_x;
   const dim3 block_nums(block_num_x, block_num_y, 1);
   const dim3 block_dims(WARP_SIZE_GGUF, nwarps, 1);
+
+#if !defined(USE_ROCM) && !defined(USE_MUSA)
+  // For two or more complete activation tiles, put the activation tile on
+  // grid.x so adjacent logical CTAs can use the same weight tile.
+  if (nrows_x % mmq_y == 0 && block_num_x > 0 && block_num_x <= 65535 &&
+      ncols_y >= 2 * mmq_x && ncols_y % mmq_x == 0) {
+    const dim3 b_major_blocks(block_num_y, block_num_x, 1);
+    mul_mat_q8_0_research_x64_y64_w4<scalar_t, false, true>
+        <<<b_major_blocks, block_dims, 0, stream>>>(vx, vy, dst, ncols_x, nrows_x, ncols_y, nrows_y, nrows_dst);
+    return;
+  }
+#endif
 
   if (nrows_x % mmq_y == 0) {
     const bool need_check = false;
