@@ -59,7 +59,7 @@ def diagnostic_counts():
 
 
 @functools.lru_cache(maxsize=1)
-def _operator():
+def _load_library():
     root = Path(__file__).with_name("native_q8_mmq_x64_y64_w4")
     binding = json.loads((root / "NATIVE-BUILD-MANIFEST.json").read_bytes())
     if (binding.get("schema_version") != 1 or binding.get("namespace") != _NAMESPACE
@@ -70,6 +70,11 @@ def _operator():
             or hashlib.sha256(library.read_bytes()).hexdigest() != binding.get("library_sha256")):
         raise RuntimeError("Registered X8 library bytes differ")
     torch.ops.load_library(str(library))
+
+
+@functools.lru_cache(maxsize=1)
+def _operator():
+    _load_library()
     return torch.ops.tierengine_q8_mmq_x64_y64_w4_v1.mmq.default
 
 
@@ -77,3 +82,10 @@ def apply(x, weight):
     # The caller selected this target. Never catch a load/launch failure and
     # silently execute the old kernel; a research run must retain that failure.
     return _operator()(weight, x)
+
+
+def apply_gate_up(x, gate, up):
+    _load_library()
+    if _DIAGNOSTICS:
+        _COUNTS["paired_gate_up"] += 1
+    return torch.ops.tierengine_q8_mmq_x64_y64_w4_v1.mmq_gate_up.default(gate, up, x)

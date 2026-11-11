@@ -65,6 +65,7 @@ class Spark2_5MLP(nn.Module):
             quant_config=quant_config,
             prefix=add_prefix("gate_up_proj", prefix),
         )
+        self.gate_up_proj._spark_q8_gate_up = True
         self.down_proj = RowParallelLinear(
             intermediate_size,
             hidden_size,

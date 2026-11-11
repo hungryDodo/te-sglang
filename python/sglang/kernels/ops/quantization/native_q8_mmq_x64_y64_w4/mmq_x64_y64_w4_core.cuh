@@ -18,7 +18,8 @@ template <
     allocate_tiles_cuda_t allocate_tiles,
     load_tiles_cuda_t load_tiles,
     int vdr,
-    vec_dot_q_mul_mat_cuda_t vec_dot>
+    vec_dot_q_mul_mat_cuda_t vec_dot,
+    int output_stride = 0>
 static __device__ __forceinline__ void mul_mat_q(
     const void* __restrict__ vx,
     const void* __restrict__ vy,
@@ -128,7 +129,8 @@ static __device__ __forceinline__ void mul_mat_q(
       if (row_dst >= nrows_dst) {
         continue;
       }
-      dst[col_dst * nrows_dst + row_dst] = sum[i / WARP_SIZE_GGUF][j / nwarps];
+      const int stride = output_stride == 0 ? nrows_dst : output_stride;
+      dst[col_dst * stride + row_dst] = sum[i / WARP_SIZE_GGUF][j / nwarps];
     }
   }
 }
@@ -143,7 +145,7 @@ static __device__ __forceinline__ void mul_mat_q(
 #define NWARPS_Q8_0 4
 #endif
 
-template <typename scalar_t, bool need_check>
+template <typename scalar_t, bool need_check, int output_stride = 0>
 static __global__ void
 #if defined(USE_ROCM)
 __launch_bounds__(WARP_SIZE_GGUF* NWARPS_Q8_0, 2)
@@ -174,7 +176,8 @@ __launch_bounds__(WARP_SIZE_GGUF* NWARPS_Q8_0, 2)
       allocate_tiles_q8_0<mmq_y>,
       load_tiles_q8_0<mmq_y, nwarps, need_check>,
       VDR_Q8_0_Q8_1_MMQ,
-      vec_dot_q8_0_q8_1_mul_mat>(vx, vy, dst, ncols_x, nrows_x, ncols_y, nrows_y, nrows_dst);
+      vec_dot_q8_0_q8_1_mul_mat,
+      output_stride>(vx, vy, dst, ncols_x, nrows_x, ncols_y, nrows_y, nrows_dst);
 }
 
 template <typename scalar_t>

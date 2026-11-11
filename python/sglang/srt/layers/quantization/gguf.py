@@ -29,7 +29,15 @@ from sglang.srt.layers.quantization.base_config import (
     QuantizeMethodBase,
 )
 from sglang.srt.layers.quantization.unquant import UnquantizedLinearMethod
-from sglang.srt.utils import is_cuda, is_hip, is_musa, is_npu, is_xpu, set_weight_attrs
+from sglang.srt.utils import (
+    is_cuda,
+    is_hip,
+    is_musa,
+    is_npu,
+    is_xpu,
+    print_info_once,
+    set_weight_attrs,
+)
 
 if TYPE_CHECKING:
     from sglang.srt.layers.moe.token_dispatcher import (
@@ -58,8 +66,10 @@ if _is_cuda:
     from sglang.kernels.ops.moe.gguf_moe_weights import apply_gguf_moe_weights
     from sglang.kernels.ops.quantization.gguf_q8_mmq_x64_y64_w4 import (
         apply as _research_q8_mmq_x64_y64_w4_apply,
+        apply_gate_up as _research_q8_mmq_x64_y64_w4_apply_gate_up,
         covered as _research_q8_mmq_x64_y64_w4_covered,
     )
+    from sglang.srt.distributed.utils import get_group_rank_size
 elif _is_musa:
     from sgl_kernel import gelu_and_mul, moe_sum, silu_and_mul
     from sgl_kernel.quantization import (
@@ -91,6 +101,34 @@ def _ordered_gguf_shard_ids(shard_ids: list) -> list:
     ) == set(range(len(shard_ids))):
         return sorted(shard_ids)
     return list(shard_ids)
+
+
+def _can_pair_spark_q8_gate_up(layer, x, bias):
+    if (
+        not _is_cuda
+        or bias is not None
+        or not getattr(layer, "_spark_q8_gate_up", False)
+        or x.shape != (8192, 2048)
+        or not x.is_cuda
+        or x.dtype != torch.bfloat16
+        or not x.is_contiguous()
+        or not hasattr(layer, "tp_group")
+        or get_group_rank_size(layer.tp_group) != (0, 1)
+        or getattr(layer, "bias", False) is not None
+    ):
+        return False
+    qweight = layer.qweight
+    return (
+        qweight.shape == (13312, 2176)
+        and qweight.device == x.device
+        and qweight.dtype == torch.uint8
+        and qweight.is_contiguous()
+        and qweight.storage_offset() == 0
+        and qweight.shard_id == [0, 1]
+        and getattr(qweight, "shard_offset_map", None)
+        == {0: (0, 6656, 2176), 1: (6656, 13312, 2176)}
+        and getattr(layer.qweight_type, "shard_weight_type", None) == {0: 8, 1: 8}
+    )
 
 
 class GGUFConfig(QuantizationConfig):
@@ -530,6 +568,13 @@ class GGUFLinearMethod(LinearMethodBase):
         shard_id = layer.qweight.shard_id
 
         if shard_id:
+            if _can_pair_spark_q8_gate_up(layer, x, bias):
+                qweight = layer.qweight
+                out = _research_q8_mmq_x64_y64_w4_apply_gate_up(
+                    x, qweight[:6656], qweight[6656:]
+                )
+                print_info_once("Using W4 paired Spark Q8_0 gate/up at B8192")
+                return out
             # dequantize shard weights respectively
             shard_id = _ordered_gguf_shard_ids(shard_id)
             qweight = layer.qweight

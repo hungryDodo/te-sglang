@@ -9,6 +9,8 @@
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
 #include <climits>
+#include <cstdint>
+#include <initializer_list>
 
 #include "../native_q8_mmq_x8/vendor/ggml-common.h"
 #include "../native_q8_mmq_x8/vendor/vecdotq.cuh"
@@ -52,11 +54,51 @@ at::Tensor run(const at::Tensor& weight, const at::Tensor& x) {
   return y;
 }
 
+at::Tensor run_gate_up(const at::Tensor& gate, const at::Tensor& up, const at::Tensor& x) {
+  constexpr int batch = 8192, col = 2048, rows = 6656, output_stride = 2 * rows;
+  constexpr int packed_width = col / QK8_0 * sizeof(block_q8_0);
+  static_assert(sizeof(block_q8_0) == 34 && sizeof(block_q8_1) == 36);
+  static_assert(col % 512 == 0 && rows % MMQ_Y_Q8_0 == 0 && batch % MMQ_X_Q8_0 == 0);
+  static_assert(batch * col <= INT_MAX && batch * output_stride <= INT_MAX);
+  TORCH_CHECK(x.is_cuda() && x.scalar_type() == at::kBFloat16 && x.is_contiguous() &&
+                  x.dim() == 2 && x.size(0) == batch && x.size(1) == col &&
+                  reinterpret_cast<std::uintptr_t>(x.data_ptr()) % alignof(at::BFloat16) == 0,
+              "W4 gate/up requires contiguous CUDA BF16 [8192,2048] input");
+  for (const at::Tensor* weight : {&gate, &up}) {
+    TORCH_CHECK(weight->device() == x.device() && weight->scalar_type() == at::kByte &&
+                    weight->is_contiguous() && weight->dim() == 2 &&
+                    weight->size(0) == rows && weight->size(1) == packed_width &&
+                    reinterpret_cast<std::uintptr_t>(weight->data_ptr()) % alignof(block_q8_0) == 0,
+                "W4 gate/up requires two aligned packed Q8_0 [6656,2176] matrices on the input device");
+  }
+  const c10::cuda::CUDAGuard guard(x.device());
+  auto y = at::empty({batch, output_stride}, x.options());
+  auto quant_x = at::empty({batch, col / 32 * 9}, x.options().dtype(at::kInt));
+  cudaStream_t stream = c10::cuda::getCurrentCUDAStream(x.get_device()).stream();
+  quantize_row_q8_1_cuda<at::BFloat16>(
+      x.data_ptr<at::BFloat16>(), quant_x.data_ptr(), col, batch, stream);
+
+  const dim3 grid(rows / MMQ_Y_Q8_0, batch / MMQ_X_Q8_0, 1);
+  const dim3 block(WARP_SIZE_GGUF, NWARPS_Q8_0, 1);
+  auto* out = y.data_ptr<at::BFloat16>();
+  // Each launch retains the ordinary 6656-row logical bound and owns one half.
+  mul_mat_q8_0_research_x64_y64_w4<at::BFloat16, false, output_stride>
+      <<<grid, block, 0, stream>>>(gate.data_ptr(), quant_x.data_ptr(), out,
+                                   col, rows, batch, col, rows);
+  mul_mat_q8_0_research_x64_y64_w4<at::BFloat16, false, output_stride>
+      <<<grid, block, 0, stream>>>(up.data_ptr(), quant_x.data_ptr(), out + rows,
+                                   col, rows, batch, col, rows);
+  C10_CUDA_KERNEL_LAUNCH_CHECK();
+  return y;
+}
+
 }  // namespace tierengine_q8_mmq_x64_y64_w4_v1
 
 TORCH_LIBRARY(tierengine_q8_mmq_x64_y64_w4_v1, m) {
   m.def("mmq(Tensor weight, Tensor x) -> Tensor");
+  m.def("mmq_gate_up(Tensor gate, Tensor up, Tensor x) -> Tensor");
 }
 TORCH_LIBRARY_IMPL(tierengine_q8_mmq_x64_y64_w4_v1, CUDA, m) {
   m.impl("mmq", &tierengine_q8_mmq_x64_y64_w4_v1::run);
+  m.impl("mmq_gate_up", &tierengine_q8_mmq_x64_y64_w4_v1::run_gate_up);
 }
