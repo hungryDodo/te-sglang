@@ -117,6 +117,7 @@ from sglang.srt.layers.quantization.fp8_utils import initialize_fp8_gemm_config
 from sglang.srt.layers.quantization.unquant import initialize_bf16_gemm_config
 from sglang.srt.lora.lora_drainer import LoRADrainer
 from sglang.srt.lora.lora_overlap_loader import LoRAOverlapLoader
+from sglang.srt.managers import forward_trace
 from sglang.srt.managers.disagg_service import maybe_create_ascend_config_store
 from sglang.srt.managers.hisparse_coordinator import HiSparseCoordinator
 from sglang.srt.managers.io_struct import (
@@ -4621,6 +4622,14 @@ class Scheduler(
         self.forward_ct += 1
         batch.forward_iter = self.forward_ct
         batch.launch_ts = time.monotonic()
+        # Snapshot for the opt-in per-forward trace (SGLANG_FORWARD_TRACE=1).
+        # Taken before overlap staging (e.g. mix_running_indices) is consumed
+        # below; the single FWD line is emitted just before this method returns.
+        fwd_trace = (
+            forward_trace.capture_composition(batch)
+            if forward_trace.FORWARD_TRACE_ENABLED
+            else None
+        )
         is_split_prefill = batch.forward_mode.is_split_prefill()
         if not is_split_prefill or batch.split_index == 0:
             batch.after_idle_gap = self._sched_idled
@@ -4929,6 +4938,12 @@ class Scheduler(
                 # Result processing finishes the others; a chunked one is
                 # released like a client abort so its next chunk never runs.
                 self._pending_chunked_abort_req = self.chunked_req
+
+        if fwd_trace is not None:
+            # graph is the worker-returned can_run_cuda_graph, not inferred.
+            forward_trace.log_forward_composition(
+                *fwd_trace, bool(getattr(ret, "can_run_cuda_graph", False))
+            )
 
         self._maybe_report_active_ranks()
 
