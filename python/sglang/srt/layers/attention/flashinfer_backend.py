@@ -3,6 +3,7 @@ from __future__ import annotations
 from sglang.srt.runtime_context import (
     get_buffer,
     get_exec,
+    get_flags,
     get_parallel,
     get_platform,
 )
@@ -1131,6 +1132,9 @@ class FlashInferAttnBackend(AttentionBackend):
             and forward_batch.cross_attention_custom_mask is None
             and self.prefill_wrapper_ragged._backend == "fa2"
             and max(forward_batch.extend_seq_lens_cpu or (), default=0) > 512
+            and check_cuda_graph_backend(Phase.PREFILL, Backend.DISABLED)
+            and not get_flags().capture.enable_torch_compile
+            and not torch.compiler.is_compiling()
         ):
             return None
 
