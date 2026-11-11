@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "origin": "CONTROLLER_PRODUCED_NEW_GUARDED_X64_Y64_W8_FROM_PROVIDER_X32_Y64",
+  "source_parent": "6cd8d0dc999b587bb7f84b6447d36b679434d43e",
+  "trusted_performance_reference": "5b89820b04cb26385d45915c484708796ba7df91",
+  "namespace": "tierengine_q8_mmq_x64_y64_w8_v1",
+  "operator": "mmq",
+  "library": "q8_mmq_x64_y64_w8.so",
+  "tile_cuda_else": {
+    "X": 64,
+    "Y": 64,
+    "warps": 8
+  },
+  "coupled_factor": "X32->64 and W4->8 at fixed Y64, so the existing activation and weight scale index formulas cover one complete tile without duplicate destination writers. No independent warp-count claim.",
+  "guard": "Original BF16/packed Q8_0/B32..8192/K2048 or6656/N range/device/contiguity/int guards retained; additional N%64==0 in helper with original fallback, and in direct native before allocation/launch. Selected native load/launch failure stays fatal.",
+  "legacy_tail_boundary": "Inherited checked weight loader clamps the destination row, allowing overlapping shared writes for incomplete N tiles. This candidate only excludes that native path; it does not fix inherited tail code or certify fallback tails. Activation B tails clamp source only.",
+  "source_files": {
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x64_y64_w8/mmq_x64_y64_w8_core.cuh": {
+      "sha256": "8499b5a737eb4b3fe309ee16f09321c298988b248943da4a608dadc7124922cf",
+      "bytes": 6578
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x64_y64_w8/q8_mmq_x64_y64_w8.cu": {
+      "sha256": "34811a1bb7b07eef69409d719ff2b3459b318adbf4b906ddf01df1b39c283c3f",
+      "bytes": 3055
+    },
+    "python/sglang/kernels/ops/quantization/gguf_q8_mmq_x64_y64_w8.py": {
+      "sha256": "ff99188dd51246c2f1dbf36a113571bb02a27c0d8898c5a9e24e80d4c5705502",
+      "bytes": 2941
+    },
+    "python/sglang/srt/layers/quantization/gguf.py": {
+      "sha256": "7f560a9661f5c98b33b4536f89fe06ded20fc08ee3651baac710d1b695a4800e",
+      "bytes": 39315
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/device_compat.cuh": {
+      "sha256": "38e2c82bb420c6aef341c9048da61ec44f2f452e2e25aad02d407f7f78b13ac5",
+      "bytes": 495
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/ggml-common.h": {
+      "sha256": "d74d226d7bc50f0fcfc74ccfc955d1e395ab92cf05a165b502275c9b95fb40f8",
+      "bytes": 84564
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/quantize_q8_1.cuh": {
+      "sha256": "a51602bc4f85bb297fb48d5bbb0d249699e826e69f1e699a9327e1c3e7b9bbe4",
+      "bytes": 1820
+    },
+    "python/sglang/kernels/ops/quantization/native_q8_mmq_x8/vendor/vecdotq.cuh": {
+      "sha256": "1c51d0de569672d98bb442c68911179e2665db8d222d016d5029d73cf751c6f4",
+      "bytes": 69050
+    }
+  },
+  "native_build": "NOT_RUN",
+  "GPU_math": "NOT_RUN",
+  "model_performance": "NOT_RUN",
+  "quality": "NOT_RUN"
+}
