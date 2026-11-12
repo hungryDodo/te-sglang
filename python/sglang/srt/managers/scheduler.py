@@ -1760,6 +1760,7 @@ class Scheduler(
             self.decode_overlap_stream
         )
         self._decode_overlap_event = self.device_module.Event()
+        self._prefill_in_flight = False
 
         if not self.enable_overlap:
             return
@@ -2129,10 +2130,10 @@ class Scheduler(
         ] = deque()
 
         def pop_and_process():
-            # Process the results of the last batch (drain all entries: the
-            # split-decode iteration appends prefill+decode companions).
             while self.result_queue:
                 tmp_batch, tmp_result = self.result_queue.popleft()
+                if tmp_batch.forward_mode is not None and tmp_batch.forward_mode.is_extend() and not getattr(tmp_batch, 'decoding_reqs', None):
+                    self._prefill_in_flight = False
                 self.process_batch_result(tmp_batch, tmp_result)
 
         while True:
@@ -2172,9 +2173,10 @@ class Scheduler(
             # Launch the current batch
             if batch:
                 batch_result = self.run_batch(batch)
-                # Fence result processing behind this forward's shared reads.
                 self._apply_war_barrier()
                 self.result_queue.append((batch.copy(), batch_result))
+                if batch.forward_mode is not None and batch.forward_mode.is_extend() and not getattr(batch, 'decoding_reqs', None):
+                    self._prefill_in_flight = True
                 # MIXED-GRAPH-PLAN: companion decode batch (graph replay)
                 # runs back-to-back on the same forward stream; its result is
                 # queued exactly like a normal decode step.  The prefill
@@ -5180,8 +5182,10 @@ class Scheduler(
         if batch_result is None or batch_result.delay_sample_func is None:
             return
 
-        with self.forward_stream_ctx:
-            self.forward_stream.wait_stream(self.schedule_stream)
+        _overlap = (self._prefill_in_flight and batch.forward_mode is not None and batch.forward_mode.is_decode())
+        _sctx = self.decode_overlap_ctx if _overlap else self.forward_stream_ctx
+        with _sctx:
+            (self.decode_overlap_stream if _overlap else self.forward_stream).wait_stream(self.schedule_stream)
             _batch_result = batch_result.delay_sample_func()
             assert _batch_result is batch_result
             # Delay-sample is non-spec only; relays the sampled bonus tokens.
