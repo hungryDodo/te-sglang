@@ -2086,6 +2086,15 @@ class Scheduler(
                 if companion is not None:
                     dres = self.run_batch(companion)
                     self.process_batch_result(companion, dres)
+                    # MIXED-GRAPH-PLAN fix: merge the companion's unfinished
+                    # reqs back into running_batch so the next decode step
+                    # and the KV pool see them (prevents the pool leak).
+                    companion.filter_batch()
+                    if not companion.is_empty():
+                        if self.running_batch.is_empty():
+                            self.running_batch = companion
+                        else:
+                            self.running_batch.merge_batch(companion)
             else:
                 # When the server is idle, do self-check and re-init some states.
                 self._sched_idled = True
@@ -2162,6 +2171,14 @@ class Scheduler(
                     dres = self.run_batch(companion)
                     self._apply_war_barrier()
                     self.result_queue.append((companion.copy(), dres))
+                    # MIXED-GRAPH-PLAN fix: merge the companion's unfinished
+                    # reqs back into running_batch (prevents the pool leak).
+                    companion.filter_batch()
+                    if not companion.is_empty():
+                        if self.running_batch.is_empty():
+                            self.running_batch = companion
+                        else:
+                            self.running_batch.merge_batch(companion)
             else:
                 batch_result = None
                 self._sched_idled = True
