@@ -64,6 +64,11 @@ if _is_cuda:
     from sglang.kernels.ops.activation.activation import gelu_and_mul, silu_and_mul
     from sglang.kernels.ops.moe.gguf_moe_vec import gguf_moe_a8_vec as ggml_moe_a8_vec
     from sglang.kernels.ops.moe.gguf_moe_weights import apply_gguf_moe_weights
+    from sglang.kernels.ops.quantization.gguf_q8_imma_m16n8k16 import (
+        maybe_apply as _research_q8_imma_maybe_apply,
+        maybe_apply_gate_up as _research_q8_imma_maybe_apply_gate_up,
+        maybe_repack_layer as _research_q8_imma_maybe_repack_layer,
+    )
     from sglang.kernels.ops.quantization.gguf_q8_mmq_x64_y64_w4 import (
         apply as _research_q8_mmq_x64_y64_w4_apply,
         apply_gate_up as _research_q8_mmq_x64_y64_w4_apply_gate_up,
@@ -268,7 +273,9 @@ def fused_mul_mat_gguf(
     # Use MMQ Kernel if it's available (standard + k-quants)
     elif qweight_type in MMQ_QUANT_TYPES:
         if _is_cuda and _research_q8_mmq_x64_y64_w4_covered(x, qweight, qweight_type):
-            y = _research_q8_mmq_x64_y64_w4_apply(x, qweight)
+            y = _research_q8_imma_maybe_apply(x, qweight)
+            if y is None:
+                y = _research_q8_mmq_x64_y64_w4_apply(x, qweight)
         else:
             y = ggml_mul_mat_a8(qweight, x, qweight_type, qweight.shape[0])
     # If there is no available MMQ kernel, fallback to dequantize
@@ -509,6 +516,10 @@ class GGUFLinearMethod(LinearMethodBase):
         # For MergedColumnParallelLinear and QKVParallelLinear, we need to
         # materialize the padded weight parameter for CUDA Graph compatibility.
         self._create_padded_weight_param(layer)
+        # Research r12: opt-in int8 tensor-core panels (SGLANG_Q8_IMMA=1,
+        # strict parse); no-op otherwise, byte-identical load without it.
+        if _is_cuda:
+            _research_q8_imma_maybe_repack_layer(layer)
 
     def _create_padded_weight_param(self, layer: torch.nn.Module):
         """Create padded weight parameter for GGUF MergedLinear layer."""
@@ -570,9 +581,11 @@ class GGUFLinearMethod(LinearMethodBase):
         if shard_id:
             if _can_pair_spark_q8_gate_up(layer, x, bias):
                 qweight = layer.qweight
-                out = _research_q8_mmq_x64_y64_w4_apply_gate_up(
-                    x, qweight[:6656], qweight[6656:]
-                )
+                out = _research_q8_imma_maybe_apply_gate_up(x, layer)
+                if out is None:
+                    out = _research_q8_mmq_x64_y64_w4_apply_gate_up(
+                        x, qweight[:6656], qweight[6656:]
+                    )
                 print_info_once("Using W4 paired Spark Q8_0 gate/up at B8192")
                 return out
             # dequantize shard weights respectively

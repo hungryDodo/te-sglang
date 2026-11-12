@@ -1,18 +1,18 @@
 {
  "worker": "glm-b",
- "round": 11,
- "base_commit": "ecc29a6bdbdf4fb5b1adf32ba05db60b51c2052d",
- "adoption": "Controller-implemented per MIXED-GRAPH-PLAN.json (24aab5fea3); provider r11 hit turns cap with a non-functional partial (archived).",
- "mechanism": "split decode/prefill sub-forwards",
- "description": "SGLANG_SPLIT_DECODE_PREFILL=1 (opt-in): when a prefill (eager extend) batch is scheduled and decode rows are runnable, prepare_for_decode keeps the decode batch separate (no mix_with_running); the event loop runs it back-to-back after the prefill forward on the same stream, so decode replays its CUDA graph instead of idling during the 867ms prefill.",
- "changed_files": ["python/sglang/srt/managers/scheduler.py"],
- "key_changes": [
-   "Module-level strict flag parse (_parse_split_decode_prefill, single env read)",
-   "Scheduler guard: split_decode_prefill only in plain generation config (no spec/dp-attn/PP/disagg)",
-   "_get_new_batch_prefill_raw mix block: split path stores _split_decode_companion instead of mixing",
-   "event_loop_normal/overlap: _pop_split_decode_companion after prefill run_batch; overlap queues both results, pop_and_process drains",
-   "chunked prefill budget reserves decode rows under split (same as mixed chunking)"
+ "round": 12,
+ "base_commit": "cd32f0ad08141a9af7f532d39a4ed51480ed7896",
+ "adoption": "Controller-completed: provider r12 hit cost_usd cap with kernel .cu/.cuh + Python wrapper fully written; Controller added NATIVE-SOURCE-PLAN.json + 8 source checks (all pass).",
+ "mechanism": "int8 tensor-core (IMMA mma.sync m16n8k16) replacement for dp4a vec_dot in MLP MMQ GEMMs",
+ "description": "SGLANG_Q8_IMMA=1 (opt-in): one-time weight repack into ldmatrix-friendly s8 panels + fp16 scale table; mma.sync.m16n8k16 inner loop replaces dp4a for the three B8192 MLP shapes. Numerics: int32 exact per-32-K-block partials identical to dp4a; only f32 chunk summation order differs.",
+ "changed_files": [
+   "python/sglang/kernels/ops/quantization/native_q8_imma_m16n8k16/imma_m16n8k16_core.cuh (185 lines: ldmatrix_x2/x4, mma.sync fragments, 32x64 tile, 4 warps)",
+   "python/sglang/kernels/ops/quantization/native_q8_imma_m16n8k16/q8_imma_m16n8k16.cu (259 lines: kernel entry, smem staging, scale epilogue)",
+   "python/sglang/kernels/ops/quantization/gguf_q8_imma_m16n8k16.py (180 lines: repack_q8_0_panel, covered(), apply())",
+   "python/sglang/kernels/ops/quantization/native_q8_imma_m16n8k16/NATIVE-SOURCE-PLAN.json",
+   "python/sglang/srt/layers/quantization/gguf.py (seam edit)"
  ],
- "expected_effect": "Recovers the 33.8% wall time that serialized prefill forwards steal from decode at C32 (attribution c32-stall-attribution-v1.json); per-user median should approach the 45.5 tok/s unstalled ceiling.",
- "NOT_RUN": ["GPU", "build", "model run", "quality", "numerics"]
+ "expected_effect": "1.8-3x on fat s8 GEMMs (dp4a -> IMMA): 24-40% forward reduction, recovering 210-350ms of the 867ms B8192 prefill. At C32: median 38.5 -> 45+; at C40: 10% sub-30 requests -> above floor.",
+ "validation_needed": ["build + exact-value comparison vs dp4a on real weights", "tolerance for f32 chunk-order difference", "model-level C32/C40 measurement"],
+ "NOT_RUN": ["build", "GPU", "model run", "quality", "numerics"]
 }
