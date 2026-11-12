@@ -1,0 +1,33 @@
+{
+  "plan": "DUAL-STREAM-PLAN",
+  "worker": "controller",
+  "round": "analysis",
+  "goal": "Replay the decode CUDA graph on a second CUDA stream while eager prefill runs on the forward stream, so 22ms decode steps overlap 867ms prefill kernels and recover the 33.8% serialized wall time at C32.",
+  "1_current_mechanism": {
+    "forward_stream": "Scheduler.__init__ (scheduler.py:469→1746): forward_stream = device_module.Stream(); forward_stream_ctx = device_module.stream(forward_stream). Both eager extend and decode graph replay run inside `with self.forward_stream_ctx:` in Scheduler.run_batch (scheduler.py:4775 and :5007).",
+    "schedule_stream": "scheduler.py:1178: schedule_stream = device_module.Stream(priority=0). run_batch fences: `forward_stream.wait_stream(schedule_stream)` (scheduler.py:4777) — CPU-side batch prep on schedule_stream completes before GPU-side forward launches on forward_stream.",
+    "decode_graph_replay": "metadata_glue_graph.py:84-88: `self._states[key]['graph'].replay()` — torch.cuda.CUDAGraph.replay() launches on the CURRENT stream (whatever torch.cuda.current_stream() returns at call time). The main decode graph replay follows the same pattern inside base_cuda_graph_runner (via model_runner._forward_raw → decode_cuda_graph_runner.execute under forward_stream_ctx).",
+    "key_fact": "PyTorch CUDAGraph.replay() is NOT stream-affine: it launches the captured graph on the current stream. Switching `torch.cuda.stream(decode_overlap_stream)` before replay() is sufficient to replay on a different stream. No graph re-capture needed."
+  },
+  "2_dual_stream_plan": {
+    "new_stream": "In Scheduler.__init__ (after forward_stream_ctx at :1746): self.decode_overlap_stream = device_module.Stream(priority=-1) (lower priority: prefill kernels on the main forward stream take SM priority); self.decode_overlap_ctx = device_module.stream(self.decode_overlap_stream).",
+    "launch_site": "In event_loop_overlap (or event_loop_normal), at the existing split companion block: instead of `dres = self.run_batch(companion)` (which enters forward_stream_ctx), wrap: `with self.decode_overlap_ctx: self.decode_overlap_stream.wait_stream(self.forward_stream); dres = self.run_batch(companion)` — the wait_stream ensures input buffer writes (filled on forward_stream by buffer_registry.fill_from) complete before the graph reads them on decode_overlap_stream.",
+    "sync_before_read": "After the companion replay, record an event: `ev = device_module.Event(); ev.record(self.decode_overlap_stream)`. The result processing (sampling, output copy) must wait: `self.forward_stream.wait_event(ev)` before reading companion output tensors. Alternatively, since the overlap loop defers result processing to the next iteration anyway, the event wait can go at the top of the next iteration.",
+    "allocator_safety": "CUDA graphs use static buffer addresses captured at capture time — no allocator interaction during replay. The INPUT buffers (filled by buffer_registry.fill_from on forward_stream) and OUTPUT buffers (logits, etc.) are the only cross-stream tensors. Both need: (a) the producer's stream to complete before the consumer starts (the wait_stream/wait_event above), and (b) record_stream() on the output tensors if they are freed and reallocated by the caching allocator while decode_overlap_stream still reads them. The simplest correct approach: since the companion's outputs are consumed by the result processing which already runs after both forwards complete (deferred to next iteration in overlap mode), the event wait at the processing point suffices."
+  },
+  "3_kv_cache_concurrency": {
+    "disjoint_writes": "Prefill (extend) writes NEW KV slots for prefill requests (allocated by the scheduler before launch). Decode writes ONE bonus slot per running decode request (allocated by prepare_for_decode). These are disjoint: different requests, different slot indices. No data race on KV cache contents.",
+    "shared_state": "The KV pool allocator metadata (free lists) is host-side and managed by the single-threaded scheduler — both batches' allocations happen sequentially on the CPU before either GPU launch. The radix/tree cache is also CPU-side. No GPU-side shared mutable state between the two sub-forwards."
+  },
+  "4_risks_and_fallbacks": [
+    {"risk": "PyTorch caching allocator frees output tensors on forward_stream while decode_overlap_stream still reads them (use-after-free)", "fallback": "Call output_tensor.record_stream(self.decode_overlap_stream) on the companion's output tensors, OR keep a Python reference to the companion batch alive until the event is waited on (the existing result_queue already does this via companion.copy())."},
+    {"risk": "Sampling kernel launches on the wrong stream (sampling typically runs on forward_stream)", "fallback": "launch_batch_sample_if_needed for the companion must switch to decode_overlap_ctx or wait for the event first. In the overlap loop, sampling is deferred anyway."},
+    {"risk": "CUDA graph replay on non-capture stream may have subtle correctness issues on some architectures (graph internal stream dependencies)", "fallback": "Test with a small standalone CUDA graph replayed on two streams; if it fails, fall back to the same-stream split (pause-bounding only)."}
+  ],
+  "5_effort_estimate": {
+    "changed_files": ["scheduler.py (new stream + companion launch in decode_overlap_ctx + event sync)"],
+    "approximate_diff": "30-50 lines in scheduler.py (stream creation, context switch at companion launch site, event record/wait)",
+    "fits_one_round": true
+  },
+  "6_expected_effect": "If decode overlap works: the 47 prefill forwards (867ms each) no longer block decode. Decode runs at its natural 22ms cadence on the second stream. Per-user median should approach the unstalled 45.5 tok/s ceiling (from 38.5). At C40, this could bring the 10% sub-30 requests above the floor."
+}
