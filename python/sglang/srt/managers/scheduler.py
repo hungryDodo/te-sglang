@@ -1751,6 +1751,16 @@ class Scheduler(
             self.copy_stream
         )
 
+        # Dual-stream decode overlap (DUAL-STREAM-PLAN): second stream for
+        # decode graph replay alongside eager prefill on forward_stream.
+        self.decode_overlap_stream: CudaStream = self.device_module.Stream(
+            priority=-1
+        )
+        self.decode_overlap_ctx: CudaStreamContext = self.device_module.stream(
+            self.decode_overlap_stream
+        )
+        self._decode_overlap_event = self.device_module.Event()
+
         if not self.enable_overlap:
             return
 
@@ -2084,7 +2094,12 @@ class Scheduler(
                 # MIXED-GRAPH-PLAN: companion decode batch (graph replay)
                 companion = self._pop_split_decode_companion()
                 if companion is not None:
-                    dres = self.run_batch(companion)
+                    # DUAL-STREAM-PLAN: replay on second stream.
+                    self.decode_overlap_stream.wait_stream(self.forward_stream)
+                    with self.decode_overlap_ctx:
+                        dres = self.run_batch(companion)
+                    self._decode_overlap_event.record(self.decode_overlap_stream)
+                    self.forward_stream.wait_event(self._decode_overlap_event)
                     self.process_batch_result(companion, dres)
                     # MIXED-GRAPH-PLAN fix: merge the companion's unfinished
                     # reqs back into running_batch so the next decode step
@@ -2168,7 +2183,13 @@ class Scheduler(
                 # mixed path, so the queue-depth-1 assumption there is safe.
                 companion = self._pop_split_decode_companion()
                 if companion is not None:
-                    dres = self.run_batch(companion)
+                    # DUAL-STREAM-PLAN: replay the decode graph on a second
+                    # stream so it overlaps the eager prefill kernels.
+                    self.decode_overlap_stream.wait_stream(self.forward_stream)
+                    with self.decode_overlap_ctx:
+                        dres = self.run_batch(companion)
+                    self._decode_overlap_event.record(self.decode_overlap_stream)
+                    self.forward_stream.wait_event(self._decode_overlap_event)
                     self._apply_war_barrier()
                     self.result_queue.append((companion.copy(), dres))
                     # MIXED-GRAPH-PLAN fix: merge the companion's unfinished
