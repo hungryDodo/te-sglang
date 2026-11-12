@@ -4,12 +4,21 @@
  "helper_path": "../gguf_q8_imma_m16n8k16.py",
  "diagnostics_env": "SGLANG_Q8_IMMA_M16N8K16_DIAGNOSTICS",
  "opt_in_env": "SGLANG_Q8_IMMA",
- "tile": {"mma": "m16n8k16", "block_rows": 32, "block_cols": 64, "warps": 4},
- "source_files": ["imma_m16n8k16_core.cuh", "q8_imma_m16n8k16.cu"],
- "compiled": false,
- "library_sha256": null,
+ "tile": {
+  "mma": "m16n8k16",
+  "block_rows": 32,
+  "block_cols": 64,
+  "warps": 4
+ },
+ "source_files": [
+  "imma_m16n8k16_core.cuh",
+  "q8_imma_m16n8k16.cu"
+ ],
+ "compiled": true,
+ "library_sha256": "54222821b527143a9ec37c6da4bade780b9861014a72a6a1011534ea231e1e78",
  "vendor_includes": "../native_q8_mmq_x8/vendor/",
  "numerics": "int32 exact per-32-K-block partials (identical to dp4a); only f32 chunk summation order differs",
  "weight_repack": "gguf_q8_imma_m16n8k16.repack_q8_0_panel produces int8[rows/16,k/16,16,16] + fp16[rows,k/32] scale table",
- "fallback": "dp4a path unchanged; IMMA activates only when SGLANG_Q8_IMMA=1 and repacked panel present"
+ "fallback": "dp4a path unchanged; IMMA activates only when SGLANG_Q8_IMMA=1 and repacked panel present",
+ "library_bytes": 1350680
 }

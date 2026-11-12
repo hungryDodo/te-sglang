@@ -58,7 +58,7 @@ __device__ __forceinline__ void mma_m16n8k16_s8(
     const int c0, const int c1, const int c2, const int c3) {
   asm(
       "mma.sync.aligned.m16n8k16.row.col.s32.s8.s8.s32 "
-      "{%0,%1,%2,%3}, {%4,%5}, %6, {%7,%8,%9,%10};\n"
+      "{%0,%1,%2,%3}, {%4,%5}, {%6}, {%7,%8,%9,%10};\n"
       : "=r"(d0), "=r"(d1), "=r"(d2), "=r"(d3)
       : "r"(a0), "r"(a1), "r"(b0), "r"(c0), "r"(c1), "r"(c2), "r"(c3));
 }
