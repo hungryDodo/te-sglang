@@ -1,0 +1,18 @@
+{
+ "worker": "glm-b",
+ "round": 11,
+ "base_commit": "ecc29a6bdbdf4fb5b1adf32ba05db60b51c2052d",
+ "adoption": "Controller-implemented per MIXED-GRAPH-PLAN.json (24aab5fea3); provider r11 hit turns cap with a non-functional partial (archived).",
+ "mechanism": "split decode/prefill sub-forwards",
+ "description": "SGLANG_SPLIT_DECODE_PREFILL=1 (opt-in): when a prefill (eager extend) batch is scheduled and decode rows are runnable, prepare_for_decode keeps the decode batch separate (no mix_with_running); the event loop runs it back-to-back after the prefill forward on the same stream, so decode replays its CUDA graph instead of idling during the 867ms prefill.",
+ "changed_files": ["python/sglang/srt/managers/scheduler.py"],
+ "key_changes": [
+   "Module-level strict flag parse (_parse_split_decode_prefill, single env read)",
+   "Scheduler guard: split_decode_prefill only in plain generation config (no spec/dp-attn/PP/disagg)",
+   "_get_new_batch_prefill_raw mix block: split path stores _split_decode_companion instead of mixing",
+   "event_loop_normal/overlap: _pop_split_decode_companion after prefill run_batch; overlap queues both results, pop_and_process drains",
+   "chunked prefill budget reserves decode rows under split (same as mixed chunking)"
+ ],
+ "expected_effect": "Recovers the 33.8% wall time that serialized prefill forwards steal from decode at C32 (attribution c32-stall-attribution-v1.json); per-user median should approach the 45.5 tok/s unstalled ceiling.",
+ "NOT_RUN": ["GPU", "build", "model run", "quality", "numerics"]
+}

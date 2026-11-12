@@ -390,6 +390,24 @@ else:
 logger = logging.getLogger(__name__)
 
 
+def _parse_split_decode_prefill(raw):
+    """SGLANG_SPLIT_DECODE_PREFILL: exactly '1' (on), '0' (off), or unset (off)."""
+    if raw is None:
+        return False
+    if raw == "1":
+        return True
+    if raw == "0":
+        return False
+    raise ValueError(
+        f"SGLANG_SPLIT_DECODE_PREFILL must be exactly '1' or '0' (unset = off), got {raw!r}"
+    )
+
+
+_SPLIT_DECODE_PREFILL = _parse_split_decode_prefill(
+    __import__("os").environ.get("SGLANG_SPLIT_DECODE_PREFILL")
+)
+
+
 def _prewarm_hccl_group(device, group, device_module):
     warmup_tensor = torch.zeros(1, dtype=torch.int32, device=device)
     torch.distributed.all_reduce(warmup_tensor, group=group)
@@ -1377,6 +1395,21 @@ class Scheduler(
         self.is_mixed_chunk = (
             self.chunked_prefill_size is not None and get_schedule().enable_mixed_chunk
         )
+        # MIXED-GRAPH-PLAN (glm-a r7, 24aab5f): opt-in split decode/prefill
+        # composition. Guarded to the plain single-replica generation config;
+        # every other config keeps today's behavior with the env flag inert.
+        self.split_decode_prefill = (
+            _SPLIT_DECODE_PREFILL
+            and self.is_generation
+            and self.spec_algorithm.is_none()
+            and not self.require_mlp_sync
+            and not self.attn_dp_enabled
+            and not self.enable_hisparse
+            and not self.enable_pdmux
+            and str(get_disagg().disaggregation_mode) == "null"
+            and get_parallel().pp_size == 1
+        )
+        self._split_decode_companion = None
 
     def maybe_init_dynamic_chunk_sizer(self) -> None:
         """Profile a PP prefill latency model that sizes chunks per stage."""
@@ -2048,6 +2081,11 @@ class Scheduler(
             if batch:
                 result = self.run_batch(batch)
                 self.process_batch_result(batch, result)
+                # MIXED-GRAPH-PLAN: companion decode batch (graph replay)
+                companion = self._pop_split_decode_companion()
+                if companion is not None:
+                    dres = self.run_batch(companion)
+                    self.process_batch_result(companion, dres)
             else:
                 # When the server is idle, do self-check and re-init some states.
                 self._sched_idled = True
@@ -2067,9 +2105,11 @@ class Scheduler(
         ] = deque()
 
         def pop_and_process():
-            # Process the results of the last batch
-            tmp_batch, tmp_result = self.result_queue.popleft()
-            self.process_batch_result(tmp_batch, tmp_result)
+            # Process the results of the last batch (drain all entries: the
+            # split-decode iteration appends prefill+decode companions).
+            while self.result_queue:
+                tmp_batch, tmp_result = self.result_queue.popleft()
+                self.process_batch_result(tmp_batch, tmp_result)
 
         while True:
             if self.gracefully_exit:
@@ -2111,6 +2151,17 @@ class Scheduler(
                 # Fence result processing behind this forward's shared reads.
                 self._apply_war_barrier()
                 self.result_queue.append((batch.copy(), batch_result))
+                # MIXED-GRAPH-PLAN: companion decode batch (graph replay)
+                # runs back-to-back on the same forward stream; its result is
+                # queued exactly like a normal decode step.  The prefill
+                # result stays in the queue too (two entries this iteration);
+                # _reqs_finishing_inflight is only called on the (replaced)
+                # mixed path, so the queue-depth-1 assumption there is safe.
+                companion = self._pop_split_decode_companion()
+                if companion is not None:
+                    dres = self.run_batch(companion)
+                    self._apply_war_barrier()
+                    self.result_queue.append((companion.copy(), dres))
             else:
                 batch_result = None
                 self._sched_idled = True
@@ -4163,7 +4214,7 @@ class Scheduler(
             self.new_token_ratio_tracker.current,
             self.max_prefill_tokens,
             chunked_prefill_size,
-            running_bs if self.is_mixed_chunk else 0,
+            running_bs if (self.is_mixed_chunk or self.split_decode_prefill) else 0,
             self.priority_scheduling_preemption_threshold,
             max_prefill_bs=int(self.max_prefill_bs),
             max_running_requests=self.max_running_requests,
@@ -4393,8 +4444,14 @@ class Scheduler(
             # step, which fits them; a mixed step does not retract them.
             if not running_batch.is_empty() and running_batch.check_decode_mem():
                 running_batch.prepare_for_decode()
-                new_batch.mix_with_running(running_batch)
-                new_batch.decoding_reqs = running_batch.reqs
+                if self.split_decode_prefill:
+                    # MIXED-GRAPH-PLAN step A: keep the decode batch separate
+                    # so it replays its CUDA graph; the eager extend (prefill)
+                    # batch and this decode batch run back-to-back this step.
+                    self._split_decode_companion = running_batch
+                else:
+                    new_batch.mix_with_running(running_batch)
+                    new_batch.decoding_reqs = running_batch.reqs
                 if not self.enable_overlap and not self.spec_algorithm.is_none():
                     # Non-overlap spec never writes the relay; stash the
                     # tails' pending tokens for the mixed input resolve.
@@ -4610,6 +4667,25 @@ class Scheduler(
                     setattr(batch, name, value)
             else:
                 batch.sampling_info = sched_sampling_info
+
+    def _pop_split_decode_companion(self):
+        """Take the companion decode batch prepared by this step's prefill pass.
+
+        Returns None when the split path did not fire (default, non-split
+        configs, or no runnable decode rows).  The companion's requests were
+        already advanced by prepare_for_decode and will re-enter
+        running_batch through the normal decode-result path.
+        """
+        companion = self._split_decode_companion
+        self._split_decode_companion = None
+        if companion is not None and companion.is_empty():
+            return None
+        if companion is not None:
+            logger.info(
+                "SPLIT step: decode_bs=%d (companion to eager extend)",
+                companion.batch_size(),
+            )
+        return companion
 
     @scheduler_stage_method(SCHEDULER_STAGE_RUN_BATCH)
     def run_batch(
