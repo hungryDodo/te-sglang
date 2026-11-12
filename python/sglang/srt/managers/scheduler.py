@@ -4424,9 +4424,11 @@ class Scheduler(
             ),
         )
 
-        # Mixed-style chunked prefill
+        # Mixed-style chunked prefill (or split-decode companion under
+        # SGLANG_SPLIT_DECODE_PREFILL, which reuses this block's admission
+        # logic but keeps the batches separate instead of mixing).
         if (
-            self.is_mixed_chunk
+            (self.is_mixed_chunk or self.split_decode_prefill)
             and not running_batch.is_empty()
             and not (new_batch.return_logprob or running_batch.return_logprob)
             # mix_with_running cats input_ids but not input_embeds — shapes would mismatch
